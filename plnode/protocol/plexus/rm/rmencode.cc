@@ -9,11 +9,13 @@
  * $Date: 2002/12/09 04:06:59 $
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "reedmuller.h"
 #include "common.h"
+
+using namespace std;
 
 static reedmuller rm = 0;
 static int *message = 0;
