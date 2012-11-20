@@ -1,0 +1,6 @@
+.cproject
+.meta*
+.project
+Debug/*
+Release/*
+
