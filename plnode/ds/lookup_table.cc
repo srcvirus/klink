@@ -18,7 +18,7 @@ bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 }
 
 template <class KeyType, class ValueType>
-bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
+bool LookupTable<KeyType, ValueType>::lookup(const KeyType& key, ValueType* value)
 {
 	if(table.find(key) == table.end())
 	{
@@ -33,7 +33,7 @@ bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
 }
 
 template <class KeyType, class ValueType>
-bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
+bool LookupTable<KeyType, ValueType>::update(const KeyType& key, ValueType value)
 {
 	if(table.find(key) == table.end())
 	{
@@ -48,10 +48,14 @@ bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
 }
 
 template <class KeyType, class ValueType>
-void LookupTable<KeyType, ValueType>::remove(KeyType key)
+bool LookupTable<KeyType, ValueType>::remove(const KeyType& key)
 {
 	if(table.find(key) != table.end())
+	{
 		table.erase(key);
+		return true;
+	}
+	return false;
 }
 
 template <class KeyType, class ValueType>

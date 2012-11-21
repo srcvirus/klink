@@ -24,9 +24,9 @@ public:
 	virtual ~LookupTable();
 
 	bool add(KeyType key, ValueType value);
-	bool lookup(KeyType key, ValueType* value);
-	bool update(KeyType key, ValueType value);
-	void remove(KeyType key);
+	bool lookup(const KeyType& key, ValueType* value);
+	bool update(const KeyType& key, ValueType value);
+	bool remove(const KeyType& key);
 	vector <KeyType> getKeySet();
 };
 
