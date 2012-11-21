@@ -15,10 +15,8 @@
 #include "reedmuller.h"
 #include "common.h"
 
-<<<<<<< HEAD:plnode/protocol/plexus/rm/rmencode.c
-=======
+
 using namespace std;
->>>>>>> a038882b1ed5c1f99b5e78ec9aa75dc8bc43c6a5:plnode/protocol/plexus/rm/rmencode.cc
 
 static reedmuller rm = 0;
 static int *message = 0;
