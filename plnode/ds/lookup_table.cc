@@ -8,7 +8,7 @@
 
 using namespace std;
 
-template <class KeyType, class ValueType>
+template <typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 {
 	if(table.find(key) != table.end())
@@ -17,7 +17,7 @@ bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 	return true;
 }
 
-template <class KeyType, class ValueType>
+template <typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::lookup(const KeyType& key, ValueType* value)
 {
 	if(table.find(key) == table.end())
@@ -32,7 +32,7 @@ bool LookupTable<KeyType, ValueType>::lookup(const KeyType& key, ValueType* valu
 	}
 }
 
-template <class KeyType, class ValueType>
+template <typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::update(const KeyType& key, ValueType value)
 {
 	if(table.find(key) == table.end())
@@ -47,7 +47,7 @@ bool LookupTable<KeyType, ValueType>::update(const KeyType& key, ValueType value
 	}
 }
 
-template <class KeyType, class ValueType>
+template <typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::remove(const KeyType& key)
 {
 	if(table.find(key) != table.end())
@@ -58,10 +58,11 @@ bool LookupTable<KeyType, ValueType>::remove(const KeyType& key)
 	return false;
 }
 
-template <class KeyType, class ValueType>
+template <typename KeyType, typename ValueType>
 vector <KeyType> LookupTable<KeyType, ValueType>::getKeySet()
 {
 	vector <KeyType> keySet;
+
 	map <KeyType, ValueType>::iterator mapIt;
 
 	for(mapIt = table.begin(); mapIt != table.end(); mapIt++)
