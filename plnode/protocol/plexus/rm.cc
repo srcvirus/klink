@@ -1,7 +1,6 @@
 #include "rm/reedmuller.h"
 #include "rm/common.h"
 
-
 class rm{
 	int r, m;
 	reedmuller rm;

@@ -1,0 +1,73 @@
+/*
+ * lookup_table.cc
+ *
+ *  Created on: 2012-11-21
+ *      Author: sr2chowd
+ */
+#include "lookup_table.h"
+
+using namespace std;
+
+template <class KeyType, class ValueType>
+bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
+{
+	if(table.find(key) != table.end())
+		return false;
+	table.insert(make_pair(key, value));
+	return true;
+}
+
+template <class KeyType, class ValueType>
+bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
+{
+	if(table.find(key) == table.end())
+	{
+		value = NULL;
+		return false;
+	}
+	else
+	{
+		*value = table[key];
+		return true;
+	}
+}
+
+template <class KeyType, class ValueType>
+bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
+{
+	if(table.find(key) == table.end())
+	{
+		table.insert(make_pair(key, value));
+		return false;
+	}
+	else
+	{
+		table[key] = value;
+		return true;
+	}
+}
+
+template <class KeyType, class ValueType>
+void LookupTable<KeyType, ValueType>::remove(KeyType key)
+{
+	if(table.find(key) != table.end())
+		table.erase(key);
+}
+
+template <class KeyType, class ValueType>
+vector <KeyType> LookupTable<KeyType, ValueType>::getKeySet()
+{
+	vector <KeyType> keySet;
+	map <KeyType, ValueType>::iterator mapIt;
+
+	for(mapIt = table.begin(); mapIt != table.end(); mapIt++)
+		keySet.push_back(mapIt);
+
+	return keySet;
+}
+
+
+
+
+
+
