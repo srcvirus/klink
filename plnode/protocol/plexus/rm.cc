@@ -1,36 +1,41 @@
-#include "rm/reedmuller.h"
 #include "rm/common.h"
+#include "rm/reedmuller.h"
 
+using namespace std;
 
-class rm{
+class ReedMuller{
 	int r, m;
 	reedmuller rm;
 public:
-	rm(int r, int m);
+	ReedMuller();
+	ReedMuller(int r, int m);
 	int* encode(int* message);
 	int* decode(int* codeword);
 };
 
-rm::rm(int r, int m){
-	rm = readmuller_init(r, m);
+ReedMuller::ReedMuller(int r, int m)
+{
+	this->r = r;
+	this->m = m;
+	this->rm = reedmuller_init(r, m);
 }
 
-int* rm::encode(int* message){
-	if(strlen(message) != rm->k){
+int* ReedMuller::encode(int* message){
+	if(strlen(message) != ReedMuller->k){
 		#ifdef DEBUG_MESSAGE
-		cout << "ERROR in rm.cc: rm-k = " << rm->k << " but message length " << strlen(message) << "."
+		cout << "ERROR in rm.cc: rm-k = " << ReedMuller->k << " but message length " << strlen(message) << "."
 		#endif
 		return NULL;
 	}
-	int* codeword = new int[rm->n];
+	int* codeword = new int[ReedMuller->n];
 	reedmuller_encode(rm, message, codeword);
 	return codeword;
 }
 
-int* rm::decode(int* codeword){
-	if(strlen(codeword) != rm->n){
+int* ReedMuller::decode(int* codeword){
+	if(strlen(codeword) != ReedMuller->n){
 		#ifdef DEBUG_MESSAGE
-		cout << "ERROR in rm.cc: rm-n = " << rm->n << " but codeword length " << strlen(codeword) << "."
+		cout << "ERROR in rm.cc: rm-n = " << ReedMuller->n << " but codeword length " << strlen(codeword) << "."
 		#endif
 		return NULL;
 	}

@@ -15,6 +15,7 @@
 #include "reedmuller.h"
 #include "common.h"
 
+
 using namespace std;
 
 static reedmuller rm = 0;
