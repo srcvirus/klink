@@ -14,8 +14,8 @@ public:
 	ABSCode();
 	virtual ~ABSCode();
 
-	virtual void encode(long data) = 0;
-	virtual long decode() = 0;
+	virtual void encode(const char* bit_string) = 0;
+	virtual char* decode(const char* bit_string) = 0;
 };
 
 
