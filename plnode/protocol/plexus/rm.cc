@@ -12,7 +12,7 @@ public:
 };
 
 rm::rm(int r, int m){
-	rm = readMuller_init(r, m);
+	rm = readmuller_init(r, m);
 }
 
 int* rm::encode(int* message){
