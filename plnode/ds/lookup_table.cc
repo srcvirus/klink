@@ -63,7 +63,7 @@ vector <KeyType> LookupTable<KeyType, ValueType>::getKeySet()
 {
 	vector <KeyType> keySet;
 
-	map <KeyType, ValueType>::iterator mapIt;
+	typename map <KeyType, ValueType>::iterator mapIt;
 
 	for(mapIt = table.begin(); mapIt != table.end(); mapIt++)
 		keySet.push_back(mapIt);
