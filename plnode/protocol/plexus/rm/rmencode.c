@@ -15,6 +15,7 @@
 #include "reedmuller.h"
 #include "common.h"
 
+
 static reedmuller rm = 0;
 static int *message = 0;
 static int *codeword = 0;
