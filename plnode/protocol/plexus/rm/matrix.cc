@@ -4,10 +4,11 @@
  * $Date: 2002/11/14 19:11:00 $
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "common.h"
 #include "matrix.h"
 
+using namespace std;
 
 int **matrix_2d(int n, int m)
 {

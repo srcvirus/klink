@@ -7,11 +7,12 @@
  * $Date: 2002/11/14 19:11:00 $
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "common.h"
 #include "combination.h"
 #include "ksubset.h"
 
+using namespace std;
 
 set ksubset_init(int n)
 {

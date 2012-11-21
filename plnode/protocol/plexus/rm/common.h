@@ -10,7 +10,7 @@
 #define COMMON_H
 
 #ifdef DEBUG
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #ifndef FALSE

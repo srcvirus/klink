@@ -1,24 +1,25 @@
-/* rmencode.c
+/* rmdecode.c
  *
- * Command-line Reed-Muller encoding utility.
+ * Command-line Reed-Muller decoding utility.
  *
  * By Sebastian Raaphorst, 2002
  * ID#: 1256241
  *
  * $Author: vorpal $
- * $Date: 2002/12/09 04:06:59 $
+ * $Date: 2002/12/09 04:25:44 $
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "reedmuller.h"
 #include "common.h"
 
+using namespace std;
 
 static reedmuller rm = 0;
+static int *received = 0;
 static int *message = 0;
-static int *codeword = 0;
 
 
 static int read_vector_from_string(char *str, int elems, int *vector)
@@ -38,8 +39,8 @@ static int read_vector_from_string(char *str, int elems, int *vector)
 static void cleanup()
 {
   reedmuller_free(rm);
+  free(received);
   free(message);
-  free(codeword);
 }
 
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
   int r, m;
 
   if (argc < 4) {
-    fprintf(stderr, "usage: %s r m message1 [message2 [message3 [...]]]\n",
+    fprintf(stderr, "usage: %s r m received1 [received2 [received3 [...]]]\n",
 	    argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -58,8 +59,8 @@ int main(int argc, char *argv[])
   r = atoi(argv[1]);
   m = atoi(argv[2]);
   if ((!(rm = reedmuller_init(r, m)))
-      || (!(message = (int*) calloc(rm->k, sizeof(int))))
-      || (!(codeword = (int*) calloc(rm->n, sizeof(int))))) {
+      || (!(received = (int*) calloc(rm->n, sizeof(int))))
+      || (!(message = (int*) calloc(rm->k, sizeof(int))))) {
     fprintf(stderr, "out of memory\n");
     cleanup();
     exit(EXIT_FAILURE);
@@ -80,24 +81,24 @@ int main(int argc, char *argv[])
 
   for (i=3; i < argc; ++i) {
     /* make sure that the message is of the appropriate length */
-    if (strlen(argv[i]) != rm->k) {
-      fprintf(stderr, "message %s has invalid length %d (needs %d)\n",
-	      argv[i], strlen(argv[i]), rm->k);
+    if (strlen(argv[i]) != rm->n) {
+      fprintf(stderr, "received %s has invalid length %d (needs %d)\n",
+	      argv[i], strlen(argv[i]), rm->n);
       continue;
     }
 
     /* read in the message */
-    read_vector_from_string(argv[i], rm->k, message);
+    read_vector_from_string(argv[i], rm->n, received);
 #ifdef OUTPUTINPUT
-    for (j=0; j < rm->k; ++j)
-      printf("%d", message[j]);
+    for (j=0; j < rm->n; ++j)
+      printf("%d", received[j]);
     printf(" -> ");
 #endif
 
-    /* encode it */
-    reedmuller_encode(rm, message, codeword);
-    for (j=0; j < rm->n; ++j)
-      printf("%d", codeword[j]);
+    /* decode it */
+    reedmuller_decode(rm, received, message);
+    for (j=0; j < rm->k; ++j)
+      printf("%d", message[j]);
     printf("\n");
   }
 
@@ -107,16 +108,10 @@ int main(int argc, char *argv[])
 
 
 /*
- * $Log: rmencode.c,v $
- * Revision 1.3  2002/12/09 04:06:59  vorpal
- * Added changes to allow for decoding.
- * Still have to write rmdecode.c and test.
- *
- * Revision 1.2  2002/11/14 21:05:41  vorpal
- * Tidied up vector reading, and recompiled without debugging defines.
- *
- * Revision 1.1  2002/11/14 21:02:34  vorpal
- * Fixed bugs in reedmuller.c and added command-line encoding app.
+ * $Log: rmdecode.c,v $
+ * Revision 1.1  2002/12/09 04:25:44  vorpal
+ * Fixed some glaring errors in reedmuller.c
+ * Still need to fix problems with decoding; not doing it properly.
  *
  */
 

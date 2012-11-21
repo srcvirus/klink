@@ -7,13 +7,14 @@
  * $Date: 2002/12/09 15:07:04 $
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "matrix.h"
 #include "ksubset.h"
 #include "vector.h"
 #include "common.h"
 #include "reedmuller.h"
 
+using namespace std;
 
 reedmuller reedmuller_init(int r, int m)
 {
