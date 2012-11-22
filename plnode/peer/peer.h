@@ -9,16 +9,20 @@
 #define PEER_H_
 
 #include <string.h>
+#include "../protocol/protocol.h"
+#include "../ds/ip_address.h"
 
 class Peer
 {
 	int peer_id;
 	int code_word;
-	int ip_address;
+	IPAddress ip_address;
+	string host_name;
 	int name_range_start;
 	int name_range_end;
 	double alpha;
 	int k;
+	ABSProtocol* protocol;
 
 public:
 	Peer();
@@ -44,37 +48,22 @@ public:
 		code_word = codeWord;
 	}
 
-	int getIpAddress()
+	IPAddress getIpAddress()
 	{
 		return ip_address;
 	}
-
-	void setIpAddress(int ipAddress)
+	int getIpAddress()
 	{
-		ip_address = ipAddress;
+		return ip_address.getIpAddress();
+	}
+	string getStrIpAddress()
+	{
+		return ip_address.getStrIpAddress();
 	}
 
 	void setIpAddress(char* ipAddress)
 	{
-		ip_address = 0;
-		int to_shift = 24;
-		int ip_component = 0;
-
-		char* ptr = strtok(ipAddress, ".");
-
-		if(ptr != NULL)
-		{
-			ip_component = atoi(ptr);
-			ip_address |= (ip_component << to_shift);
-			to_shift -= 8;
-		}
-
-		while((ptr = strtok(NULL, " ")) != NULL)
-		{
-			ip_component = atoi(ptr);
-			ip_address |= (ip_component << to_shift);
-			to_shift -= 8;
-		}
+		ip_address.setIp(ipAddress);
 	}
 
 	int getK()
@@ -115,6 +104,16 @@ public:
 	void setPeerId(int peerId)
 	{
 		peer_id = peerId;
+	}
+
+	void setHostName(string host_name)
+	{
+		this->host_name = host_name;
+	}
+
+	string getHostName()
+	{
+		return host_name;
 	}
 };
 
