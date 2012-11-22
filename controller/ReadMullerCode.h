@@ -5,13 +5,11 @@
  * Created on November 22, 2012, 5:37 PM
  */
 
-#ifndef READMULLER_H
-#define	READMULLER_H
+#ifndef READMULLERCODE_H
+#define	READMULLERCODE_H
 
-
-
-#include "common.h"
-#include "reedmuller.h"
+#include "plnode/protocol/plexus/rm/common.h"
+#include "plnode/protocol/plexus/rm/reedmuller.h"
 
 #include<iostream>
 
@@ -61,4 +59,4 @@ int* ReedMuller::decode(int* codeword) {
 }
 
 
-#endif	/* READMULLER_H */
+#endif	/* READMULLERCODE_H */
