@@ -45,67 +45,67 @@ static void cleanup()
 }
 
 
-int main(int argc, char *argv[])
-{
-  int i, j;
-  int r, m;
-
-  if (argc < 4) {
-    fprintf(stderr, "usage: %s r m message1 [message2 [message3 [...]]]\n",
-	    argv[0]);
-    exit(EXIT_FAILURE);
-  }
-
-  /* try to create the reed-muller code and the vectors */
-  r = atoi(argv[1]);
-  m = atoi(argv[2]);
-  if ((!(rm = reedmuller_init(r, m)))
-      || (!(message = (int*) calloc(rm->k, sizeof(int))))
-      || (!(codeword = (int*) calloc(rm->n, sizeof(int))))) {
-    fprintf(stderr, "out of memory\n");
-    cleanup();
-    exit(EXIT_FAILURE);
-  }
-
-#ifdef OUTPUTINPUT
-  printf("Code parameters for R(%d,%d): n=%d, k=%d\n",
-	 rm->r, rm->m, rm->n, rm->k);
-  printf("The generator matrix is:\n");
-  for (i=0; i < rm->k; ++i) {
-    printf("\t");
-    for (j=0; j < rm->n; ++j)
-      printf("%d ", rm->G[j][i]);
-    printf("\n");
-  }
-  printf("\n");
-#endif
-
-  for (i=3; i < argc; ++i) {
-    /* make sure that the message is of the appropriate length */
-    if (strlen(argv[i]) != rm->k) {
-      fprintf(stderr, "message %s has invalid length %d (needs %d)\n",
-	      argv[i], strlen(argv[i]), rm->k);
-      continue;
-    }
-
-    /* read in the message */
-    read_vector_from_string(argv[i], rm->k, message);
-#ifdef OUTPUTINPUT
-    for (j=0; j < rm->k; ++j)
-      printf("%d", message[j]);
-    printf(" -> ");
-#endif
-
-    /* encode it */
-    reedmuller_encode(rm, message, codeword);
-    for (j=0; j < rm->n; ++j)
-      printf("%d", codeword[j]);
-    printf("\n");
-  }
-
-  cleanup();
-  exit(EXIT_SUCCESS);
-}
+//int main(int argc, char *argv[])
+//{
+//  int i, j;
+//  int r, m;
+//
+//  if (argc < 4) {
+//    fprintf(stderr, "usage: %s r m message1 [message2 [message3 [...]]]\n",
+//	    argv[0]);
+//    exit(EXIT_FAILURE);
+//  }
+//
+//  /* try to create the reed-muller code and the vectors */
+//  r = atoi(argv[1]);
+//  m = atoi(argv[2]);
+//  if ((!(rm = reedmuller_init(r, m)))
+//      || (!(message = (int*) calloc(rm->k, sizeof(int))))
+//      || (!(codeword = (int*) calloc(rm->n, sizeof(int))))) {
+//    fprintf(stderr, "out of memory\n");
+//    cleanup();
+//    exit(EXIT_FAILURE);
+//  }
+//
+//#ifdef OUTPUTINPUT
+//  printf("Code parameters for R(%d,%d): n=%d, k=%d\n",
+//	 rm->r, rm->m, rm->n, rm->k);
+//  printf("The generator matrix is:\n");
+//  for (i=0; i < rm->k; ++i) {
+//    printf("\t");
+//    for (j=0; j < rm->n; ++j)
+//      printf("%d ", rm->G[j][i]);
+//    printf("\n");
+//  }
+//  printf("\n");
+//#endif
+//
+//  for (i=3; i < argc; ++i) {
+//    /* make sure that the message is of the appropriate length */
+//    if (strlen(argv[i]) != rm->k) {
+//      fprintf(stderr, "message %s has invalid length %d (needs %d)\n",
+//	      argv[i], strlen(argv[i]), rm->k);
+//      continue;
+//    }
+//
+//    /* read in the message */
+//    read_vector_from_string(argv[i], rm->k, message);
+//#ifdef OUTPUTINPUT
+//    for (j=0; j < rm->k; ++j)
+//      printf("%d", message[j]);
+//    printf(" -> ");
+//#endif
+//
+//    /* encode it */
+//    reedmuller_encode(rm, message, codeword);
+//    for (j=0; j < rm->n; ++j)
+//      printf("%d", codeword[j]);
+//    printf("\n");
+//  }
+//
+//  cleanup();
+//  exit(EXIT_SUCCESS);
+//}
 
 
 /*
