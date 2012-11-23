@@ -25,6 +25,7 @@ using namespace std;
 
 class ABSMessage
 {
+protected:
 	unsigned char messageType;
 	string dest_host;
 	int dest_port;

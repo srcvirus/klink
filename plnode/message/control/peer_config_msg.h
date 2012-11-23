@@ -16,7 +16,10 @@ class PeerConfigMessage:public ABSMessage
 	double parameter_alpha;
 
 public:
-	PeerConfigMessage():ABSMessage(){;}
+	PeerConfigMessage():ABSMessage()
+	{
+		messageType = MSG_PEER_CONFIG;
+	}
 
 	void setParameterK(int k)
 	{
