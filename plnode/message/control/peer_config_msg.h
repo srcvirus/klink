@@ -17,6 +17,7 @@ class PeerConfigMessage:public ABSMessage
 
 public:
 	PeerConfigMessage():ABSMessage(){;}
+
 	void setParameterK(int k)
 	{
 		parameter_k = k;

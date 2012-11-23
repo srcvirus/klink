@@ -20,8 +20,8 @@ using namespace std;
 #define MSG_DYN_CONFIG					12
 #define MSG_LOOKUP_CHANGE_STATUS		21
 #define MSG_GENERATE_NAME				31
-#define	PLEXUS_PUT						41
-#define PLEXUS_GET						42
+#define	MSG_PLEXUS_PUT						41
+#define MSG_PLEXUS_GET						42
 
 class ABSMessage
 {
@@ -32,6 +32,7 @@ class ABSMessage
 	int source_port;
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
+
 public:
 	ABSMessage();
 	virtual ~ABSMessage();
