@@ -9,6 +9,7 @@
 #define MESSAGE_H_
 
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 
@@ -25,6 +26,8 @@ using namespace std;
 
 class ABSMessage
 {
+	static int sequence_no_generator;
+
 protected:
 	unsigned int sequence_no;
 	unsigned char messageType;
@@ -35,17 +38,27 @@ protected:
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
 	
-	static int sequence_no_generator = 0;
+
 
 public:
-	ABSMessage(){ sequence_no = ABSMessage.sequence_no_generator++; }
-	virtual ~ABSMessage();
+	ABSMessage(){ ; }
+	virtual ~ABSMessage(){;}
 
 	virtual char* serialize(int* serialize_length) = 0;
 
 	virtual ABSMessage* deserialize(char* buffer, int buffer_len) = 0;
 
-	virtual void message_print_dump(){;}
+	virtual void message_print_dump()
+	{
+		printf("Sequence no. %d\n", sequence_no);
+		printf("Message Type. %d\n", messageType);
+		printf("Destination host %s\n", dest_host.c_str());
+		printf("Destination Port %d\n", dest_port);
+		printf("Source Host %s\n", source_host.c_str());
+		printf("Source Port %d\n", source_port);
+		printf("Overlay Hops %d\n", overlay_hops);
+		printf("Overlay TTL %d\n", overlay_ttl);
+	}
 
 	string getDestHost()
 	{

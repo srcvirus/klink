@@ -9,6 +9,7 @@
 #define PEER_CONFIG_MSG_H_
 
 #include "../message.h"
+#include <memory.h>
 
 class PeerConfigMessage:public ABSMessage
 {
@@ -45,15 +46,22 @@ public:
 	{
 		char* buffer = new char[sizeof(PeerConfigMessage)];
 		memcpy(buffer, (char*)(this), sizeof(PeerConfigMessage));
-		*serialize_length = sizeof(PeerConfigMessage());
+		*serialize_length = sizeof(PeerConfigMessage);
 		return buffer;
 	}
 
 	virtual ABSMessage* deserialize(char* buffer, int buffer_length)
 	{
-		PeerConfigMessage* pcfg_message = new PeerConfigMessage();
-		memcpy(&pcfg_message, buffer, buffer_length);
-		return &pcfg_message;
+		memcpy(this, buffer, buffer_length);
+		return this;
+	}
+
+	virtual void message_print_dump()
+	{
+		printf("Configuration Message\n");
+		ABSMessage::message_print_dump();
+		printf("Parameter K = %d\n", parameter_k);
+		printf("Parameter alpha = %.2lf\n", parameter_alpha);
 	}
 };
 
