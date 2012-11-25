@@ -9,23 +9,27 @@
 #define MESSAGE_H_
 
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 
 //Message Types
-#define MSG_PEER_CONFIG					 1
-#define MSG_PEER_START					 2
-#define MSG_PEER_CHANGE_STATUS			 3
-#define MSG_DYN_CHANGE_STATUS			11
+#define MSG_PEER_CONFIG					1
+#define MSG_PEER_START					2
+#define MSG_PEER_CHANGE_STATUS				3
+#define MSG_DYN_CHANGE_STATUS				11
 #define MSG_DYN_CONFIG					12
-#define MSG_LOOKUP_CHANGE_STATUS		21
+#define MSG_LOOKUP_CHANGE_STATUS			21
 #define MSG_GENERATE_NAME				31
-#define	MSG_PLEXUS_PUT						41
-#define MSG_PLEXUS_GET						42
+#define	MSG_PLEXUS_PUT					41
+#define MSG_PLEXUS_GET					42
 
 class ABSMessage
 {
+	static int sequence_no_generator;
+
 protected:
+	unsigned int sequence_no;
 	unsigned char messageType;
 	string dest_host;
 	int dest_port;
@@ -33,16 +37,28 @@ protected:
 	int source_port;
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
+	
+
 
 public:
-	ABSMessage();
-	virtual ~ABSMessage();
+	ABSMessage(){ ; }
+	virtual ~ABSMessage(){;}
 
 	virtual char* serialize(int* serialize_length) = 0;
 
 	virtual ABSMessage* deserialize(char* buffer, int buffer_len) = 0;
 
-	virtual void message_print_dump(){;}
+	virtual void message_print_dump()
+	{
+		printf("Sequence no. %d\n", sequence_no);
+		printf("Message Type. %d\n", messageType);
+		printf("Destination host %s\n", dest_host.c_str());
+		printf("Destination Port %d\n", dest_port);
+		printf("Source Host %s\n", source_host.c_str());
+		printf("Source Port %d\n", source_port);
+		printf("Overlay Hops %d\n", overlay_hops);
+		printf("Overlay TTL %d\n", overlay_ttl);
+	}
 
 	string getDestHost()
 	{
@@ -112,6 +128,11 @@ public:
 	void setSourcePort(int sourcePort)
 	{
 		source_port = sourcePort;
+	}
+
+	int getSequenceNo()
+	{
+		return sequence_no;
 	}
 };
 

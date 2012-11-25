@@ -1,0 +1,34 @@
+/*
+ * error_code.h
+ *
+ *  Created on: 2012-11-24
+ *      Author: sr2chowd
+ */
+
+#ifndef ERROR_CODE_H_
+#define ERROR_CODE_H_
+#define DEBUG
+
+#define SUCCESS							0
+#define ERROR_SOCKET_CREATE_FAIL		-100
+#define ERROR_SOCKET_BIND_FAIL			-101
+#define ERROR_SOCKET_LISTEN_FAIL		-102
+#define ERROR_CONNECTION_ACCEPT_FAIL 	-103
+#define ERROR_SERVER_CONNECTION_FAIL	-104
+
+char ERROR_MESSAGES[][100] = {
+		"SUCCESS",
+		"Socket Create Fail",
+		"Socket Bind Fail",
+		"Socket Listener Add Fail",
+		"Cannot Create a Connection",
+		"Cannot Connect to Server"
+};
+
+void print_error_message(int error_code)
+{
+	puts(ERROR_MESSAGES[-error_code - 100]);
+}
+
+#endif /* ERROR_CODE_H_ */
+

@@ -1,4 +1,4 @@
-mkdir controller plnode monitor
+mkdir controller plnode monitor communication
 cd plnode
 mkdir logging message protocol peer ds
 
