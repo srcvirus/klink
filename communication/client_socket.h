@@ -9,6 +9,7 @@
 #define CLIENT_SOCKET_H_
 
 #include "socket.h"
+#include "error_code.h"
 
 class ClientSocket: public ABSSocket
 {
@@ -17,8 +18,17 @@ class ClientSocket: public ABSSocket
 
 public:
 	//ClientSocket(){;}
-	ClientSocket(){;}
-	ClientSocket(const string& server, int port):server_host_name(server), server_port_number(port){;}
+	ClientSocket()
+	{
+		server_host_name = "localhost";
+		server_port_number = -1;
+	}
+
+	ClientSocket(const string& server, int port):
+		server_host_name(server),
+		server_port_number(port)
+	{;}
+
 	int connect_to_server();
 
 	void setServerHostName(const string& hostname){ server_host_name = hostname; }
@@ -32,15 +42,6 @@ public:
 	~ClientSocket();
 };
 
-/*
- * client_socket.cc
- *
- *  Created on: 2012-11-24
- *      Author: sr2chowd
- */
-
-#include "client_socket.h"
-#include "error_code.h"
 
 int ClientSocket::connect_to_server()
 {
@@ -79,7 +80,7 @@ int ClientSocket::send_data(char* buffer, int n_bytes)
 
 ClientSocket::~ClientSocket()
 {
-	close_socket();
+	;
 }
 
 

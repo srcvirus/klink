@@ -9,6 +9,7 @@
 #define SERVER_SOCKET_H_
 
 #include "socket.h"
+#include "error_code.h"
 #include <set>
 
 using namespace std;
@@ -59,16 +60,6 @@ public:
 	~ServerSocket();
 };
 
-/*
- * server_socket.cc
-
- *
- *  Created on: 2012-11-24
- *      Author: sr2chowd
- */
-
-#include "server_socket.h"
-#include "error_code.h"
 
 int ServerSocket::create_server_socket()
 {
