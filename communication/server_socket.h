@@ -26,10 +26,27 @@ protected:
 	int add_listener_to_socket();
 
 public:
-	ServerSocket(){ active_connections.clear(); }
-	ServerSocket(string hostname, int port):server_host_name(hostname), server_port_number(port){active_connections.clear();}
+	ServerSocket()
+	{
+		char hostname[100];
+		gethostname(hostname, 100);
+		server_host_name = hostname;
+		server_port_number = 0;
+		active_connections.clear();
+	}
 
-	int listen_to_socket();
+	ServerSocket(string hostname, int port):
+		server_host_name(hostname),
+		server_port_number(port)
+	{
+		active_connections.clear();
+	}
+
+	/* Initiates the socket (TCP) and prepares it to accept any incoming connections */
+	int init_connection();
+
+	/* Accepts a connection and returns the connection handler for that connection */
+	int accept_connection();
 
 	void setServerHostName(const string& hostname){ server_host_name = hostname; }
 	void setServerPortNumber(int port){ server_port_number = port; }
@@ -90,13 +107,13 @@ int ServerSocket::add_listener_to_socket()
 	return ret_code;
 }
 
-int ServerSocket::listen_to_socket()
+int ServerSocket::init_connection()
 {
 	int ret_code = SUCCESS;
 	ret_code = create_server_socket();
 	if( ret_code < 0 )
 	{
-		print_error_message(ret_code);
+		//print_error_message(ret_code);
 		close_socket();
 		return ret_code;
 	}
@@ -104,7 +121,7 @@ int ServerSocket::listen_to_socket()
 	ret_code = bind_port_to_socket();
 	if(ret_code < 0)
 	{
-		print_error_message(ret_code);
+	//	print_error_message(ret_code);
 		close_socket();
 		return ret_code;
 	}
@@ -113,19 +130,27 @@ int ServerSocket::listen_to_socket()
 
 	if(ret_code < 0)
 	{
-		print_error_message(ret_code);
+	//	print_error_message(ret_code);
 		close_socket();
 		return ret_code;
 	}
 
+	return ret_code;
+}
+
+int ServerSocket::accept_connection()
+{
 	int connection_fd = accept(socket_fd, NULL, NULL);
-	if(connection_fd < 0) return ret_code = ERROR_CONNECTION_ACCEPT_FAIL;
-	else active_connections.insert(connection_fd);
-
-	//print_error_message(ret_code);
-
+	if(connection_fd < 0)
+	{
+		//print_error_message(ERROR_CONNECTION_ACCEPT_FAIL);
+		return ERROR_CONNECTION_ACCEPT_FAIL;
+	}
+	active_connections.insert(connection_fd);
 	return connection_fd;
 }
+
+
 
 void ServerSocket::close_connection(int connection_fd)
 {

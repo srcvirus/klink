@@ -34,11 +34,10 @@ protected:
 	int socket_fd;
 
 public:
-	//virtual int send_data(int connection_fd, char* buffer, int n_bytes){return 0;}
-	//virtual int receive_data(int connection_fd, char** buffer){return 0;}
 
 	int getSocketFd(){ return socket_fd; }
 	void close_socket(){ close(socket_fd); }
+
 	void print_socket_info()
 	{
 		struct sockaddr_in sin;
@@ -52,6 +51,7 @@ public:
 		printf("ADDRESS %s\n",hostName);
 		printf("PORT %d\n", port);
 	}
+
 	virtual ~ABSSocket(){ close(socket_fd); };
 };
 

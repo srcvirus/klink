@@ -17,7 +17,8 @@ class ClientSocket: public ABSSocket
 
 public:
 	//ClientSocket(){;}
-
+	ClientSocket(){;}
+	ClientSocket(const string& server, int port):server_host_name(server), server_port_number(port){;}
 	int connect_to_server();
 
 	void setServerHostName(const string& hostname){ server_host_name = hostname; }
