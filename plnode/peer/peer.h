@@ -25,7 +25,12 @@ class Peer
 	ABSProtocol* protocol;
 
 public:
-	Peer();
+	Peer()
+	{
+		char hostname[100];
+		gethostname(hostname, 100);
+		host_name = hostname;
+	}
 	~Peer();
 
 	double getAlpha()

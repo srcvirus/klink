@@ -29,8 +29,8 @@ class ABSMessage
 	static int sequence_no_generator;
 
 protected:
-	unsigned int sequence_no;
 	unsigned char messageType;
+	unsigned int sequence_no;
 	string dest_host;
 	int dest_port;
 	string source_host;
@@ -41,7 +41,10 @@ protected:
 
 
 public:
-	ABSMessage(){ ; }
+	ABSMessage()
+	{
+		sequence_no = sequence_no_generator++;
+	}
 	virtual ~ABSMessage(){;}
 
 	virtual char* serialize(int* serialize_length) = 0;
