@@ -7,7 +7,7 @@ using namespace std;
 BuildTree::BuildTree(int treeSize) {
     this->treeSize = treeSize;
     this->idArray = new OverlayID[treeSize];
-    this->rtArray = new RoutingTable[treeSize];
+    this->rtArray = new LookupTable<OverlayID, IPAddress>[treeSize];
     this->max_height = ceil(log2(treeSize));
 }
 
@@ -38,6 +38,7 @@ void BuildTree::execute() {
 
     int nbrIndex;
     for (int i = 0; i < this->treeSize; i++) {
+        rtArray[i] = LookupTable<OverlayID, IPAddress>();
         for (int j = 0; j < GetHeight(i); j++) {
             OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm.rm->n - j);
             nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);

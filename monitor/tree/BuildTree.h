@@ -7,7 +7,7 @@ class BuildTree {
 public:
     int treeSize;
     OverlayID *idArray;
-    RoutingTable *rtArray;
+    LookupTable<OverlayID, IPAddress> *rtArray;
     int max_height;
 public:
     BuildTree(int treeSize);
