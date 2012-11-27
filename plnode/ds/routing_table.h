@@ -6,4 +6,6 @@ class RoutingTable : public LookupTable<OverlayID, IPAddress> {
 public:
     RoutingTable();
     ~RoutingTable();
+    
+    bool add(OverlayID key, IPAddress value);
 };
