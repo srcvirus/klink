@@ -6,6 +6,7 @@
  */
 
 #include "ip_address.h"
+#include <stdio.h>
 
 IPAddress::IPAddress()
 {
