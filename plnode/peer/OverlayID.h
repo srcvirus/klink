@@ -39,7 +39,7 @@ public:
         return overlay_id;
     }
 
-    int GetBitAtPosition(int n) {
+    int GetBitAtPosition(int n) const {
         return (((this->overlay_id & (1 << n)) >> n) & 0x00000001);
     }
 
@@ -49,7 +49,7 @@ public:
         return id;
     }
 
-    int GetMatchedPrefixLength(OverlayID id) {
+    int GetMatchedPrefixLength(const OverlayID &id) const {
         int position = MAX_LENGTH - 1;
         for (; position > 0; position--) {
             if (this->GetBitAtPosition(position) != id.GetBitAtPosition(position)) {
@@ -59,7 +59,7 @@ public:
         return MAX_LENGTH - position - 1;
     }
 
-    bool operator==(OverlayID &id){
+    bool operator==(const OverlayID &id) const {
         if (this->prefix_length != id.prefix_length)
             return false;
         if (this->GetMatchedPrefixLength(id) < this->prefix_length)
@@ -67,8 +67,12 @@ public:
         return true;
     }
 
-    bool operator<=(OverlayID &id) {
-        return this->overlay_id <= id.overlay_id;
+//    bool operator<=(const OverlayID &id) {
+//        return this->overlay_id <= id.overlay_id;
+//    }
+
+    bool operator<(const OverlayID &id) const {
+        return this->overlay_id < id.overlay_id;
     }
 };
 #endif	/* OVERLAYID_H */

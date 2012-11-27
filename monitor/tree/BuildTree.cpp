@@ -49,7 +49,7 @@ void BuildTree::execute() {
 
 int main() {
     puts("here here");
-    BuildTree bt = BuildTree(9);
+    BuildTree bt = BuildTree(1024);
     bt.execute();
 
     return 0;
