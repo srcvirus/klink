@@ -8,18 +8,19 @@
 #ifndef OVERLAYID_H
 #define	OVERLAYID_H
 
-//#define MAX_LENGTH 16
-
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;
+    int MAX_LENGTH;
 public:
-    static int MAX_LENGTH;
-    OverlayID(){}
-    OverlayID(unsigned int overlay_id, int prefix_lenght) {
+
+    OverlayID() {
+    }
+
+    OverlayID(unsigned int overlay_id, int prefix_lenght, int max_length) {
         this->overlay_id = overlay_id;
         this->prefix_length = prefix_lenght;
-        MAX_LENGTH = 32;
+        this->MAX_LENGTH = max_length;
     }
 
     void SetPrefix_length(int prefix_length) {
@@ -43,7 +44,7 @@ public:
     }
 
     OverlayID ToggleBitAtPosition(int n) {
-        OverlayID id(this->overlay_id, this->prefix_length);
+        OverlayID id(this->overlay_id, this->prefix_length, MAX_LENGTH);
         id.overlay_id ^= (1 << n);
         return id;
     }
@@ -57,8 +58,18 @@ public:
         }
         return MAX_LENGTH - position - 1;
     }
+
+    bool operator==(OverlayID &id){
+        if (this->prefix_length != id.prefix_length)
+            return false;
+        if (this->GetMatchedPrefixLength(id) < this->prefix_length)
+            return false;
+        return true;
+    }
+
+    bool operator<=(OverlayID &id) {
+        return this->overlay_id <= id.overlay_id;
+    }
 };
-
-
 #endif	/* OVERLAYID_H */
 

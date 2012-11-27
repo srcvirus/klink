@@ -39,9 +39,8 @@ public:
 
     void execute() {
         ReedMuller *rm = new ReedMuller(2, 4);
-        OverlayID::MAX_LENGTH = rm->rm->n;
         for (int i = 0; i < this->treeSize; i++) {
-            idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)),rm->rm->n), GetHeight(i));
+            idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)),rm->rm->n), GetHeight(i), rm->rm->n);
         }
         
         int nbrIndex;
