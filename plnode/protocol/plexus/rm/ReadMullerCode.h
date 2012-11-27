@@ -8,8 +8,8 @@
 #ifndef READMULLERCODE_H
 #define	READMULLERCODE_H
 
-#include "plnode/protocol/plexus/rm/common.h"
-#include "plnode/protocol/plexus/rm/reedmuller.h"
+#include "common.h"
+#include "reedmuller.h"
 
 #include<iostream>
 
@@ -26,6 +26,8 @@ public:
     ReedMuller(int r, int m);
     int* encode(int* message);
     int* decode(int* codeword);
+    unsigned int array2int(int* array, int size);
+    int* int2array(unsigned int value, int size);
 };
 
 ReedMuller::ReedMuller(int r, int m) {
@@ -58,5 +60,20 @@ int* ReedMuller::decode(int* codeword) {
     return message;
 }
 
+unsigned int ReedMuller::array2int(int* array, int size){
+    unsigned int value = 0;
+    for (int i = 0; i < size; i++) {
+        value |= (array[i] & 0x00000001) << (size - i - 1);
+    }
+    return value;
 
+}
+
+int* ReedMuller::int2array(unsigned int value, int size){
+    int *array = new int[size];
+    for (int i = 0; i < size; i++) {
+        array[i] = (((value & (1 << i)) >> i) & 0x00000001);
+    }
+    return array;
+}
 #endif	/* READMULLERCODE_H */
