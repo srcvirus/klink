@@ -31,15 +31,15 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 }
 
 void BuildTree::execute() {
-    ReedMuller *rm = new ReedMuller(2, 4);
+    ReedMuller rm(2, 4);
     for (int i = 0; i < this->treeSize; i++) {
-        idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
+        idArray[i] = OverlayID(rm.array2int(rm.encode(rm.int2array(i, rm.rm->k)), rm.rm->n), GetHeight(i), rm.rm->n);
     }
 
     int nbrIndex;
     for (int i = 0; i < this->treeSize; i++) {
         for (int j = 0; j < GetHeight(i); j++) {
-            OverlayID nbrPattern = (idArray + i)->ToggleBitAtPosition(rm->rm->n - j);
+            OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm.rm->n - j);
             nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
             rtArray[i].add(idArray[nbrIndex], IPAddress(1, 2, 3, 4));
         }
