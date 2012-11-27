@@ -7,6 +7,7 @@
 
 #include "ip_address.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 IPAddress::IPAddress()
 {
