@@ -8,6 +8,7 @@
 #include "ip_address.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 IPAddress::IPAddress()
 {
@@ -25,7 +26,13 @@ IPAddress::IPAddress(int a,int b,int c,int d)
 	sprintf(temp_c,"%d",c);
 	sprintf(temp_d,"%d",d);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
 IPAddress::IPAddress(const string& str_ip)
@@ -72,7 +79,14 @@ IPAddress::IPAddress(int* a)
 	sprintf(temp_c,"%d",a[2]);
 	sprintf(temp_d,"%d",a[3]);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
 IPAddress::IPAddress(const vector <int>& a)
@@ -85,7 +99,14 @@ IPAddress::IPAddress(const vector <int>& a)
 	sprintf(temp_c,"%d",a[2]);
 	sprintf(temp_d,"%d",a[3]);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
 
@@ -99,7 +120,14 @@ void IPAddress::setIp(int a,int b,int c,int d)
 	sprintf(temp_c,"%d",c);
 	sprintf(temp_d,"%d",d);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
 void IPAddress::setIp(const string& str_ip)
@@ -146,7 +174,14 @@ void IPAddress::setIp(int* a)
 	sprintf(temp_c,"%d",a[2]);
 	sprintf(temp_d,"%d",a[3]);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
 void IPAddress::setIp(const vector <int>& a)
@@ -159,6 +194,13 @@ void IPAddress::setIp(const vector <int>& a)
 	sprintf(temp_c,"%d",a[2]);
 	sprintf(temp_d,"%d",a[3]);
 
-	str_ip_address = temp_a + "." + temp_b + "." + temp_c + "." + temp_d;
+
+	str_ip_address = temp_a;
+	str_ip_address += ".";
+	str_ip_address = temp_b;
+	str_ip_address += ".";
+	str_ip_address = temp_c;
+	str_ip_address += ".";
+	str_ip_address = temp_d;
 }
 
