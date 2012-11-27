@@ -5,6 +5,7 @@
  *      Author: sr2chowd
  */
 #include "lookup_table.h"
+#include <stdio.h>
 
 using namespace std;
 
