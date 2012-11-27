@@ -15,6 +15,8 @@
 #define ERROR_SOCKET_LISTEN_FAIL		-102
 #define ERROR_CONNECTION_ACCEPT_FAIL 	-103
 #define ERROR_SERVER_CONNECTION_FAIL	-104
+#define ERROR_OPEN_FILE_FAIL			-105
+#define ERROR_FILE_NOT_OPEN				-106
 
 char ERROR_MESSAGES[][100] = {
 		"SUCCESS",
@@ -22,7 +24,9 @@ char ERROR_MESSAGES[][100] = {
 		"Socket Bind Fail",
 		"Socket Listener Add Fail",
 		"Cannot Create a Connection",
-		"Cannot Connect to Server"
+		"Cannot Connect to Server",
+		"Cannot Open File",
+		"File Not Open"
 };
 
 void print_error_message(int error_code)
