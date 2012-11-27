@@ -20,8 +20,8 @@ class LookupTable
 	map <KeyType, ValueType> table;
 
 public:
-	LookupTable();
-	virtual ~LookupTable();
+	LookupTable(){ table.clear(); }
+	virtual ~LookupTable(){ table.clear(); }
 
 	bool add(KeyType key, ValueType value);
 	bool lookup(const KeyType& key, ValueType* value);
