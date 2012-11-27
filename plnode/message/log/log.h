@@ -112,6 +112,12 @@ int Log::open(const char* mode = "r")
 
 int Log::write(char* key, int argc, char* format, ...)
 {
+	if(log_file_ptr == NULL)
+		return ERROR_FILE_NOT_OPEN;
+
+	string text = key;
+	text += " ";
+
 	va_list values;
 	va_start(values, format);
 
