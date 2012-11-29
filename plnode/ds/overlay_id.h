@@ -5,8 +5,8 @@
  * Created on November 26, 2012, 1:10 AM
  */
 
-#ifndef OVERLAYID_H
-#define	OVERLAYID_H
+#ifndef OVERLAY_ID_H
+#define	OVERLAY_ID_H
 
 #include <iostream>
 
@@ -90,5 +90,5 @@ public:
         }
     }
 };
-#endif	/* OVERLAYID_H */
+#endif	/* OVERLAY_ID_H */
 

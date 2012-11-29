@@ -8,19 +8,23 @@
 #ifndef CACHE_REPLACE_POLICY_H
 #define	CACHE_REPLACE_POLICY_H
 
-#include "double_linked_list.h"
-#include "ip_address.h"
 #include "overlay_id.h"
+#include "lookup_table.h"
+#include "double_linked_list.h"
 
 class CacheReplacePolicy{
-    DoublyLinkedList *ddl;
-    LookupTable<OverlayID, IPAddress> *hm;
+protected:
+    DoublyLinkedList *dll;
+    LookupTable<OverlayID, DLLNode*> *hm;
 public:
-    CacheReplacePolicy(DoublyLinkedList *ddl, LookupTable<OverlayID, IPAddress> *hm){
-        this->ddl = ddl;
+    CacheReplacePolicy() {
+    }
+    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm){
+        this->dll = dll;
         this->hm = hm;
     }
-    virtual bool evict() = 0;
+    virtual void evict() = 0;
+    virtual void processHit(OverlayID *key) = 0;
 };
 
 #endif	/* CACHE_REPLACE_POLICY_H */

@@ -15,18 +15,15 @@
 
 using namespace std;
 
-struct Node {
+struct DLLNode {
     OverlayID *key;
     IPAddress *value;
-    Node *prev, *next;
+    DLLNode *prev, *next;
 
-//    Node(OverlayID key, IPAddress value) {
-//        this->key = &key;
-//        this->value = &value;
-//        prev = next = NULL;
-//    }
+    DLLNode() {
+    }
 
-    Node(OverlayID *key, IPAddress *value) {
+    DLLNode(OverlayID *key, IPAddress * value) {
         this->key = key;
         this->value = value;
         prev = next = NULL;
@@ -34,7 +31,7 @@ struct Node {
 };
 
 class DoublyLinkedList {
-    Node *head, *tail;
+    DLLNode *head, *tail;
 public:
 
     DoublyLinkedList() {
@@ -42,7 +39,7 @@ public:
     }
 
     ~DoublyLinkedList() {
-        Node *temp1 = tail, *temp2;
+        DLLNode *temp1 = tail, *temp2;
         while (temp1 != NULL) {
             temp2 = temp1;
             temp1 = temp1->prev;
@@ -51,7 +48,7 @@ public:
         head = tail = NULL;
     }
 
-    void append2Head(Node *node) {
+    void append2Head(DLLNode *node) {
         if (head == NULL) {
             head = tail = node;
         } else {
@@ -62,11 +59,11 @@ public:
     }
 
     void append2Head(OverlayID *key, IPAddress *value) {
-        Node *node = new Node(key, value);
+        DLLNode *node = new DLLNode(key, value);
         append2Head(node);
     }
 
-    void append2Tail(Node *node) {
+    void append2Tail(DLLNode *node) {
         if (tail == NULL) {
             head = tail = node;
         } else {
@@ -77,12 +74,51 @@ public:
     }
 
     void append2Tail(OverlayID *key, IPAddress *value) {
-        Node *node = new Node(key, value);
+        DLLNode *node = new DLLNode(key, value);
         append2Tail(node);
     }
 
+    DLLNode* getTail() {
+        return tail;
+    }
+
+    DLLNode* getHead() {
+        return head;
+    }
+    
+    DLLNode* extract(DLLNode *node) {
+        if (head == NULL || tail == NULL) {
+            return NULL;
+        } else if (head == node && tail == node) {
+            head = tail = NULL;
+        } else if (head == node) {
+            head = node->next;
+            head->prev = NULL;
+        } else if (tail == node) {
+            tail = node->prev;
+            tail->next = NULL;
+        } else {
+            node->prev->next = node->next;
+            node->next->prev = node->prev;
+        }
+        node->next = node->prev = NULL;
+        return node;
+    }
+
+    void remove(DLLNode *node) {
+        delete extract(node);
+    }
+
+    void move2Head(DLLNode *node) {
+        if (head == NULL || tail == NULL)
+            return;
+        if (head != node) {
+            append2Head(extract(node));
+        }
+    }
+
     void printNodesReverse() {
-        Node *temp = tail;
+        DLLNode *temp = tail;
         cout << endl << "Nodes in reverse order :" << endl;
         while (temp != NULL) {
             cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->getStrIpAddress() << "> ";
@@ -92,7 +128,7 @@ public:
     }
 
     void printNodesForward() {
-        Node *temp = head;
+        DLLNode *temp = head;
         cout << endl << "Nodes in forward order:" << endl;
         while (temp != NULL) {
             cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->getStrIpAddress() << "> ";
