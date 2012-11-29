@@ -8,6 +8,10 @@
 #ifndef OVERLAYID_H
 #define	OVERLAYID_H
 
+#include <iostream>
+
+using namespace std;
+
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;
@@ -67,12 +71,23 @@ public:
         return true;
     }
 
-//    bool operator<=(const OverlayID &id) {
+    bool operator!=(const OverlayID &id) const {
+        
+        return !(*this == id);
+    }
+
+    //    bool operator<=(const OverlayID &id) {
 //        return this->overlay_id <= id.overlay_id;
 //    }
 
     bool operator<(const OverlayID &id) const {
         return this->overlay_id < id.overlay_id;
+    }
+    
+    void printBits(){
+        for(int i=MAX_LENGTH-1;i>=0;i--){
+            cout << GetBitAtPosition(i);
+        }
     }
 };
 #endif	/* OVERLAYID_H */

@@ -31,26 +31,51 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 }
 
 void BuildTree::execute() {
-    ReedMuller rm(2, 4);
+    rm = new ReedMuller(1, 2);
     for (int i = 0; i < this->treeSize; i++) {
-        idArray[i] = OverlayID(rm.array2int(rm.encode(rm.int2array(i, rm.rm->k)), rm.rm->n), GetHeight(i), rm.rm->n);
+        idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
     }
 
     int nbrIndex;
     for (int i = 0; i < this->treeSize; i++) {
-        rtArray[i] = LookupTable<OverlayID, IPAddress>();
+        rtArray[i] = LookupTable<OverlayID, IPAddress > ();
         for (int j = 0; j < GetHeight(i); j++) {
-            OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm.rm->n - j);
+            OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm->rm->n - j - 1);
             nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
-            rtArray[i].add(idArray[nbrIndex], IPAddress(1, 2, 3, 4));
+            if (idArray[nbrIndex] != idArray[i]) {
+                rtArray[i].add(idArray[nbrIndex], IPAddress(1, 2, 3, 4));
+            }
         }
+    }
+}
+
+void BuildTree::print() {
+    cout << "RM: k = " << rm->rm->k << " n = " << rm->rm->n << endl;
+    for (int i = 0; i < treeSize; i++) {
+        cout << "CW = ";
+        idArray[i].printBits();
+        cout << " pl = " << GetHeight(i);
+        cout << endl << "RT" << endl;
+        vector<OverlayID> keys = rtArray[i].getKeySet();
+        for (int j = 0; j < keys.size(); j++) {
+            keys[j].printBits();
+            cout << endl;
+        }
+        cout << "==================================" << endl;
     }
 }
 
 int main() {
     puts("here here");
-    BuildTree bt = BuildTree(1024);
+    //assign codeword and generate routing tables
+    BuildTree bt = BuildTree(8);
     bt.execute();
-
+    
+    //send INIT messages to PL nodes
+    // TO DO
+    
+      
+    
+    bt.print();
     return 0;
 }

@@ -11,9 +11,11 @@ public:
     OverlayID *idArray;
     LookupTable<OverlayID, IPAddress> *rtArray;
     int max_height;
+    ReedMuller *rm;
 public:
     BuildTree(int treeSize);
     int GetHeight(int index);
     int GetIndexOfLongestMatchedPrefix(OverlayID id);
     void execute();
+    void print();
 };
