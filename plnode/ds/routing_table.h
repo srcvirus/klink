@@ -1,5 +1,5 @@
 #include "lookup_table.h"
-#include "../peer/OverlayID.h"
+#include "overlay_id.h"
 #include "ip_address.h"
 
 class RoutingTable : public LookupTable<OverlayID, IPAddress> {

@@ -65,17 +65,17 @@ void BuildTree::print() {
     }
 }
 
-int main() {
-    puts("here here");
-    //assign codeword and generate routing tables
-    BuildTree bt = BuildTree(8);
-    bt.execute();
-    
-    //send INIT messages to PL nodes
-    // TO DO
-    
-      
-    
-    bt.print();
-    return 0;
-}
+//int main() {
+//    puts("here here");
+//    //assign codeword and generate routing tables
+//    BuildTree bt = BuildTree(8);
+//    bt.execute();
+//    
+//    //send INIT messages to PL nodes
+//    // TO DO
+//    
+//      
+//    
+//    bt.print();
+//    return 0;
+//}
