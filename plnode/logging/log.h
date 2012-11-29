@@ -226,17 +226,19 @@ int Log::write(const char* key, const char* format, ...)
 	va_end(values);
 
 	int ret = fprintf(log_file_ptr,"%s\n",text.c_str());
-	printf("Bytes written: %d\n", ret);
-	printf("Line written %s\n", text.c_str());
-	printf("Log file name %s\n", log_file_name.c_str());
-	fflush(log_file_ptr);
+//	printf("Bytes written: %d\n", ret);
+//	printf("Line written %s\n", text.c_str());
+//	printf("Log file name %s\n", log_file_name.c_str());
+
+//	fflush(log_file_ptr);
 
 	current_row_count++;
-	printf("%d %d\n", current_row_count, check_point_row_count);
+//	printf("%d %d\n", current_row_count, check_point_row_count);
 	if(current_row_count == check_point_row_count)
 	{
-		printf("%d\n", current_row_count);
-		printf("%d\n", current_segment_no);
+		fflush(log_file_ptr);
+//		printf("%d\n", current_row_count);
+//		printf("%d\n", current_segment_no);
 		fclose(log_file_ptr);
 		log_file_ptr = NULL;
 
@@ -260,7 +262,7 @@ void Log::archiveCurrentLog()
 	new_name += "_";
 	new_name += i_str;
 
-	//rename the log file
+//	rename the log file
 	command = "mv ";
 	command += log_file_name;
 	command += " ";
@@ -269,7 +271,7 @@ void Log::archiveCurrentLog()
 	shell_pipe = popen(command.c_str(), "w");
 	pclose(shell_pipe);
 
-	//if the tar file doesn't exist then create it
+//	if the tar file doesn't exist then create it
 	if(current_segment_no <= 1)
 	{
 		command = "tar -cf ";
@@ -277,7 +279,7 @@ void Log::archiveCurrentLog()
 		command += " ";
         command += new_name;
 	}
-	//otherwise add the current log file in the tarball
+//	otherwise add the current log file in the tarball
 	else
 	{
 		command = "tar -rf ";
@@ -297,44 +299,44 @@ void Log::archiveCurrentLog()
 }
 void Log::ftpUploadLog()
 {
-	//run the ftp command
+//	run the ftp command
 	string command = "ftp ";
 	command += monitor_host_name.c_str();
-	//puts("FTP Command 1");
-	//puts(command.c_str());
+//	puts("FTP Command 1");
+//	puts(command.c_str());
 	FILE* shell_pipe = popen(command.c_str(), "w");
 
-	//upload the current log file to the remote ftp directory in append mode
+//	upload the current log file to the remote ftp directory in append mode
 	command = "append ";
 	command += log_file_name;
 	command += " ";
 	command += remote_ftp_directory;
 	command += "/";
 	command += log_file_name;
-	//puts("FTP Command 2");
-	//puts(command.c_str());
+//	puts("FTP Command 2");
+//	puts(command.c_str());
 	fputs(command.c_str(), shell_pipe);
 	pclose(shell_pipe);
 }
 
 void Log::ftpUploadArchive()
 {
-	//run the ftp command
+//	run the ftp command
 	string command = "ftp ";
 	command += monitor_host_name.c_str();
-	//puts("FTP Command 1");
-	//puts(command.c_str());
+//	puts("FTP Command 1");
+//	puts(command.c_str());
 	FILE* shell_pipe = popen(command.c_str(), "w");
 
-	//upload the current log file to the remote ftp directory in append mode
+//	upload the current log file to the remote ftp directory in append mode
 	command = "append ";
 	command += archive_name;
 	command += " ";
 	command += remote_ftp_directory;
 	command += "/";
 	command += archive_name;
-	//puts("FTP Command 2");
-	//puts(command.c_str());
+//	puts("FTP Command 2");
+//	puts(command.c_str());
 	fputs(command.c_str(), shell_pipe);
 	pclose(shell_pipe);
 }
