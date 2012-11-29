@@ -23,6 +23,7 @@ using namespace std;
 #define MSG_GENERATE_NAME				31
 #define	MSG_PLEXUS_PUT					41
 #define MSG_PLEXUS_GET					42
+#define MSG_PLEXUS_GET_REPLY				43
 
 class ABSMessage
 {
@@ -137,6 +138,14 @@ public:
 	{
 		return sequence_no;
 	}
+
+        void setMessageType(unsigned char messageType) {
+            this->messageType = messageType;
+        }
+
+        unsigned char getMessageType() const {
+            return messageType;
+        }
 };
 
 #endif /* MESSAGE_H_ */

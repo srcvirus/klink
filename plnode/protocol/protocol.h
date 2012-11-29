@@ -9,13 +9,14 @@
 #define PROTOCOL_H_
 
 #include "../message/message.h"
+#include "../message/message_processor.h"
 #include "../ds/lookup_table.h"
 
 class ABSProtocol
 {
 	LookupTable* routing_table;
 	LookupTable* index_table;
-
+        MessageProcessor* msgProcessor; 
 public:
 	ABSProtocol();
 	virtual ~ABSProtocol();
