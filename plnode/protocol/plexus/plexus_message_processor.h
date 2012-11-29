@@ -11,22 +11,28 @@
 #include "../../message/message.h"
 #include "../../message/message_processor.h"
 
-class PlexusMessageProcessor : MessageProcessor {
+class PlexusMessageProcessor : public MessageProcessor {
 public:
 
+    void setup(LookupTable* routing_table, LookupTable* index_table){
+        MessageProcessor::setup(routing_table, index_table);
+    }
+    
     bool processMessage(ABSMessage* message) {
 
         //PUT
         if (message->getMessageType() == MSG_PLEXUS_PUT) {
-
+            index_table->add(((MessagePUT*)message)->GetDeviceName(), 
+                    ((MessagePUT*)message)->GetIp());
         }
         //GET
         else if (message->getMessageType() == MSG_PLEXUS_GET) {
-
+            
         }
         //GET REPLY
         else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
-
+            MessageGET_REPLY *msg = ((MessageGET_REPLY*)message);
+            cache->add(msg->getID(), msg->getIP());
         }
     }
 };
