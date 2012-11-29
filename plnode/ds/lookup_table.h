@@ -27,9 +27,9 @@ public:
 	virtual ~LookupTable(){ table.clear(); }
 
 	bool add(KeyType key, ValueType value);
-	bool lookup(const KeyType& key, ValueType* value);
-	bool update(const KeyType& key, ValueType value);
-	bool remove(const KeyType& key);
+	bool lookup(KeyType key, ValueType* value);
+	bool update(KeyType key, ValueType value);
+	bool remove(KeyType key);
 	vector <KeyType> getKeySet()
 	{
 		typename::vector <KeyType> keySet;
@@ -53,7 +53,7 @@ bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 }
 
 template <typename KeyType, typename ValueType>
-bool LookupTable<KeyType, ValueType>::lookup(const KeyType& key, ValueType* value)
+bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
 {
 	if(table.find(key) == table.end())
 	{
@@ -62,13 +62,13 @@ bool LookupTable<KeyType, ValueType>::lookup(const KeyType& key, ValueType* valu
 	}
 	else
 	{
-		*value = table[key];
+		*value = (*table.find(key)).second;
 		return true;
 	}
 }
 
 template <typename KeyType, typename ValueType>
-bool LookupTable<KeyType, ValueType>::update(const KeyType& key, ValueType value)
+bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
 {
 	if(table.find(key) == table.end())
 	{
@@ -83,7 +83,7 @@ bool LookupTable<KeyType, ValueType>::update(const KeyType& key, ValueType value
 }
 
 template <typename KeyType, typename ValueType>
-bool LookupTable<KeyType, ValueType>::remove(const KeyType& key)
+bool LookupTable<KeyType, ValueType>::remove(KeyType key)
 {
 	if(table.find(key) != table.end())
 	{
