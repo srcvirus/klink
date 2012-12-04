@@ -18,7 +18,7 @@ class MessagePUT : public ABSMessage {
     IPAddress ip;
 public:
 
-    void SetIp(IPAddress ip) {
+    void SetIp(IPAddress &ip) {
         this->ip = ip;
     }
 
@@ -26,7 +26,7 @@ public:
         return ip;
     }
 
-    void SetDeviceName(string deviceName) {
+    void SetDeviceName(string &deviceName) {
         this->deviceName = deviceName;
     }
 

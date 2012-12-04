@@ -16,7 +16,7 @@ class MessageGET : public ABSMessage {
     string deviceName;
 public:
 
-    void SetDeviceName(string deviceName) {
+    void SetDeviceName(string &deviceName) {
         this->deviceName = deviceName;
     }
 

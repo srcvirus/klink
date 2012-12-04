@@ -9,6 +9,7 @@
 #define	PLEXUS_MESSAGE_PROCESSOR_H
 
 #include "../../message/message.h"
+#include "../../message/p2p/message_get.h"
 #include "../../message/message_processor.h"
 
 class PlexusMessageProcessor : public MessageProcessor {
@@ -27,7 +28,16 @@ public:
         }
         //GET
         else if (message->getMessageType() == MSG_PLEXUS_GET) {
-            
+            MessageGET *msg = ((MessageGET*)message);
+            IPAddress *ip;
+            if(index_table->lookup(msg->GetDeviceName(), ip)){
+                MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
+                msg_reply->setIP(ip);
+                //send message
+            }
+            else{
+                //send error message
+            }
         }
         //GET REPLY
         else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {

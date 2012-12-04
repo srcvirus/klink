@@ -23,6 +23,34 @@ public:
     bool processMessage(ABSMessage *message){
         return msgProcessor->processMessage(message);
     }
+    
+    void initiate_join(){}
+    
+    void process_join(){}
+        
+    void forward(const ABSMessage*){
+        int maxLengthMatch = 0;        
+        OverlayID& idWithLongestMatch = NULL;
+        //search in the RT
+        
+        //search in the CAche
+    }
+    
+    void get(string name){
+        MessageGET *msg = new MessageGET();
+        msg->SetDeviceName(name);
+        //push in Q
+    }
+    
+    
+    void put(string name, IPAddress ip){
+        MessagePUT *msg = new MessagePUT();
+        msg->SetDeviceName(name);
+        msg->SetIp(ip);
+        //push message in Q
+    }
+    
+    void rejoin() = 0;
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */
