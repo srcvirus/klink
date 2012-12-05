@@ -50,7 +50,7 @@ public:
         //push message in Q
     }
     
-    void rejoin() = 0;
+    void rejoin(){}
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */
