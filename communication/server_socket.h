@@ -43,6 +43,11 @@ public:
 		active_connections.clear();
 	}
 
+	ServerSocket(int port):
+		server_port_number(port)
+	{
+		active_connections.clear();
+	}
 	/* Initiates the socket (TCP) and prepares it to accept any incoming connections */
 	int init_connection();
 
