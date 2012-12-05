@@ -15,7 +15,7 @@
 
 class ABSProtocol {
 protected:
-    LookupTable* routing_table;
+    LookupTable<OverlayID, string>* routing_table;
     LookupTable* index_table;
     Cache* cache;
     MessageProcessor* msgProcessor;

@@ -9,21 +9,23 @@
 #define	DOUBLELINKEDLIST_H
 
 #include <iostream>
+#include <cstring>
 
 #include "ip_address.h"
 #include "overlay_id.h"
+#include "host_address.h"
 
 using namespace std;
 
 struct DLLNode {
     OverlayID *key;
-    IPAddress *value;
+    HostAddress *value;
     DLLNode *prev, *next;
 
     DLLNode() {
     }
 
-    DLLNode(OverlayID *key, IPAddress * value) {
+    DLLNode(OverlayID *key, HostAddress * value) {
         this->key = key;
         this->value = value;
         prev = next = NULL;
@@ -58,7 +60,7 @@ public:
         }
     }
 
-    void append2Head(OverlayID *key, IPAddress *value) {
+    void append2Head(OverlayID *key, HostAddress *value) {
         DLLNode *node = new DLLNode(key, value);
         append2Head(node);
     }
@@ -73,7 +75,7 @@ public:
         }
     }
 
-    void append2Tail(OverlayID *key, IPAddress *value) {
+    void append2Tail(OverlayID *key, HostAddress *value) {
         DLLNode *node = new DLLNode(key, value);
         append2Tail(node);
     }
@@ -121,7 +123,7 @@ public:
         DLLNode *temp = tail;
         cout << endl << "Nodes in reverse order :" << endl;
         while (temp != NULL) {
-            cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->getStrIpAddress() << "> ";
+            cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value << "> ";
             temp = temp->prev;
         }
         cout << endl;

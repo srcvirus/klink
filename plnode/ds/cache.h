@@ -26,6 +26,7 @@ public:
     CacheReplacePolicy *crPolicy;
     int capacity;
     int size;
+    DLLNode *current;
 
     Cache() {
     }
@@ -39,8 +40,22 @@ public:
         this->crPolicy->setup(dll, hm);
         this->capacity = capacity;
         size = 0;
+        current = dll->getHead();
     }
 
+    void reset_iterator(){
+        current = dll->getHead();
+    }
+    
+    bool has_next(){
+        return current->next != NULL;
+    }
+    
+    DLLNode* get_next(){
+        current = current->next;
+        return current->prev;
+    }
+    
     void add(OverlayID *key, IPAddress *value) {
         crPolicy->processHit(key);
         if (size == capacity) {

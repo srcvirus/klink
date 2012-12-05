@@ -7,7 +7,7 @@ public:
     CacheInsertEndpoint() {
     }
 
-    void insert(OverlayID *key, IPAddress *value) {
+    void insert(OverlayID *key, string *value) {
         DLLNode *node = new DLLNode(key, value);
         dll->append2Head(node);
         hm->add(*key, node);

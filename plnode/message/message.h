@@ -38,7 +38,7 @@ protected:
 	int source_port;
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
-	
+	OverlayID oID;
 
 
 public:
@@ -145,6 +145,14 @@ public:
 
         unsigned char getMessageType() const {
             return messageType;
+        }
+
+        void setOID(OverlayID oID) {
+            this->oID = oID;
+        }
+
+        OverlayID getOID() const {
+            return oID;
         }
 };
 

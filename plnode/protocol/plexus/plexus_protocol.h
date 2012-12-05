@@ -28,12 +28,32 @@ public:
     
     void process_join(){}
         
-    void forward(const ABSMessage*){
-        int maxLengthMatch = 0;        
-        OverlayID& idWithLongestMatch = NULL;
+    void forward(const ABSMessage* msg){
+        int maxLengthMatch = 0, currentMatchLength;        
+        OverlayID* idWithLongestMatch = NULL;
         //search in the RT
-        
+        routing_table->reset_iterator();
+        while(routing_table->hasMoreKey()){
+            OverlayID *id = &routing_table->getNextKey();
+            currentMatchLength = msg->getOID().GetMatchedPrefixLength(*id);
+            if(currentMatchLength > maxLengthMatch){
+                maxLengthMatch = currentMatchLength;
+                idWithLongestMatch = msg->getOID();
+            }
+        }
         //search in the CAche
+        cache->reset_iterator();
+        while(cache->has_next()){
+            DLLNode *node = &cache->get_next();
+            OverlayID *id = node->key;
+            currentMatchLength = msg->getOID().GetMatchedPrefixLength(*id);
+            if(currentMatchLength > maxLengthMatch){
+                maxLengthMatch = currentMatchLength;
+                idWithLongestMatch = msg->getOID();
+            }
+        }
+        
+        //push in Q with idWithLongestMatch
     }
     
     void get(string name){
