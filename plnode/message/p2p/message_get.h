@@ -15,7 +15,13 @@
 class MessageGET : public ABSMessage {
     string deviceName;
 public:
+    char* serialize(int* serialize_length) {
+        return NULL;
+    }
 
+    ABSMessage* deserialize(char* buffer, int buffer_len) {
+        return NULL;
+    }
     void SetDeviceName(string &deviceName) {
         this->deviceName = deviceName;
     }

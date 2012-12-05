@@ -17,7 +17,13 @@ class MessageGET_REPLY : public ABSMessage {
     OverlayID *id;
     IPAddress *ip;
 public:
+    char* serialize(int* serialize_length) {
+        return NULL;
+    }
 
+    ABSMessage* deserialize(char* buffer, int buffer_len) {
+        return NULL;
+    }
     void setID(OverlayID *id){
         this->id = id;
     }
@@ -27,7 +33,7 @@ public:
     }
     
     void setIP(IPAddress *ip) {
-        this->ip = *ip;
+        this->ip = ip;
     }
 
     IPAddress* getIP() const {

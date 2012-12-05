@@ -66,7 +66,7 @@ public:
         cinPolicy->insert(key, value);
     }
     
-    IPAddress* lookup(OverlayID* key){
+    HostAddress* lookup(OverlayID* key){
         DLLNode *node;
         if(hm->lookup(*key, &node)){
             crPolicy->processHit(key);

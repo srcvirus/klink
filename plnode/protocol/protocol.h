@@ -33,8 +33,8 @@ public:
     virtual void initiate_join() = 0;
     virtual void process_join() = 0;
     virtual void forward(const ABSMessage*) = 0;
-    virtual void get() = 0;
-    virtual void put() = 0;
+    virtual void get(string name) = 0;
+    virtual void put(string name, HostAddress ip) = 0;
     virtual void rejoin() = 0;
 };
 
