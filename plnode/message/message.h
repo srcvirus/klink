@@ -10,6 +10,7 @@
 
 #include <string>
 #include <stdio.h>
+#include "../ds/overlay_id.h"
 
 using namespace std;
 
