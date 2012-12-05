@@ -10,14 +10,17 @@
 
 #include "../ds/cache.h"
 #include "../ds/lookup_table.h"
+#include "../ds/overlay_id.h"
+#include "../ds/host_address.h"
 
 class MessageProcessor {
 protected:
-    LookupTable* routing_table;
-    LookupTable* index_table;
+    LookupTable<OverlayID, HostAddress>* routing_table;
+    LookupTable<string, OverlayID>* index_table;
     Cache* cache;
 public:
-    void setup(LookupTable* routing_table, LookupTable* index_table, Cache *cache){
+    void setup(LookupTable<OverlayID, HostAddress>* routing_table, 
+            LookupTable<string, OverlayID>* index_table, Cache *cache){
         this->routing_table = routing_table;
         this->index_table = index_table;
         this->cache = cache;

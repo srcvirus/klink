@@ -8,6 +8,8 @@
 #ifndef PLEXUS_PROTOCOL_H
 #define	PLEXUS_PROTOCOL_H
 
+#include <cstring>
+
 #include "../protocol.h"
 #include "../../ds/cache.h"
 #include "../../message/message_processor.h"
@@ -18,11 +20,12 @@
 class PlexusProtocol : public ABSProtocol {
 public:
 
-    PlexusProtocol() {
+    PlexusProtocol() : ABSProtocol() {
     }
 
-    PlexusProtocol(LookupTable* routing_table, LookupTable* index_table,
-            Cache cache, MessageProcessor* msgProcessor) :
+    PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
+            LookupTable<string, OverlayID>* index_table,
+            Cache *cache, MessageProcessor* msgProcessor) :
     ABSProtocol(routing_table, index_table, cache, msgProcessor) {
 
     }
@@ -79,6 +82,9 @@ public:
     }
 
     void rejoin() {
+    }
+
+    ~PlexusProtocol() {
     }
 };
 

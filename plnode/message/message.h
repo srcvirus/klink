@@ -157,4 +157,6 @@ public:
         }
 };
 
+int ABSMessage::sequence_no_generator;
+
 #endif /* MESSAGE_H_ */
