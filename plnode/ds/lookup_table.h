@@ -18,13 +18,13 @@ template <class KeyType, class ValueType>
 class LookupTable
 {
 	map <KeyType, ValueType> table;
-
+	typename map <KeyType, ValueType>::iterator table_iterator;
 public:
 
 	//typedef typename::vector <KeyType> vk;
 
 	LookupTable(){ table.clear(); }
-	virtual ~LookupTable(){ table.clear(); }
+	virtual ~LookupTable(){ table.clear(); table_iterator = table.begin(); }
 
 	bool add(KeyType key, ValueType value);
 	bool lookup(KeyType key, ValueType* value);
@@ -40,6 +40,17 @@ public:
 			keySet.push_back((*mapIt).first);
 
 		return keySet;
+	}
+	void reset_iterator(){ table_iterator = table.begin(); }
+	KeyType getNextKey()
+	{
+		KeyType ret = (*table_iterator).first;
+		table_iterator++;
+		return ret;
+	}
+	bool hasMoreKey()
+	{
+		return table_iterator != table.end();
 	}
 };
 
