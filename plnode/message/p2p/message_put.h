@@ -15,15 +15,23 @@
 
 class MessagePUT : public ABSMessage {
     string deviceName;
-    IPAddress ip;
+    HostAddress hostAddress;
 public:
 
-    void SetIp(IPAddress &ip) {
-        this->ip = ip;
+    char* serialize(int* serialize_length) {
+        return NULL;
     }
 
-    IPAddress GetIp() const {
-        return ip;
+    ABSMessage* deserialize(char* buffer, int buffer_len) {
+        return NULL;
+    }
+
+    void SetHostAddress(HostAddress &hostAddress) {
+        this->hostAddress = hostAddress;
+    }
+
+    HostAddress GetHostAddress() const {
+        return hostAddress;
     }
 
     void SetDeviceName(string &deviceName) {
