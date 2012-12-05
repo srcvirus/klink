@@ -12,39 +12,47 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/message_processor.h"
 
-class PlexusMessageProcessor : public MessageProcessor {
+class PlexusMessageProcessor: public MessageProcessor
+{
 public:
 
-    void setup(LookupTable* routing_table, LookupTable* index_table){
-        MessageProcessor::setup(routing_table, index_table);
-    }
-    
-    bool processMessage(ABSMessage* message) {
+	void setup(LookupTable<OverlayID, HostAddress>* routing_table,
+			LookupTable<string, OverlayID>* index_table)
+	{
+		MessageProcessor::setup(routing_table, index_table, NULL);
+	}
 
-        //PUT
-        if (message->getMessageType() == MSG_PLEXUS_PUT) {
-            index_table->add(((MessagePUT*)message)->GetDeviceName(), 
-                    ((MessagePUT*)message)->GetIp());
-        }
-        //GET
-        else if (message->getMessageType() == MSG_PLEXUS_GET) {
-            MessageGET *msg = ((MessageGET*)message);
-            IPAddress *ip;
-            if(index_table->lookup(msg->GetDeviceName(), ip)){
-                MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
-                msg_reply->setIP(ip);
-                //send message
-            }
-            else{
-                //send error message
-            }
-        }
-        //GET REPLY
-        else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
-            MessageGET_REPLY *msg = ((MessageGET_REPLY*)message);
-            cache->add(msg->getID(), msg->getIP());
-        }
-    }
+	bool processMessage(ABSMessage* message)
+	{
+
+		//PUT
+		if (message->getMessageType() == MSG_PLEXUS_PUT)
+		{
+			index_table->add(((MessagePUT*) message)->GetDeviceName(),
+					((MessagePUT*) message)->GetIp());
+		}
+		//GET
+		else if (message->getMessageType() == MSG_PLEXUS_GET)
+		{
+			MessageGET *msg = ((MessageGET*) message);
+			IPAddress *ip;
+			if (index_table->lookup(msg->GetDeviceName(), ip))
+			{
+				MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
+				msg_reply->setIP(ip);
+				//send message
+			} else
+			{
+				//send error message
+			}
+		}
+		//GET REPLY
+		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
+		{
+			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
+			cache->add(msg->getID(), msg->getIP());
+		}
+	}
 };
 
 #endif	/* PLEXUS_MESSAGE_PROCESSOR_H */

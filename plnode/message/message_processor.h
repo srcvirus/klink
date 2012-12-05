@@ -12,21 +12,37 @@
 #include "../ds/lookup_table.h"
 #include "../ds/overlay_id.h"
 #include "../ds/host_address.h"
+#include "../../plnode/protocol/protocol.h"
 
-class MessageProcessor {
+class ABSProtocol;
+
+class MessageProcessor
+{
 protected:
-    LookupTable<OverlayID, HostAddress>* routing_table;
-    LookupTable<string, OverlayID>* index_table;
-    Cache* cache;
+	LookupTable<OverlayID, HostAddress>* routing_table;
+	LookupTable<string, OverlayID>* index_table;
+	Cache* cache;
+	ABSProtocol* container_protocol;
+
 public:
-    void setup(LookupTable<OverlayID, HostAddress>* routing_table, 
-            LookupTable<string, OverlayID>* index_table, Cache *cache){
-        this->routing_table = routing_table;
-        this->index_table = index_table;
-        this->cache = cache;
-    }
-    
-    virtual bool processMessage(ABSMessage* message) = 0;
+	void setup(LookupTable<OverlayID, HostAddress>* routing_table,
+			LookupTable<string, OverlayID>* index_table, Cache *cache)
+	{
+		this->routing_table = routing_table;
+		this->index_table = index_table;
+		this->cache = cache;
+	}
+
+	void setContainerProtocol(ABSProtocol* protocol)
+	{
+		container_protocol = protocol;
+	}
+	ABSProtocol* getContainerProtocol()
+	{
+		return container_protocol;
+	}
+
+	virtual bool processMessage(ABSMessage* message) = 0;
 };
 
 #endif	/* MESSAGE_PROCESSOR_H */

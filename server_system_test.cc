@@ -8,6 +8,9 @@
 #include "communication/server_socket.h"
 #include "communication/client_socket.h"
 #include "communication/error_code.h"
+#include "plnode/protocol/protocol.h"
+#include "plnode/protocol/plexus/plexus_protocol.h"
+
 
 #include <stdlib.h>
 
@@ -16,13 +19,21 @@ int main(int argc, char* argv[])
 	int port = atoi(argv[1]);
 	int error_code;
 
+	//create a peer
+	Peer* this_peer = new Peer(port);
+	//create a protocol
+	ABSProtocol* plexus = new PlexusProtocol();
+	//set the container peer for the protocol
+	plexus->setContainerPeer(this_peer);
+
 	fd_set connection_pool;
 	fd_set read_connection_fds;
 	int fd_max;
 
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
-	ServerSocket* s_socket = new ServerSocket(port);
+
+	ServerSocket* s_socket = this_peer->getServerSocket();
 	error_code = s_socket->init_connection();
 	FD_SET(s_socket->getSocketFd(), &connection_pool);
 

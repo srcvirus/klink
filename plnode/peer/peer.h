@@ -16,13 +16,18 @@ class Peer
 {
 	int peer_id;
 	int code_word;
+
 	IPAddress ip_address;
 	string host_name;
+	int listen_port_number;
+
 	int name_range_start;
 	int name_range_end;
 	double alpha;
 	int k;
+
 	ABSProtocol* protocol;
+	ServerSocket* server_socket;
 
 public:
 	Peer()
@@ -30,8 +35,23 @@ public:
 		char hostname[100];
 		gethostname(hostname, 100);
 		host_name = hostname;
+		listen_port_number = 0;
 	}
-	~Peer();
+
+	Peer(int port)
+	{
+		char hostname[100];
+		gethostname(hostname, 100);
+		host_name = hostname;
+
+		listen_port_number = port;
+		server_socket = new ServerSocket(listen_port_number);
+	}
+
+	~Peer()
+	{
+		;
+	}
 
 	double getAlpha()
 	{
@@ -57,10 +77,12 @@ public:
 	{
 		return ip_address;
 	}
-	int getIpAddress()
+
+	int getIntIpAddress()
 	{
 		return ip_address.getIpAddress();
 	}
+
 	string getStrIpAddress()
 	{
 		return ip_address.getStrIpAddress();
@@ -120,6 +142,37 @@ public:
 	{
 		return host_name;
 	}
+
+	int getListenPortNumber()
+	{
+		return listen_port_number;
+	}
+
+	void setListenPortNumber(int port)
+	{
+		listen_port_number = port;
+	}
+
+	ABSProtocol* getProtocol()
+	{
+		return protocol;
+	}
+
+	void setProtocol(ABSProtocol* protocol)
+	{
+		this->protocol = protocol;
+	}
+
+	ServerSocket* getServerSocket()
+	{
+		return server_socket;
+	}
+
+	void setServerSocket(ServerSocket* socket)
+	{
+		server_socket = socket;
+	}
+
 };
 
 
