@@ -11,27 +11,56 @@
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
 #include "plnode/message/message.h"
+#include "plnode/message/control/peer_init_message.h"
 
 #include <stdlib.h>
+
+Peer* this_peer;
+ABSProtocol* plexus;
+fd_set connection_pool;
+fd_set read_connection_fds;
+ServerSocket* s_socket = NULL;
+int fd_max;
+
+void process_and_forward(ABSMessage* rcvd_message)
+{
+	printf("Received Message Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
+
+	((PlexusProtocol*)plexus)->addToIncomingQueue(rcvd_message);
+
+	ABSMessage* msg_to_process = ((PlexusProtocol*)plexus)->getIncomingQueueFront();
+	plexus->getMessageProcessor()->processMessage(msg_to_process);
+
+	plexus->setNextHop(msg_to_process);
+	((PlexusProtocol*)plexus)->addToOutgoingQueue(msg_to_process);
+
+
+	ABSMessage* msg_to_forward = ((PlexusProtocol*)plexus)->getOutgoingQueueFront();
+	msg_to_forward->setOverlayHops(msg_to_forward->getOverlayHops() + 1);
+
+	string dest_host = msg_to_forward->getDestHost();
+	int dest_port = msg_to_forward->getDestPort();
+	ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
+	c_socket->connect_to_server();
+	int buffer_length = 0;
+	char* buffer = msg_to_forward->serialize(&buffer_length);
+	c_socket->send_data(buffer, buffer_length);
+}
 
 int main(int argc, char* argv[])
 {
 	int port = atoi(argv[1]);
 	int error_code;
 
-	Peer* this_peer = new Peer(port);
-	ABSProtocol* plexus = new PlexusProtocol();
+	this_peer = new Peer(port);
+	plexus = new PlexusProtocol();
 	//ABSProtocol* plexus = new PlexusProtocol(routing_table,index_table,cache,msgProcessor,this_peer);
 	plexus->setContainerPeer(this_peer);
-
-	fd_set connection_pool;
-	fd_set read_connection_fds;
-	int fd_max;
 
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
 
-	ServerSocket* s_socket = this_peer->getServerSocket();
+	s_socket = this_peer->getServerSocket();
 	error_code = s_socket->init_connection();
 	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
@@ -98,6 +127,11 @@ int main(int argc, char* argv[])
 
 						switch(messageType)
 						{
+						case MSG_PEER_INIT:
+							rcvd_message = new PeerInitMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
@@ -108,29 +142,7 @@ int main(int argc, char* argv[])
 							rcvd_message->deserialize(buffer, buffer_length);
 							break;
 						}
-
-						printf("Received Message Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
-
-						((PlexusProtocol*)plexus)->addToIncomingQueue(rcvd_message);
-
-						ABSMessage* msg_to_process = ((PlexusProtocol*)plexus)->getIncomingQueueFront();
-						plexus->getMessageProcessor()->processMessage(msg_to_process);
-
-						plexus->setNextHop(msg_to_process);
-						((PlexusProtocol*)plexus)->addToOutgoingQueue(msg_to_process);
-
-
-						ABSMessage* msg_to_forward = ((PlexusProtocol*)plexus)->getOutgoingQueueFront();
-						msg_to_forward->setOverlayHops(msg_to_forward->getOverlayHops() + 1);
-
-						string dest_host = msg_to_forward->getDestHost();
-						int dest_port = msg_to_forward->getDestPort();
-						ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
-						c_socket->connect_to_server();
-						buffer = msg_to_forward->serialize(&buffer_length);
-						c_socket->send_data(buffer, buffer_length);
 					}
-
 				}
 			}
 		}

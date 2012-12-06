@@ -8,10 +8,11 @@
 #include "../../plnode/ds/host_address.h"
 
 class BuildTree {
-public:
+private:
     string fileName;
     int treeSize;
     OverlayID *idArray;
+    HostAddress* hAddArray;
     LookupTable<OverlayID, HostAddress> *rtArray;
     int max_height;
     ReedMuller *rm;
@@ -19,6 +20,9 @@ public:
     BuildTree(string fileName);
     int GetHeight(int index);
     int GetIndexOfLongestMatchedPrefix(OverlayID id);
+    LookupTable<OverlayID, HostAddress>& getRoutingTablePtr(int index){ return rtArray[index]; }
+    int getTreeSize() const { return treeSize; }
+    HostAddress getHostAddress(int index){ return hAddArray[index]; }
     void execute();
     void print();
 };
@@ -28,7 +32,7 @@ BuildTree::BuildTree(string fileName) {
 }
 
 int BuildTree::GetHeight(int index) {
-    if (index < pow(2, max_height) - treeSize)
+    if (index < pow(2.0, max_height) - treeSize)
         return max_height - 1;
     return max_height;
 }
@@ -54,6 +58,7 @@ void BuildTree::execute() {
 
         hostListFile >> this->treeSize;
         this->idArray = new OverlayID[treeSize];
+        this->hAddArray = new HostAddress[treeSize];
         this->rtArray = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
@@ -78,6 +83,7 @@ void BuildTree::execute() {
                     ha.SetHostName(hostName);
                     ha.SetHostPort(hostPort);
                     rtArray[i].add(idArray[nbrIndex], ha);
+                    hAddArray[i] = ha;
                 }
             }
         }

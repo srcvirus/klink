@@ -25,6 +25,8 @@ public:
 
 	LookupTable(){ table.clear(); }
 	virtual ~LookupTable(){ table.clear(); table_iterator = table.begin(); }
+	int size(){ return table.size(); }
+	void clear(){ table.clear(); }
 
 	bool add(KeyType key, ValueType value);
 	bool lookup(KeyType key, ValueType* value);

@@ -58,10 +58,12 @@ public:
 
 	virtual void message_print_dump()
 	{
+		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 		printf("Configuration Message\n");
 		ABSMessage::message_print_dump();
 		printf("Parameter K = %d\n", parameter_k);
 		printf("Parameter alpha = %.2lf\n", parameter_alpha);
+		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
 };
 
