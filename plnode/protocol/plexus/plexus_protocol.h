@@ -23,176 +23,158 @@ using namespace std;
 
 class ABSProtocol;
 
-class PlexusProtocol: public ABSProtocol
-{
-	queue <ABSMessage*> incoming_message_queue;
-	queue <ABSMessage*> outgoing_message_queue;
+class PlexusProtocol : public ABSProtocol {
+    queue <ABSMessage*> incoming_message_queue;
+    queue <ABSMessage*> outgoing_message_queue;
 
-	pthread_mutex_t incoming_queue_lock;
-	pthread_mutex_t outgoing_queue_lock;
+    pthread_mutex_t incoming_queue_lock;
+    pthread_mutex_t outgoing_queue_lock;
 
-	pthread_cond_t cond_incoming_queue_empty;
-	pthread_cond_t cond_outgoing_queue_empty;
+    pthread_cond_t cond_incoming_queue_empty;
+    pthread_cond_t cond_outgoing_queue_empty;
 
 public:
 
-	PlexusProtocol() :
-			ABSProtocol()
-	{
-		this->routing_table = new LookupTable<OverlayID, HostAddress>();
-		this->index_table = new LookupTable<string, OverlayID>();
+    PlexusProtocol() :
+    ABSProtocol() {
+        this->routing_table = new LookupTable<OverlayID, HostAddress > ();
+        this->index_table = new LookupTable<string, OverlayID > ();
 
-		pthread_mutex_init(&incoming_queue_lock, NULL);
-		pthread_mutex_init(&outgoing_queue_lock, NULL);
+        pthread_mutex_init(&incoming_queue_lock, NULL);
+        pthread_mutex_init(&outgoing_queue_lock, NULL);
 
-		pthread_cond_init(&cond_incoming_queue_empty, NULL);
-		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
-	}
+        pthread_cond_init(&cond_incoming_queue_empty, NULL);
+        pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+    }
 
-	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
-			LookupTable<string, OverlayID>* index_table,
-			Cache *cache,
-			MessageProcessor* msgProcessor,
-			Peer* container) :
-			ABSProtocol(routing_table, index_table, cache, msgProcessor, container)
-	{
-		this->msgProcessor->setContainerProtocol(this);
+    PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
+            LookupTable<string, OverlayID>* index_table,
+            Cache *cache,
+            MessageProcessor* msgProcessor,
+            Peer* container) :
+    ABSProtocol(routing_table, index_table, cache, msgProcessor, container) {
+        this->msgProcessor->setContainerProtocol(this);
 
-		pthread_mutex_init(&incoming_queue_lock, NULL);
-		pthread_mutex_init(&outgoing_queue_lock, NULL);
+        pthread_mutex_init(&incoming_queue_lock, NULL);
+        pthread_mutex_init(&outgoing_queue_lock, NULL);
 
-		pthread_cond_init(&cond_incoming_queue_empty, NULL);
-		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
-	}
+        pthread_cond_init(&cond_incoming_queue_empty, NULL);
+        pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+    }
 
-	bool processMessage(ABSMessage *message)
-	{
-		return msgProcessor->processMessage(message);
-	}
+    bool processMessage(ABSMessage *message) {
+        return msgProcessor->processMessage(message);
+    }
 
-	void initiate_join(){}
+    void initiate_join() {
+    }
 
-	void process_join(){}
+    void process_join() {
+    }
 
-	void setNextHop(ABSMessage* msg)
-	{
-		int maxLengthMatch = 0, currentMatchLength;
-		OverlayID idWithLongestMatch;
-		HostAddress next_hop;
+    void setNextHop(ABSMessage* msg) {
+        int maxLengthMatch = 0, currentMatchLength;
+        HostAddress next_hop;
 
-		//search in the RT
-		routing_table->reset_iterator();
-		while (routing_table->hasMoreKey())
-		{
-			OverlayID oid = routing_table->getNextKey();
-			currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
-			if (currentMatchLength > maxLengthMatch)
-			{
-				maxLengthMatch = currentMatchLength;
-				idWithLongestMatch = msg->getOID();
-			}
-		}
-		//search in the CAche
-		cache->reset_iterator();
-		while (cache->has_next())
-		{
-			DLLNode *node = cache->get_next();
-			OverlayID *id = node->key;
-			currentMatchLength = msg->getOID().GetMatchedPrefixLength(*id);
-			if (currentMatchLength > maxLengthMatch)
-			{
-				maxLengthMatch = currentMatchLength;
-				idWithLongestMatch = msg->getOID();
-			}
-		}
+        //search in the RT
+        routing_table->reset_iterator();
+        while (routing_table->hasMoreKey()) {
+            OverlayID oid = routing_table->getNextKey();
+            currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
+            if (currentMatchLength > maxLengthMatch) {
+                maxLengthMatch = currentMatchLength;
+                routing_table->lookup(msg->getOID(), &next_hop);
+            }
+        }
+        //search in the CAche
+        cache->reset_iterator();
+        while (cache->has_next()) {
+            DLLNode *node = cache->get_next();
+            OverlayID *id = node->key;
+            currentMatchLength = msg->getOID().GetMatchedPrefixLength(*id);
+            if (currentMatchLength > maxLengthMatch) {
+                maxLengthMatch = currentMatchLength;
+                cache->lookup(msg->getOID(), next_hop);
+            }
+        }
 
-		msg->setDestHost(next_hop.GetHostName().c_str());
-		msg->setDestPort(next_hop.GetHostPort());
-		//push in Q with idWithLongestMatchPlexusProtocol
-	}
+        msg->setDestHost(next_hop.GetHostName().c_str());
+        msg->setDestPort(next_hop.GetHostPort());
+        //push in Q with idWithLongestMatchPlexusProtocol
+    }
 
-	void get(string name)
-	{
-		MessageGET *msg = new MessageGET();
-		msg->SetDeviceName(name);
-		addToOutgoingQueue(msg);
-	}
+    void get(string name) {
+        MessageGET *msg = new MessageGET();
+        msg->SetDeviceName(name);
+        addToOutgoingQueue(msg);
+    }
 
-	void put(string name, HostAddress hostAddress)
-	{
-		MessagePUT *msg = new MessagePUT();
-		msg->SetDeviceName(name);
-		msg->SetHostAddress(hostAddress);
-		addToOutgoingQueue(msg);
-	}
+    void put(string name, HostAddress hostAddress) {
+        MessagePUT *msg = new MessagePUT();
+        msg->SetDeviceName(name);
+        msg->SetHostAddress(hostAddress);
+        addToOutgoingQueue(msg);
+    }
 
-	void rejoin()
-	{
-	}
+    void rejoin() {
+    }
 
-	void addToIncomingQueue(ABSMessage* message)
-	{
-		pthread_mutex_lock(&incoming_queue_lock);
-		incoming_message_queue.push(message);
-		pthread_cond_signal(&cond_incoming_queue_empty);
-		pthread_mutex_unlock(&incoming_queue_lock);
-	}
+    void addToIncomingQueue(ABSMessage* message) {
+        pthread_mutex_lock(&incoming_queue_lock);
+        incoming_message_queue.push(message);
+        pthread_cond_signal(&cond_incoming_queue_empty);
+        pthread_mutex_unlock(&incoming_queue_lock);
+    }
 
-	bool isIncomingQueueEmpty()
-	{
-		return incoming_message_queue.empty();
-	}
+    bool isIncomingQueueEmpty() {
+        return incoming_message_queue.empty();
+    }
 
-	ABSMessage* getIncomingQueueFront()
-	{
-		pthread_mutex_lock(&incoming_queue_lock);
+    ABSMessage* getIncomingQueueFront() {
+        pthread_mutex_lock(&incoming_queue_lock);
 
-		while(incoming_message_queue.empty())
-			pthread_cond_wait(&cond_incoming_queue_empty, &incoming_queue_lock);
+        while (incoming_message_queue.empty())
+            pthread_cond_wait(&cond_incoming_queue_empty, &incoming_queue_lock);
 
-		ABSMessage* ret = incoming_message_queue.front();
-		incoming_message_queue.pop();
-		pthread_mutex_unlock(&incoming_queue_lock);
-		return ret;
-	}
+        ABSMessage* ret = incoming_message_queue.front();
+        incoming_message_queue.pop();
+        pthread_mutex_unlock(&incoming_queue_lock);
+        return ret;
+    }
 
-	void addToOutgoingQueue(ABSMessage* message)
-	{
-		pthread_mutex_lock(&outgoing_queue_lock);
-		outgoing_message_queue.push(message);
-		pthread_mutex_unlock(&outgoing_queue_lock);
-	}
+    void addToOutgoingQueue(ABSMessage* message) {
+        pthread_mutex_lock(&outgoing_queue_lock);
+        outgoing_message_queue.push(message);
+        pthread_mutex_unlock(&outgoing_queue_lock);
+    }
 
-	bool isOutgoingQueueEmpty()
-	{
-		bool status;
-		pthread_mutex_lock(&outgoing_queue_lock);
-		status = outgoing_message_queue.empty();
-		pthread_cond_signal(&cond_outgoing_queue_empty);
-		pthread_mutex_unlock(&outgoing_queue_lock);
-		return status;
-	}
+    bool isOutgoingQueueEmpty() {
+        bool status;
+        pthread_mutex_lock(&outgoing_queue_lock);
+        status = outgoing_message_queue.empty();
+        pthread_cond_signal(&cond_outgoing_queue_empty);
+        pthread_mutex_unlock(&outgoing_queue_lock);
+        return status;
+    }
 
-	ABSMessage* getOutgoingQueueFront()
-	{
-		pthread_mutex_lock(&outgoing_queue_lock);
+    ABSMessage* getOutgoingQueueFront() {
+        pthread_mutex_lock(&outgoing_queue_lock);
 
-		while(outgoing_message_queue.empty())
-			pthread_cond_wait(&cond_outgoing_queue_empty, &outgoing_queue_lock);
+        while (outgoing_message_queue.empty())
+            pthread_cond_wait(&cond_outgoing_queue_empty, &outgoing_queue_lock);
 
-		ABSMessage* ret = outgoing_message_queue.front();
-		outgoing_message_queue.pop();
-		pthread_mutex_lock(&outgoing_queue_lock);
-		return ret;
-	}
+        ABSMessage* ret = outgoing_message_queue.front();
+        outgoing_message_queue.pop();
+        pthread_mutex_lock(&outgoing_queue_lock);
+        return ret;
+    }
 
-	~PlexusProtocol()
-	{
-		pthread_mutex_destroy(&incoming_queue_lock);
-		pthread_mutex_destroy(&outgoing_queue_lock);
-		pthread_cond_destroy(&cond_incoming_queue_empty);
-		pthread_cond_destroy(&cond_outgoing_queue_empty);
-	}
+    ~PlexusProtocol() {
+        pthread_mutex_destroy(&incoming_queue_lock);
+        pthread_mutex_destroy(&outgoing_queue_lock);
+        pthread_cond_destroy(&cond_incoming_queue_empty);
+        pthread_cond_destroy(&cond_outgoing_queue_empty);
+    }
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */
