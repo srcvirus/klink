@@ -26,13 +26,22 @@ int main(int argc, char* argv[])
 	tree.print();
 
 	int n = tree.getTreeSize();
+	int retCode = 0;
+	ClientSocket* c_socket;
 
 	for(int i = 0; i < n; i++)
 	{
 		HostAddress address = tree.getHostAddress(i);
 		printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
-		ClientSocket c_socket(address.GetHostName(), address.GetHostPort());
-//		c_socket.connect_to_server();
+
+		c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
+		retCode = c_socket->connect_to_server();
+
+		if(retCode < 0)
+		{
+			print_error_message(retCode);
+			continue;
+		}
 
 		PeerInitMessage* pInit = new PeerInitMessage();
 		LookupTable <OverlayID, HostAddress> rt = tree.getRoutingTablePtr(i);
@@ -51,8 +60,11 @@ int main(int argc, char* argv[])
 		int buffer_length = 0;
 		buffer = pInit->serialize(&buffer_length);
 
-//		c_socket.send_data(buffer, buffer_length);
-//		c_socket.close_socket();
+		retCode = c_socket->send_data(buffer, buffer_length);
+		if(retCode < 0) print_error_message(retCode);
+		c_socket->close_socket();
+		delete c_socket;
+		delete pInit;
 	}
 	//plexus->put("name");
 	//plexus->get("name");
