@@ -88,6 +88,7 @@ void BuildTree::execute() {
         rm = new ReedMuller(1, 2);
         for (int i = 0; i < this->treeSize; i++) {
             idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
+            hosts->add(idArray[i], hAddArray[i]);
         }
 
         int nbrIndex;
@@ -98,7 +99,7 @@ void BuildTree::execute() {
                 nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
                 if (idArray[nbrIndex] != idArray[i]) {
                     HostAddress ha;
-                    hosts->lookup(&idArray[nbrIndex], ha);
+                    hosts->lookup(idArray[nbrIndex], &ha);
                     rtArray[i].add(idArray[nbrIndex], ha);
                 }
             }
