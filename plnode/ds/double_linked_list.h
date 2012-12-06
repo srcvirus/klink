@@ -11,7 +11,6 @@
 #include <iostream>
 #include <cstring>
 
-#include "ip_address.h"
 #include "overlay_id.h"
 #include "host_address.h"
 

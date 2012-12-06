@@ -8,8 +8,10 @@
 #ifndef IP_ADDRESS_H_
 #define IP_ADDRESS_H_
 
-#include <string>
+#include <cstring>
 #include <vector>
+#include <cstdlib>
+#include <cstdio>
 
 using namespace std;
 

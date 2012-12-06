@@ -47,10 +47,9 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 }
 
 void BuildTree::execute() {
-    //INIT
-
+    //INIT    
     ifstream hostListFile(fileName.c_str());
-
+    
     if (hostListFile.is_open()) {
 
         hostListFile >> this->treeSize;
