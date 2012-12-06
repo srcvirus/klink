@@ -23,7 +23,6 @@ class ABSProtocol
 protected:
 	LookupTable<OverlayID, HostAddress>* routing_table;
 	LookupTable<string, OverlayID>* index_table;
-
 	Peer* container_peer;
 	Cache* cache;
 	MessageProcessor* msgProcessor;

@@ -66,13 +66,14 @@ public:
         cinPolicy->insert(key, value);
     }
     
-    HostAddress* lookup(OverlayID* key){
+    bool lookup(OverlayID key, HostAddress &hostAddress){
         DLLNode *node;
-        if(hm->lookup(*key, &node)){
-            crPolicy->processHit(key);
-            return node->value;
+        if(hm->lookup(key, &node)){
+            crPolicy->processHit(&key);
+            hostAddress = *node->value;
+            return true;
         }
-        return NULL;
+        return false;
     }
 
     void print() {
