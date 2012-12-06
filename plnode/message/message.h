@@ -70,10 +70,10 @@ public:
 		return dest_host;
 	}
 
-	void setDestHost(const string& destHost)
+	/*void setDestHost(const string& destHost)
 	{
 		dest_host = destHost;
-	}
+	}*/
 
 	void setDestHost(const char* destHost)
 	{
@@ -85,7 +85,7 @@ public:
 		return dest_port;
 	}
 
-	void setDestPort(int destPort)
+	void setDestPort(const int destPort)
 	{
 		dest_port = destPort;
 	}

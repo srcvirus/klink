@@ -17,6 +17,7 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
+#include "../../ds/host_address.h"
 
 using namespace std;
 
@@ -73,10 +74,12 @@ public:
 
 	void process_join(){}
 
-	void forward(const ABSMessage* msg)
+	void setNextHop(ABSMessage* msg)
 	{
 		int maxLengthMatch = 0, currentMatchLength;
 		OverlayID idWithLongestMatch;
+		HostAddress next_hop;
+
 		//search in the RT
 		routing_table->reset_iterator();
 		while (routing_table->hasMoreKey())
@@ -103,6 +106,8 @@ public:
 			}
 		}
 
+		msg->setDestHost(next_hop.GetHostName().c_str());
+		msg->setDestPort(next_hop.GetHostPort());
 		//push in Q with idWithLongestMatchPlexusProtocol
 	}
 
@@ -110,7 +115,7 @@ public:
 	{
 		MessageGET *msg = new MessageGET();
 		msg->SetDeviceName(name);
-		//push in Q
+		addToOutgoingQueue(msg);
 	}
 
 	void put(string name, HostAddress hostAddress)
@@ -118,7 +123,7 @@ public:
 		MessagePUT *msg = new MessagePUT();
 		msg->SetDeviceName(name);
 		msg->SetHostAddress(hostAddress);
-		//push message in Q
+		addToOutgoingQueue(msg);
 	}
 
 	void rejoin()
