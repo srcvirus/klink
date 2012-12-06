@@ -17,14 +17,14 @@ using namespace std;
 //Message Types
 #define MSG_PEER_CONFIG					1
 #define MSG_PEER_START					2
-#define MSG_PEER_CHANGE_STATUS				3
-#define MSG_DYN_CHANGE_STATUS				11
+#define MSG_PEER_CHANGE_STATUS			3
+#define MSG_DYN_CHANGE_STATUS			11
 #define MSG_DYN_CONFIG					12
-#define MSG_LOOKUP_CHANGE_STATUS			21
+#define MSG_LOOKUP_CHANGE_STATUS		21
 #define MSG_GENERATE_NAME				31
 #define	MSG_PLEXUS_PUT					41
 #define MSG_PLEXUS_GET					42
-#define MSG_PLEXUS_GET_REPLY				43
+#define MSG_PLEXUS_GET_REPLY			43
 
 class ABSMessage
 {
@@ -46,6 +46,7 @@ public:
 	ABSMessage()
 	{
 		sequence_no = sequence_no_generator++;
+		overlay_hops = 0;
 	}
 	virtual ~ABSMessage(){;}
 

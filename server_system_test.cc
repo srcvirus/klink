@@ -94,6 +94,8 @@ int main(int argc, char* argv[])
 						ABSMessage* rcvd_message;
 
 						memcpy(&messageType, buffer, sizeof(int));
+						delete[] buffer;
+
 						switch(messageType)
 						{
 						case MSG_PLEXUS_GET:
@@ -107,7 +109,26 @@ int main(int argc, char* argv[])
 							break;
 						}
 
-						plexus->getMessageProcessor()->processMessage(rcvd_message);
+						printf("Received Message Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
+
+						((PlexusProtocol*)plexus)->addToIncomingQueue(rcvd_message);
+
+						ABSMessage* msg_to_process = ((PlexusProtocol*)plexus)->getIncomingQueueFront();
+						plexus->getMessageProcessor()->processMessage(msg_to_process);
+
+						plexus->setNextHop(msg_to_process);
+						((PlexusProtocol*)plexus)->addToOutgoingQueue(msg_to_process);
+
+
+						ABSMessage* msg_to_forward = ((PlexusProtocol*)plexus)->getOutgoingQueueFront();
+						msg_to_forward->setOverlayHops(msg_to_forward->getOverlayHops() + 1);
+
+						string dest_host = msg_to_forward->getDestHost();
+						int dest_port = msg_to_forward->getDestPort();
+						ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
+						c_socket->connect_to_server();
+						buffer = msg_to_forward->serialize(&buffer_length);
+						c_socket->send_data(buffer, buffer_length);
 					}
 
 				}
