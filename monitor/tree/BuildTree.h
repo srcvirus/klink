@@ -14,15 +14,25 @@ private:
     OverlayID *idArray;
     HostAddress* hAddArray;
     LookupTable<OverlayID, HostAddress> *rtArray;
+    LookupTable<OverlayID, HostAddress> *hosts;
     int max_height;
     ReedMuller *rm;
 public:
     BuildTree(string fileName);
     int GetHeight(int index);
     int GetIndexOfLongestMatchedPrefix(OverlayID id);
-    LookupTable<OverlayID, HostAddress>& getRoutingTablePtr(int index){ return rtArray[index]; }
-    int getTreeSize() const { return treeSize; }
-    HostAddress getHostAddress(int index){ return hAddArray[index]; }
+
+    LookupTable<OverlayID, HostAddress>& getRoutingTablePtr(int index) {
+        return rtArray[index];
+    }
+
+    int getTreeSize() const {
+        return treeSize;
+    }
+
+    HostAddress getHostAddress(int index) {
+        return hAddArray[index];
+    }
     void execute();
     void print();
 };
@@ -53,15 +63,27 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 void BuildTree::execute() {
     //INIT    
     ifstream hostListFile(fileName.c_str());
-    
+
     if (hostListFile.is_open()) {
 
         hostListFile >> this->treeSize;
         this->idArray = new OverlayID[treeSize];
         this->hAddArray = new HostAddress[treeSize];
         this->rtArray = new LookupTable<OverlayID, HostAddress>[treeSize];
+        this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
+        //read file
+        string hostName;
+        int hostPort;
+        for (int i = 0; i < treeSize; i++) {
+            hostListFile >> hostName;
+            hostListFile >> hostPort;
+            HostAddress ha;
+            ha.SetHostName(hostName);
+            ha.SetHostPort(hostPort);
+            hAddArray[i] = ha;
+        }
 
         rm = new ReedMuller(1, 2);
         for (int i = 0; i < this->treeSize; i++) {
@@ -69,21 +91,15 @@ void BuildTree::execute() {
         }
 
         int nbrIndex;
-        string hostName;
-        int hostPort;
         for (int i = 0; i < this->treeSize; i++) {
-            rtArray[i] = LookupTable<OverlayID, HostAddress> ();
+            rtArray[i] = LookupTable<OverlayID, HostAddress > ();
             for (int j = 0; j < GetHeight(i); j++) {
                 OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm->rm->n - j - 1);
                 nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
                 if (idArray[nbrIndex] != idArray[i]) {
-                    hostListFile >> hostName;
-                    hostListFile >> hostPort;
                     HostAddress ha;
-                    ha.SetHostName(hostName);
-                    ha.SetHostPort(hostPort);
+                    hosts->lookup(&idArray[nbrIndex], ha);
                     rtArray[i].add(idArray[nbrIndex], ha);
-                    hAddArray[i] = ha;
                 }
             }
         }
