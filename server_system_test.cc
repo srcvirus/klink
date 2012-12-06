@@ -14,24 +14,31 @@
 
 #include <stdlib.h>
 
+Peer* this_peer;
+ABSProtocol* plexus;
+fd_set connection_pool;
+fd_set read_connection_fds;
+ServerSocket* s_socket = NULL;
+int fd_max;
+
+void process_and_forward()
+{
+
+}
 int main(int argc, char* argv[])
 {
 	int port = atoi(argv[1]);
 	int error_code;
 
-	Peer* this_peer = new Peer(port);
-	ABSProtocol* plexus = new PlexusProtocol();
+	this_peer = new Peer(port);
+	plexus = new PlexusProtocol();
 	//ABSProtocol* plexus = new PlexusProtocol(routing_table,index_table,cache,msgProcessor,this_peer);
 	plexus->setContainerPeer(this_peer);
-
-	fd_set connection_pool;
-	fd_set read_connection_fds;
-	int fd_max;
 
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
 
-	ServerSocket* s_socket = this_peer->getServerSocket();
+	s_socket = this_peer->getServerSocket();
 	error_code = s_socket->init_connection();
 	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
@@ -98,6 +105,10 @@ int main(int argc, char* argv[])
 
 						switch(messageType)
 						{
+						case MSG_PEER_INIT:
+							rcvd_message = new PeerInitMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
