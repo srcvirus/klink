@@ -30,7 +30,7 @@ public:
 	{
 		messageType = MSG_PEER_INIT;
 	}
-	void setRoutingTable(const LookupTable <OverlayID, HostAddress>& r_table){ routing_table = r_table; }
+	void setRoutingTable(LookupTable <OverlayID, HostAddress>& r_table){ routing_table = r_table; }
 	LookupTable<OverlayID, HostAddress>& getRoutingTable(){	return routing_table; }
 
 	virtual char* serialize(int* serialize_length)
