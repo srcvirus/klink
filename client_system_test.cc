@@ -13,7 +13,15 @@ int main(int argc, char* argv[])
 {
 	char* server_name = argv[1];
 	int server_port = atoi(argv[2]);
-	ClientSocket* c_socket = new ClientSocket(server_name, server_port);
+
+	Peer* this_peer = new Peer();
+	ABSProtocol* plexus = new PlexusProtocol();
+	plexus->setContainerPeer(this_peer);
+
+	//plexus->put("name");
+	//plexus->get("name");
+
+/*	ClientSocket* c_socket = new ClientSocket(server_name, server_port);
 	int error_code = c_socket->connect_to_server();
 
 	if(error_code < 0)
@@ -31,7 +39,7 @@ int main(int argc, char* argv[])
 	c_socket->close_socket();
 
 	delete msg_get;
-	delete c_socket;
+	delete c_socket;*/
 }
 
 

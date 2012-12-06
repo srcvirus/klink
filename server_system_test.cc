@@ -10,7 +10,7 @@
 #include "communication/error_code.h"
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
-
+#include "plnode/message/message.h"
 
 #include <stdlib.h>
 
@@ -19,11 +19,9 @@ int main(int argc, char* argv[])
 	int port = atoi(argv[1]);
 	int error_code;
 
-	//create a peer
 	Peer* this_peer = new Peer(port);
-	//create a protocol
 	ABSProtocol* plexus = new PlexusProtocol();
-	//set the container peer for the protocol
+	//ABSProtocol* plexus = new PlexusProtocol(routing_table,index_table,cache,msgProcessor,this_peer);
 	plexus->setContainerPeer(this_peer);
 
 	fd_set connection_pool;
@@ -84,12 +82,36 @@ int main(int argc, char* argv[])
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
 					//printf("Received %d Bytes\n", buffer_length);
-					if(buffer_length == 0) s_socket->close_connection(i);
-					FD_CLR(i, &connection_pool);
+					if(buffer_length == 0)
+					{
+						s_socket->close_connection(i);
+						FD_CLR(i, &connection_pool);
+					}
 					//do the processing with the message
+					else
+					{
+						int messageType;
+						ABSMessage* rcvd_message;
+
+						memcpy(&messageType, buffer, sizeof(int));
+						switch(messageType)
+						{
+						case MSG_PLEXUS_GET:
+							rcvd_message = new MessageGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+
+						case MSG_PLEXUS_PUT:
+							rcvd_message = new MessagePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						}
+
+						plexus->getMessageProcessor()->processMessage(rcvd_message);
+					}
+
 				}
 			}
-
 		}
 	}
 
