@@ -24,6 +24,8 @@ public:
 
 	bool processMessage(ABSMessage* message)
 	{
+		message->incrementOverlayHops();
+		message->decrementOverlayTtl();
 
 		//INIT Message
 		if(message->getMessageType() == MSG_PEER_INIT)
@@ -44,25 +46,23 @@ public:
 			Peer* container_peer = this->getContainerProtocol()->getContainerPeer();
 			if( (container_peer->getOverlayID() == putMsg->getOID()) || putMsg->getOverlayTtl() == 0)
 			{
-				index_table->add(((MessagePUT*) message)->GetDeviceName(),
-									((MessagePUT*) message)->GetIp());
+				index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 				return false;
 			}
 			else
 			{
-
+				return true;
 			}
-
 		}
 		//GET
 		else if (message->getMessageType() == MSG_PLEXUS_GET)
 		{
 			MessageGET *msg = ((MessageGET*) message);
-			IPAddress *ip;
-			if (index_table->lookup(msg->GetDeviceName(), ip))
+			HostAddress hostAddress;
+			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
 				MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
-				msg_reply->setIP(ip);
+				//msg_reply->setIP(ip);
 				//send message
 			} else
 			{
@@ -75,6 +75,7 @@ public:
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
 			cache->add(msg->getID(), msg->getIP());
 		}
+		return false;
 	}
 };
 

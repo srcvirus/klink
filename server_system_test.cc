@@ -25,11 +25,8 @@ int fd_max;
 void process_and_forward(ABSMessage* rcvd_message)
 {
 	printf("Received Message Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
-	plexus->getMessageProcessor()->processMessage(rcvd_message);
 
 	plexus->setNextHop(rcvd_message);
-
-	rcvd_message->setOverlayHops(rcvd_message->getOverlayHops() + 1);
 
 	string dest_host = rcvd_message->getDestHost();
 	int dest_port = rcvd_message->getDestPort();
@@ -84,6 +81,7 @@ int main(int argc, char* argv[])
 			puts("Select Error");
 			exit(1);
 		}
+		bool forward;
 
 		for(int i = 0; i <= fd_max; i++)
 		{
@@ -136,11 +134,15 @@ int main(int argc, char* argv[])
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
+							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							if(forward) process_and_forward(rcvd_message);
 							break;
 
 						case MSG_PLEXUS_PUT:
 							rcvd_message = new MessagePUT();
 							rcvd_message->deserialize(buffer, buffer_length);
+							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							if(forward) process_and_forward(rcvd_message);
 							break;
 						}
 						delete[] buffer;

@@ -114,6 +114,17 @@ public:
 		overlay_ttl = overlayTtl;
 	}
 
+
+	void decrementOverlayTtl()
+	{
+		overlay_ttl--;
+	}
+
+	void incrementOverlayHops()
+	{
+		overlay_hops++;
+	}
+
 	string getSourceHost()
 	{
 		return source_host;

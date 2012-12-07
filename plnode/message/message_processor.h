@@ -20,7 +20,7 @@ class MessageProcessor
 {
 protected:
 	LookupTable<OverlayID, HostAddress>* routing_table;
-	LookupTable<string, OverlayID>* index_table;
+	LookupTable<string, HostAddress>* index_table;
 	Cache* cache;
 	ABSProtocol* container_protocol;
 
