@@ -27,6 +27,11 @@ public:
         return rtArray[index];
     }
 
+    OverlayID& getOverlayID(int index)
+    {
+    	return idArray[index];
+    }
+
     int getTreeSize() const {
         return treeSize;
     }

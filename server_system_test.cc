@@ -130,8 +130,8 @@ int main(int argc, char* argv[])
 						case MSG_PEER_INIT:
 							rcvd_message = new PeerInitMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
-							rcvd_message->message_print_dump();
-							fflush(stdout);
+							plexus->getMessageProcessor()->processMessage(rcvd_message);
+							//rcvd_message->message_print_dump();
 							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();

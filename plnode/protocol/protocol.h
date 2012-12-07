@@ -29,7 +29,14 @@ protected:
 
 public:
 
-	ABSProtocol(){}
+	ABSProtocol()
+	{
+		this->routing_table = NULL;
+		this->index_table = new LookupTable <string, OverlayID>();
+		this->container_peer = NULL;
+		this->cache = new Cache();
+		this->msgProcessor = NULL;
+	}
 
 	ABSProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
 			LookupTable<string, OverlayID>* index_table,
@@ -69,6 +76,20 @@ public:
 	MessageProcessor* getMessageProcessor()
 	{
 		return msgProcessor;
+	}
+
+	void setRoutingTable(LookupTable <OverlayID, HostAddress>* table)
+	{
+		if(routing_table != NULL) delete routing_table;
+		routing_table = new LookupTable <OverlayID, HostAddress>();
+		*routing_table = *table;
+	}
+
+	void setIndexTable(LookupTable <string, OverlayID>* table)
+	{
+		if(index_table != NULL) delete index_table;
+		index_table = new LookupTable <string, OverlayID>();
+		*index_table = *table;
 	}
 
 	virtual ~ABSProtocol(){}

@@ -25,11 +25,34 @@ public:
 	bool processMessage(ABSMessage* message)
 	{
 
-		//PUT
-		if (message->getMessageType() == MSG_PLEXUS_PUT)
+		//INIT Message
+		if(message->getMessageType() == MSG_PEER_INIT)
 		{
-			index_table->add(((MessagePUT*) message)->GetDeviceName(),
-					((MessagePUT*) message)->GetIp());
+			PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
+			PlexusProtocol* container_protocol = (PlexusProtocol*)this->getContainerProtocol();
+			Peer* container_peer = container_protocol->getContainerPeer();
+
+			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
+			container_peer->setNPeers(pInitMsg->getNPeers());
+			container_peer->setOverlayID(pInitMsg->getOID());
+			return false;
+		}
+		//PUT
+		else if (message->getMessageType() == MSG_PLEXUS_PUT)
+		{
+			MessagePUT* putMsg = (MessagePUT*)message;
+			Peer* container_peer = this->getContainerProtocol()->getContainerPeer();
+			if( (container_peer->getOverlayID() == putMsg->getOID()) || putMsg->getOverlayTtl() == 0)
+			{
+				index_table->add(((MessagePUT*) message)->GetDeviceName(),
+									((MessagePUT*) message)->GetIp());
+				return false;
+			}
+			else
+			{
+
+			}
+
 		}
 		//GET
 		else if (message->getMessageType() == MSG_PLEXUS_GET)

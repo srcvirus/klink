@@ -11,6 +11,8 @@
 #include <iostream>
 
 #include "../peer/peer.h"
+#include "../protocol/plexus/rm/ReadMullerCode.h"
+
 
 using namespace std;
 

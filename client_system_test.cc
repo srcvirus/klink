@@ -48,26 +48,57 @@ int main(int argc, char* argv[])
 		LookupTable <OverlayID, HostAddress> rt = tree.getRoutingTablePtr(i);
 
 		rt.reset_iterator();
-		while(rt.hasMoreKey())
+		/*while(rt.hasMoreKey())
 		{
 			OverlayID key = rt.getNextKey();
 			HostAddress val;
 			rt.lookup(key, &val);
 			printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
-		}
+		}*/
 
+		pInit->setOID(tree.getOverlayID(i));
+		pInit->setNPeers(n);
 		pInit->setRoutingTable(tree.getRoutingTablePtr(i));
 		char* buffer;
 		int buffer_length = 0;
 		buffer = pInit->serialize(&buffer_length);
 
 		retCode = c_socket->send_data(buffer, buffer_length);
-		if(retCode < 0) print_error_message(retCode);
-		else printf("Sent %d Bytes", retCode);
+		if(retCode < 0)
+			print_error_message(retCode);
+		//else printf("Sent %d Bytes", retCode);
 		c_socket->close_socket();
 		delete c_socket;
 		delete pInit;
 	}
+
+	string name_to_publish = "11";
+	int hash_name_to_publish = 1;
+	HostAddress my_address;
+	my_address.SetHostName("localhost");
+	my_address.SetHostPort(100);
+
+	MessagePUT* put_msg = new MessagePUT();
+	put_msg->SetDeviceName(name_to_publish);
+	put_msg->SetHostAddress(my_address);
+
+	OverlayID oID(hash_name_to_publish);
+	put_msg->setOID(oID);
+
+	int randHost = rand() % n;
+	int ttl = (int)floor(log10(n) / log(2.0)) + 2;
+
+	put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
+	put_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());
+	put_msg->setOverlayTtl(ttl);
+
+	ClientSocket cSocket(tree.getHostAddress(randHost).GetHostName(), tree.getHostAddress(randHost).GetHostPort());
+	cSocket.connect_to_server();
+	int buffer_len = 0;
+	char* buffer = put_msg->serialize(&buffer_len);
+	cSocket.send_data(buffer, buffer_len);
+	cSocket.close_socket();
+
 	//plexus->put("name");
 	//plexus->get("name");
 

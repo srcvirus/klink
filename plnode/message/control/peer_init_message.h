@@ -24,7 +24,7 @@
 class PeerInitMessage: public ABSMessage
 {
 	LookupTable<OverlayID, HostAddress> routing_table;
-
+	int n_peers;
 public:
 	PeerInitMessage()
 	{
@@ -33,9 +33,12 @@ public:
 	void setRoutingTable(LookupTable <OverlayID, HostAddress>& r_table){ routing_table = r_table; }
 	LookupTable<OverlayID, HostAddress>& getRoutingTable(){	return routing_table; }
 
+	void setNPeers(int n){ n_peers = n; }
+	int getNPeers(){ return n_peers; }
+
 	virtual char* serialize(int* serialize_length)
 	{
-		*serialize_length = sizeof(char) + sizeof(int) * 6 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID);
+		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID);
 		routing_table.reset_iterator();
 		while(routing_table.hasMoreKey())
 		{
@@ -75,6 +78,7 @@ public:
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&oID), sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*)n_peers, sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);
@@ -99,8 +103,10 @@ public:
 			int hostport = value.GetHostPort();
 			memcpy(buffer + offset, (char*)(&hostport), sizeof(int)); offset += sizeof(int);
 		}
+
+
 		//memcpy(buffer, (char*)(this), sizeof(PeerInitMessage));
-		*serialize_length = sizeof(PeerInitMessage);
+		//*serialize_length = sizeof(PeerInitMessage);
 		return buffer;
 	}
 
@@ -136,6 +142,7 @@ public:
 		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&n_peers, buffer + offset, sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);

@@ -37,9 +37,9 @@ public:
 
     PlexusProtocol() :
     ABSProtocol() {
-        this->routing_table = new LookupTable<OverlayID, HostAddress > ();
-        this->index_table = new LookupTable<string, OverlayID > ();
-
+        //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
+        //this->index_table = new LookupTable<string, OverlayID > ();
+    	this->msgProcessor = new PlexusMessageProcessor();
         pthread_mutex_init(&incoming_queue_lock, NULL);
         pthread_mutex_init(&outgoing_queue_lock, NULL);
 
