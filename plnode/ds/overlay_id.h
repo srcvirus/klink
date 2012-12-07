@@ -30,8 +30,14 @@ public:
         this->MAX_LENGTH = max_length;
     }
 
+//    OverlayID(int pattern) {
+//        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
+//        this->prefix_length = Peer::rm->rm->n;
+//        this->MAX_LENGTH = Peer::rm->rm->n;
+//    }
+
     OverlayID(int pattern) {
-        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
+        this->overlay_id = pattern;
         this->prefix_length = Peer::rm->rm->n;
         this->MAX_LENGTH = Peer::rm->rm->n;
     }
