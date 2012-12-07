@@ -9,6 +9,7 @@
 #define	MESSAGE_GET_REPLY_H
 
 #include "../message.h"
+#include "../../ds/overlay_id.h"
 #include "../../ds/ip_address.h"
 
 #include <cstring>

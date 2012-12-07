@@ -9,7 +9,7 @@
 #define	MESSAGE_PUT_H
 
 #include "../message.h"
-#include "../../ds/ip_address.h"
+#include "../../ds/host_address.h"
 
 #include <cstring>
 
