@@ -110,34 +110,35 @@ public:
 		int destHostLength, sourceHostLength;
 		routing_table.clear();
 
-		memcpy(&messageType, buffer + offset, sizeof(char)); offset += sizeof(char);
-		memcpy(&sequence_no, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&destHostLength, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&messageType, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
+		memcpy(&sequence_no, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&destHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
 		dest_host = "";
+		printf("DH Length : %d\n", destHostLength);
 		for(int i = 0; i < destHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char);
+			offset += sizeof(char); printf("offset = %d\n", offset);
 			dest_host += ch;
 		}
-		memcpy(&dest_port, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&sourceHostLength, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&dest_port, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&sourceHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
 		source_host = "";
 		for(int i = 0; i < sourceHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char);
+			offset += sizeof(char); printf("offset = %d\n", offset);
 			source_host += ch;
 		}
-		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char);
-		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char);
-		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
+		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
+		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); printf("offset = %d\n", offset);
 
 		int routingTableSize;
-		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
 
 		for(int i = 0; i < routingTableSize; i++)
 		{
@@ -147,15 +148,15 @@ public:
 			string hostname;
 			int hostport;
 
-			memcpy(&key, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID);
-			memcpy(&hostNameLength, buffer + offset, sizeof(int)); offset += sizeof(int);
+			memcpy(&key, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); printf("offset = %d\n", offset);
+			memcpy(&hostNameLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
 			for(int i = 0; i < hostNameLength; i++)
 			{
 				char ch;
-				memcpy(&ch, buffer + offset, sizeof(char)); offset += sizeof(char);
+				memcpy(&ch, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
 				hostname += ch;
 			}
-			memcpy(&hostport, buffer + offset, sizeof(int)); offset += sizeof(int);
+			memcpy(&hostport, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
 			value.SetHostName(hostname);
 			value.SetHostPort(hostport);
 			routing_table.add(key, value);

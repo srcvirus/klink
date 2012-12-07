@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 		}
 
 		PeerInitMessage* pInit = new PeerInitMessage();
+
 		LookupTable <OverlayID, HostAddress> rt = tree.getRoutingTablePtr(i);
 
 		rt.reset_iterator();
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 
 		retCode = c_socket->send_data(buffer, buffer_length);
 		if(retCode < 0) print_error_message(retCode);
+		else printf("Sent %d Bytes", retCode);
 		c_socket->close_socket();
 		delete c_socket;
 		delete pInit;

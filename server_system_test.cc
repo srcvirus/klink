@@ -110,8 +110,12 @@ int main(int argc, char* argv[])
 				else
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("Received %d Bytes\n", buffer_length);
+					for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					putchar('\n');
+
 					//printf("Received %d Bytes\n", buffer_length);
-					if(buffer_length == 0)
+					if(buffer_length <= 0)
 					{
 						s_socket->close_connection(i);
 						FD_CLR(i, &connection_pool);
@@ -119,11 +123,11 @@ int main(int argc, char* argv[])
 					//do the processing with the message
 					else
 					{
-						int messageType;
+						char messageType;
 						ABSMessage* rcvd_message;
 
-						memcpy(&messageType, buffer, sizeof(int));
-						delete[] buffer;
+						memcpy(&messageType, buffer, sizeof(char));
+						printf("Message Type: %d\n", messageType);
 
 						switch(messageType)
 						{
@@ -131,6 +135,7 @@ int main(int argc, char* argv[])
 							rcvd_message = new PeerInitMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
 							rcvd_message->message_print_dump();
+							fflush(stdout);
 							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
@@ -142,6 +147,7 @@ int main(int argc, char* argv[])
 							rcvd_message->deserialize(buffer, buffer_length);
 							break;
 						}
+						//delete[] buffer;
 					}
 				}
 			}

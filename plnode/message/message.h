@@ -48,6 +48,8 @@ public:
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
+		dest_host = "";
+		source_host = "";
 	}
 	virtual ~ABSMessage(){;}
 
