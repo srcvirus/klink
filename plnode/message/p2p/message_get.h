@@ -15,19 +15,33 @@
 class MessageGET : public ABSMessage {
     string deviceName;
 public:
-    char* serialize(int* serialize_length) {
-        return NULL;
+
+    MessageGET() : ABSMessage() {
+        messageType = MSG_PLEXUS_GET;
     }
 
-    ABSMessage* deserialize(char* buffer, int buffer_len) {
-        return NULL;
+    char* serialize(int* serialize_length) {
+        char* buffer = new char[sizeof (MessageGET)];
+        memcpy(buffer, (char*) (this), sizeof (MessageGET));
+        *serialize_length = sizeof (MessageGET);
+        return buffer;
     }
+
+    ABSMessage* deserialize(char* buffer, int buffer_length) {
+        memcpy(this, buffer, buffer_length);
+        return this;
+    }
+
     void SetDeviceName(string &deviceName) {
         this->deviceName = deviceName;
     }
 
     string GetDeviceName() const {
         return deviceName;
+    }
+
+    virtual void message_print_dump() {
+        printf("Device Name %s\n", deviceName.c_str());
     }
 };
 

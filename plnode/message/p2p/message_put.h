@@ -18,12 +18,20 @@ class MessagePUT : public ABSMessage {
     HostAddress hostAddress;
 public:
 
-    char* serialize(int* serialize_length) {
-        return NULL;
+    MessagePUT() : ABSMessage() {
+        messageType = MSG_PLEXUS_PUT;
     }
 
-    ABSMessage* deserialize(char* buffer, int buffer_len) {
-        return NULL;
+    char* serialize(int* serialize_length) {
+        char* buffer = new char[sizeof (MessagePUT)];
+        memcpy(buffer, (char*) (this), sizeof (MessagePUT));
+        *serialize_length = sizeof (MessagePUT);
+        return buffer;
+    }
+
+    ABSMessage* deserialize(char* buffer, int buffer_length) {
+        memcpy(this, buffer, buffer_length);
+        return this;
     }
 
     void SetHostAddress(HostAddress &hostAddress) {
@@ -40,6 +48,11 @@ public:
 
     string GetDeviceName() const {
         return deviceName;
+    }
+
+    virtual void message_print_dump() {
+        printf("Device Name %s\n", deviceName.c_str());
+        printf("Host Address %s:%d\n", hostAddress.GetHostName().c_str(), hostAddress.GetHostPort());
     }
 };
 

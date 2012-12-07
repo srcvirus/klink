@@ -73,6 +73,7 @@ void BuildTree::execute() {
         this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
+        rm = new ReedMuller(1, 2);
         //read file
         string hostName;
         int hostPort;
@@ -83,10 +84,7 @@ void BuildTree::execute() {
             ha.SetHostName(hostName);
             ha.SetHostPort(hostPort);
             hAddArray[i] = ha;
-        }
 
-        rm = new ReedMuller(1, 2);
-        for (int i = 0; i < this->treeSize; i++) {
             idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
             hosts->add(idArray[i], hAddArray[i]);
         }

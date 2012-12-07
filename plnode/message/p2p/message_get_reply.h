@@ -17,21 +17,31 @@ class MessageGET_REPLY : public ABSMessage {
     OverlayID *id;
     IPAddress *ip;
 public:
-    char* serialize(int* serialize_length) {
-        return NULL;
+
+    MessageGET_REPLY() : ABSMessage() {
+        messageType = MSG_PLEXUS_GET_REPLY;
     }
 
-    ABSMessage* deserialize(char* buffer, int buffer_len) {
-        return NULL;
+    char* serialize(int* serialize_length) {
+        char* buffer = new char[sizeof (MessageGET_REPLY)];
+        memcpy(buffer, (char*) (this), sizeof (MessageGET_REPLY));
+        *serialize_length = sizeof (MessageGET_REPLY);
+        return buffer;
     }
-    void setID(OverlayID *id){
+
+    ABSMessage* deserialize(char* buffer, int buffer_length) {
+        memcpy(this, buffer, buffer_length);
+        return this;
+    }
+
+    void setID(OverlayID *id) {
         this->id = id;
     }
-    
+
     OverlayID* getID() const {
         return id;
     }
-    
+
     void setIP(IPAddress *ip) {
         this->ip = ip;
     }
