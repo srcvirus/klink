@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 
 #include "../../plnode/protocol/plexus/rm/ReadMullerCode.h"
 #include "../../plnode/ds/lookup_table.h"
@@ -73,7 +74,9 @@ void BuildTree::execute() {
         this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
-        rm = new ReedMuller(1, 2);
+        rm = Peer::rm;
+        cout << "k = " << rm->rm->k << endl;
+        cout << "n = " << rm->rm->n << endl;
         //read file
         string hostName;
         int hostPort;
