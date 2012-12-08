@@ -16,6 +16,8 @@
 
 class ABSProtocol;
 
+class ABSProtocol;
+
 class Peer
 {
 	int n_peers;
