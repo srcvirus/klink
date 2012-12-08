@@ -119,7 +119,7 @@ public:
 
 	virtual void initiate_join() = 0;
 	virtual void process_join() = 0;
-	virtual void setNextHop(ABSMessage*) = 0;
+	virtual bool setNextHop(ABSMessage*) = 0;
 	virtual void get(string name) = 0;
 	virtual void put(string name, HostAddress my_address) = 0;
 	virtual void rejoin() = 0;

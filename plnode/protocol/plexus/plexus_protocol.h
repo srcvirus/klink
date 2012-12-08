@@ -73,11 +73,12 @@ public:
     void process_join() {
     }
 
-    void setNextHop(ABSMessage* msg) {
+    bool setNextHop(ABSMessage* msg) {
         int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
         HostAddress next_hop;
 
-        currentNodeMathLength = GlobalData::oid.GetMatchedPrefixLength(msg->getOID());
+        Peer *container_peer = getContainerPeer();
+        currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getOID());
 
         //search in the RT
         routing_table->reset_iterator();
@@ -103,11 +104,11 @@ public:
         }
 
         if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
-            msg->setDestHost(NULL);
-            msg->setDestPort(0);
+            return false;
         } else {
             msg->setDestHost(next_hop.GetHostName().c_str());
             msg->setDestPort(next_hop.GetHostPort());
+            return true;
         }
     }
 
