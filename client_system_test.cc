@@ -91,21 +91,47 @@ int main(int argc, char* argv[])
 	put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
 	put_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());
 	put_msg->setOverlayTtl(ttl);
-	put_msg->message_print_dump();
+	//put_msg->message_print_dump();
 
 	ClientSocket cSocket(tree.getHostAddress(randHost).GetHostName(), tree.getHostAddress(randHost).GetHostPort());
 	cSocket.connect_to_server();
 	int buffer_len = 0;
 	char* buffer = put_msg->serialize(&buffer_len);
 
-	for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
-	putchar('\n');
+	/*for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
+	putchar('\n');*/
 	cSocket.send_data(buffer, buffer_len);
 	cSocket.close_socket();
 
-	MessagePUT* a = new MessagePUT();
-	a->deserialize(buffer, buffer_len);
-	a->message_print_dump();
+	name_to_publish = "4000";
+	hash_name_to_publish = atoi(name_to_publish.c_str());
+
+	put_msg->SetDeviceName(name_to_publish);
+	oID.SetOverlay_id(hash_name_to_publish);
+	put_msg->setOID(oID);
+	delete[] buffer;
+	buffer = put_msg->serialize(&buffer_len);
+	cSocket.connect_to_server();
+	cSocket.send_data(buffer, buffer_len);
+	cSocket.close_socket();
+
+	MessageGET* get_msg = new MessageGET();
+	get_msg->SetDeviceName(name_to_publish);
+	OverlayID id(hash_name_to_publish);
+	get_msg->setOID(id);
+	randHost = 2;
+	ttl = (int)floor(log10(n) / log(2.0)) + 2;
+	get_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
+	get_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());
+	get_msg->setOverlayTtl(ttl);
+	cSocket.setServerHostName(tree.getHostAddress(randHost).GetHostName());
+	cSocket.setServerPortNumber(tree.getHostAddress(randHost).GetHostPort());
+	cSocket.connect_to_server();
+	buffer_len = 0;
+	buffer = get_msg->serialize(&buffer_len);
+	cSocket.send_data(buffer, buffer_len);
+	cSocket.close_socket();
+
 	//plexus->put("name");
 	//plexus->get("name");
 

@@ -42,6 +42,11 @@ protected:
 	unsigned char overlay_ttl;
 	OverlayID oID;
 
+	size_t getBaseSize()
+	{
+		size_t size = sizeof(char) * 3 + sizeof(int) * 5 + sizeof(char) * (dest_host.size() + source_host.size()) + sizeof(OverlayID);
+		return size;
+	}
 
 public:
 	ABSMessage()
@@ -51,6 +56,8 @@ public:
 		dest_host = "";
 		source_host = "";
 	}
+
+
 	virtual ~ABSMessage(){;}
 
 	virtual char* serialize(int* serialize_length) = 0;
