@@ -47,8 +47,13 @@ int main(int argc, char* argv[])
 
 	this_peer = new Peer(port);
 	plexus = new PlexusProtocol();
-	//ABSProtocol* plexus = new PlexusProtocol(routing_table,index_table,cache,msgProcessor,this_peer);
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+
+	msg_processor->setContainerProtocol(plexus);
+	plexus->setMessageProcess(msg_processor);
+
 	plexus->setContainerPeer(this_peer);
+	this_peer->setProtocol(plexus);
 
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
@@ -117,7 +122,7 @@ int main(int argc, char* argv[])
 					//do the processing with the message
 					else
 					{
-						char messageType;
+						char messageType = 0;
 						ABSMessage* rcvd_message;
 
 						memcpy(&messageType, buffer, sizeof(char));
@@ -128,21 +133,28 @@ int main(int argc, char* argv[])
 						case MSG_PEER_INIT:
 							rcvd_message = new PeerInitMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
-							plexus->getMessageProcessor()->processMessage(rcvd_message);
-							//rcvd_message->message_print_dump();
+							//plexus->getMessageProcessor()->processMessage(rcvd_message);
+							rcvd_message->message_print_dump();
 							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
-							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
-							if(forward) process_and_forward(rcvd_message);
+							rcvd_message->message_print_dump();
+							/*forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							if(forward)
+							{
+								puts("forwarding");
+								process_and_forward(rcvd_message);
+							}
+							else puts("stopped");*/
 							break;
 
 						case MSG_PLEXUS_PUT:
 							rcvd_message = new MessagePUT();
 							rcvd_message->deserialize(buffer, buffer_length);
-							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
-							if(forward) process_and_forward(rcvd_message);
+							rcvd_message->message_print_dump();
+							//forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							//if(forward) process_and_forward(rcvd_message);
 							break;
 						}
 						delete[] buffer;

@@ -14,6 +14,8 @@
 #include "../ds/overlay_id.h"
 #include "../ds/ip_address.h"
 
+class ABSProtocol;
+
 class Peer
 {
 	int n_peers;
@@ -35,7 +37,6 @@ class Peer
 	ServerSocket* server_socket;
 
 public:
-	static ReedMuller* rm;
 	Peer()
 	{
 		char hostname[100];
@@ -49,7 +50,6 @@ public:
 		char hostname[100];
 		gethostname(hostname, 100);
 		host_name = hostname;
-
 		listen_port_number = port;
 		server_socket = new ServerSocket(listen_port_number);
 	}
@@ -200,5 +200,4 @@ public:
 	}
 };
 
-ReedMuller* Peer::rm = new ReedMuller(2, 4);
 #endif /* PEER_H_ */

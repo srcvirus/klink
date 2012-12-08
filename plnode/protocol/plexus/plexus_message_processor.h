@@ -11,13 +11,18 @@
 #include "../../message/message.h"
 #include "../../message/p2p/message_get.h"
 #include "../../message/message_processor.h"
+#include "../../message/control/peer_init_message.h"
+#include "../../message/p2p/message_put.h"
+#include "../../message/p2p/message_get_reply.h"
+#include "../protocol.h"
+
 
 class PlexusMessageProcessor: public MessageProcessor
 {
 public:
 
 	void setup(LookupTable<OverlayID, HostAddress>* routing_table,
-			LookupTable<string, OverlayID>* index_table)
+			LookupTable<string, HostAddress>* index_table)
 	{
 		MessageProcessor::setup(routing_table, index_table, NULL);
 	}
@@ -31,7 +36,7 @@ public:
 		if(message->getMessageType() == MSG_PEER_INIT)
 		{
 			PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
-			PlexusProtocol* container_protocol = (PlexusProtocol*)this->getContainerProtocol();
+			ABSProtocol* container_protocol = this->getContainerProtocol();
 			Peer* container_peer = container_protocol->getContainerPeer();
 
 			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
@@ -44,9 +49,9 @@ public:
 		{
 			MessagePUT* putMsg = (MessagePUT*)message;
 			Peer* container_peer = this->getContainerProtocol()->getContainerPeer();
-			if( (container_peer->getOverlayID() == putMsg->getOID()) || putMsg->getOverlayTtl() == 0)
+			if( (container_peer->getOverlayID().GetOverlay_id() == putMsg->getOID().GetOverlay_id()) || putMsg->getOverlayTtl() == 0)
 			{
-				index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
+				//index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 				return false;
 			}
 			else

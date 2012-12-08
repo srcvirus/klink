@@ -9,13 +9,13 @@
 #include "communication/error_code.h"
 #include "monitor/tree/BuildTree.h"
 #include "plnode/message/control/peer_init_message.h"
-
+#include "plnode/message/p2p/message_put.h"
 #include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
-	char* server_name = argv[1];
-	int server_port = atoi(argv[2]);
+	//char* server_name = argv[1];
+	//int server_port = atoi(argv[2]);
 
 	/*Peer* this_peer = new Peer();
 	ABSProtocol* plexus = new PlexusProtocol();
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 	}
 
 	string name_to_publish = "11";
-	int hash_name_to_publish = 1;
+	int hash_name_to_publish = atoi(name_to_publish.c_str());
 	HostAddress my_address;
 	my_address.SetHostName("localhost");
 	my_address.SetHostPort(100);
@@ -91,14 +91,21 @@ int main(int argc, char* argv[])
 	put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
 	put_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());
 	put_msg->setOverlayTtl(ttl);
+	put_msg->message_print_dump();
 
 	ClientSocket cSocket(tree.getHostAddress(randHost).GetHostName(), tree.getHostAddress(randHost).GetHostPort());
 	cSocket.connect_to_server();
 	int buffer_len = 0;
 	char* buffer = put_msg->serialize(&buffer_len);
+
+	for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
+	putchar('\n');
 	cSocket.send_data(buffer, buffer_len);
 	cSocket.close_socket();
 
+	MessagePUT* a = new MessagePUT();
+	a->deserialize(buffer, buffer_len);
+	a->message_print_dump();
 	//plexus->put("name");
 	//plexus->get("name");
 

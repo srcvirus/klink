@@ -7,6 +7,7 @@
 #include "../../plnode/ds/lookup_table.h"
 #include "../../plnode/ds/overlay_id.h"
 #include "../../plnode/ds/host_address.h"
+#include "../../plnode/ds/GlobalData.h"
 
 class BuildTree {
 private:
@@ -79,7 +80,7 @@ void BuildTree::execute() {
         this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
-        rm = Peer::rm;
+        rm = GlobalData::rm;
         cout << "k = " << rm->rm->k << endl;
         cout << "n = " << rm->rm->n << endl;
         //read file

@@ -14,11 +14,11 @@
 
 using namespace std;
 
-set ksubset_init(int n)
+Set ksubset_init(int n)
 {
-  set s;
+  Set s;
 
-  if (!(s = (set) malloc(sizeof(struct _set))))
+  if (!(s = (Set) malloc(sizeof(struct _set))))
     return FALSE;
 
   s->n = n;
@@ -31,14 +31,14 @@ set ksubset_init(int n)
 }
 
 
-void ksubset_free(set s)
+void ksubset_free(Set s)
 {
   combination_free(s->n, s->nCr);
   free(s);
 }
 
 
-int ksubset_lex_succ(set s, int k, int *orig, int *succ)
+int ksubset_lex_succ(Set s, int k, int *orig, int *succ)
 {
   int i, j;
 
@@ -57,7 +57,7 @@ int ksubset_lex_succ(set s, int k, int *orig, int *succ)
 }
 
 
-long ksubset_lex_rank(set s, int k, int *subset)
+long ksubset_lex_rank(Set s, int k, int *subset)
 {
   int i, j;
   long r;
@@ -71,7 +71,7 @@ long ksubset_lex_rank(set s, int k, int *subset)
 }
 
 
-void ksubset_lex_unrank(set s, int k, long r, int *subset)
+void ksubset_lex_unrank(Set s, int k, long r, int *subset)
 {
   int i;
   int x;

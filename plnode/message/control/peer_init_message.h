@@ -78,7 +78,7 @@ public:
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&oID), sizeof(OverlayID)); offset += sizeof(OverlayID);
-		memcpy(buffer + offset, (char*)n_peers, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);

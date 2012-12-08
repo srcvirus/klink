@@ -10,9 +10,8 @@
 
 #include <iostream>
 
-#include "../peer/peer.h"
 #include "../protocol/plexus/rm/ReadMullerCode.h"
-
+#include "GlobalData.h"
 
 using namespace std;
 
@@ -40,8 +39,8 @@ public:
 
     OverlayID(int pattern) {
         this->overlay_id = pattern;
-        this->prefix_length = Peer::rm->rm->n;
-        this->MAX_LENGTH = Peer::rm->rm->n;
+        this->prefix_length = GlobalData::rm->rm->n;
+        this->MAX_LENGTH = GlobalData::rm->rm->n;
     }
 
     void SetPrefix_length(int prefix_length) {

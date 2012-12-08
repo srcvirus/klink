@@ -26,7 +26,7 @@ protected:
 
 public:
 	void setup(LookupTable<OverlayID, HostAddress>* routing_table,
-			LookupTable<string, OverlayID>* index_table, Cache *cache)
+			LookupTable<string, HostAddress>* index_table, Cache *cache)
 	{
 		this->routing_table = routing_table;
 		this->index_table = index_table;

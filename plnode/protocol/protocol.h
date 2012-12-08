@@ -22,7 +22,7 @@ class ABSProtocol
 {
 protected:
 	LookupTable<OverlayID, HostAddress>* routing_table;
-	LookupTable<string, OverlayID>* index_table;
+	LookupTable<string, HostAddress>* index_table;
 	Peer* container_peer;
 	Cache* cache;
 	MessageProcessor* msgProcessor;
@@ -32,14 +32,14 @@ public:
 	ABSProtocol()
 	{
 		this->routing_table = NULL;
-		this->index_table = new LookupTable <string, OverlayID>();
+		this->index_table = new LookupTable <string, HostAddress>();
 		this->container_peer = NULL;
 		this->cache = new Cache();
 		this->msgProcessor = NULL;
 	}
 
 	ABSProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
-			LookupTable<string, OverlayID>* index_table,
+			LookupTable<string, HostAddress>* index_table,
 			Cache *cache,
 			MessageProcessor* msgProcessor,
 			Peer* container)
@@ -85,10 +85,10 @@ public:
 		*routing_table = *table;
 	}
 
-	void setIndexTable(LookupTable <string, OverlayID>* table)
+	void setIndexTable(LookupTable <string, HostAddress>* table)
 	{
 		if(index_table != NULL) delete index_table;
-		index_table = new LookupTable <string, OverlayID>();
+		index_table = new LookupTable <string, HostAddress>();
 		*index_table = *table;
 	}
 
