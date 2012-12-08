@@ -69,11 +69,13 @@ public:
 			HostAddress hostAddress;
 			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
+				puts("Got it :)");
 				MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
 				//msg_reply->setIP(ip);
 				//send message
 			} else
 			{
+				puts("GET Failed");
 				//send error message
 			}
 		}

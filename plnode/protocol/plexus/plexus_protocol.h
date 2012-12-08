@@ -63,8 +63,8 @@ public:
         pthread_cond_init(&cond_outgoing_queue_empty, NULL);
     }
 
-    bool processMessage(ABSMessage *message) {
-        return msgProcessor->processMessage(message);
+    void processMessage(ABSMessage *message) {
+        msgProcessor->processMessage(message);
     }
 
     void initiate_join() {
