@@ -42,6 +42,7 @@ public:
 			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
 			container_peer->setNPeers(pInitMsg->getNPeers());
 			container_peer->setOverlayID(pInitMsg->getOID());
+                        GlobalData::oid = pInitMsg->getOID();
 
 			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 			return false;

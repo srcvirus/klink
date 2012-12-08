@@ -15,6 +15,8 @@
 
 using namespace std;
 
+class GlobalData;
+
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;

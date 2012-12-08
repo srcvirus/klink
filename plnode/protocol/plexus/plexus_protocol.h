@@ -40,7 +40,7 @@ public:
     ABSProtocol() {
         //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
         //this->index_table = new LookupTable<string, OverlayID > ();
-    	this->msgProcessor = new PlexusMessageProcessor();
+        this->msgProcessor = new PlexusMessageProcessor();
         pthread_mutex_init(&incoming_queue_lock, NULL);
         pthread_mutex_init(&outgoing_queue_lock, NULL);
 
@@ -74,8 +74,10 @@ public:
     }
 
     void setNextHop(ABSMessage* msg) {
-        int maxLengthMatch = 0, currentMatchLength;
+        int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
         HostAddress next_hop;
+
+        currentNodeMathLength = GlobalData::oid.GetMatchedPrefixLength(msg->getOID());
 
         //search in the RT
         routing_table->reset_iterator();
@@ -88,7 +90,7 @@ public:
                 printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
             }
         }
-        //search in the CAche
+        //search in the Cache
         cache->reset_iterator();
         while (cache->has_next()) {
             DLLNode *node = cache->get_next();
@@ -100,10 +102,13 @@ public:
             }
         }
 
-
-        msg->setDestHost(next_hop.GetHostName().c_str());
-        msg->setDestPort(next_hop.GetHostPort());
-        //push in Q with idWithLongestMatchPlexusProtocol
+        if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+            msg->setDestHost("LOCALHOST");
+            msg->setDestPort(0);
+        } else {
+            msg->setDestHost(next_hop.GetHostName().c_str());
+            msg->setDestPort(next_hop.GetHostPort());
+        }
     }
 
     void get(string name) {
