@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 		delete pInit;
 	}
 
-	string name_to_publish = "11";
+	string name_to_publish = "131071";
 	int hash_name_to_publish = atoi(name_to_publish.c_str());
 	HostAddress my_address;
 	my_address.SetHostName("localhost");
