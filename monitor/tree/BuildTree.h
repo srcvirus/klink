@@ -114,6 +114,7 @@ void BuildTree::execute() {
             //save in map for later retrieval
             hosts->add(idArray[i], hAddArray[i]);
         }
+        hostListFile.close();
 
         //build routing table
         int nbrIndex;
@@ -131,11 +132,11 @@ void BuildTree::execute() {
                     rtArray[i].add(idArray[nbrIndex], ha);
                 }
             }
-            cout << "CW = ";
-            idArray[i].printBits();
-            cout << " pl = " << idArray[i].GetPrefix_length() << " replica = ";
-            replica.printBits();
-            cout << endl;
+//            cout << "CW = ";
+//            idArray[i].printBits();
+//            cout << " pl = " << idArray[i].GetPrefix_length() << " replica = ";
+//            replica.printBits();
+//            cout << endl;
             //add link to replica :: toggled all bits (replica)
             nbrIndex = GetIndexOfLongestMatchedPrefix(replica);
             if (idArray[nbrIndex] != idArray[i]) {
@@ -144,7 +145,6 @@ void BuildTree::execute() {
                 rtArray[i].add(idArray[nbrIndex], ha);
             }
         }
-        hostListFile.close();
     } else
         cout << "ERROR: opening host list file.";
 }
