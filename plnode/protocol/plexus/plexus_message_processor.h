@@ -42,6 +42,8 @@ public:
 			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
 			container_peer->setNPeers(pInitMsg->getNPeers());
 			container_peer->setOverlayID(pInitMsg->getOID());
+
+			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 			return false;
 		}
 		//PUT
@@ -51,7 +53,7 @@ public:
 			Peer* container_peer = this->getContainerProtocol()->getContainerPeer();
 			if( (container_peer->getOverlayID().GetOverlay_id() == putMsg->getOID().GetOverlay_id()) || putMsg->getOverlayTtl() == 0)
 			{
-				//index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
+				index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 				return false;
 			}
 			else

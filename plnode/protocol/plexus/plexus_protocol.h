@@ -84,7 +84,8 @@ public:
             currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
             if (currentMatchLength > maxLengthMatch) {
                 maxLengthMatch = currentMatchLength;
-                routing_table->lookup(msg->getOID(), &next_hop);
+                routing_table->lookup(oid, &next_hop);
+                printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
             }
         }
         //search in the CAche
@@ -98,6 +99,7 @@ public:
                 cache->lookup(msg->getOID(), next_hop);
             }
         }
+
 
         msg->setDestHost(next_hop.GetHostName().c_str());
         msg->setDestPort(next_hop.GetHostPort());

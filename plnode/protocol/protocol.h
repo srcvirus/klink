@@ -85,6 +85,16 @@ public:
 		*routing_table = *table;
 	}
 
+	LookupTable <OverlayID, HostAddress>* getRoutingTable()
+	{
+		return routing_table;
+	}
+
+	LookupTable <string, HostAddress>* getIndexTable()
+	{
+		return index_table;
+	}
+
 	void setIndexTable(LookupTable <string, HostAddress>* table)
 	{
 		if(index_table != NULL) delete index_table;
@@ -92,6 +102,17 @@ public:
 		*index_table = *table;
 	}
 
+	void printRoutingTable()
+	{
+		routing_table->reset_iterator();
+		while(routing_table->hasMoreKey())
+		{
+			OverlayID key = routing_table->getNextKey();
+			HostAddress value;
+			routing_table->lookup(key, &value);
+			printf("%d %s:%d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
+		}
+	}
 	virtual ~ABSProtocol(){}
 
 	virtual void initiate_join() = 0;

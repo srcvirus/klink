@@ -198,6 +198,7 @@ public:
 	{
 		overlay_id = id;
 	}
+
 };
 
 #endif /* PEER_H_ */
