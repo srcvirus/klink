@@ -28,9 +28,8 @@ public:
         return rtArray[index];
     }
 
-    OverlayID& getOverlayID(int index)
-    {
-    	return idArray[index];
+    OverlayID& getOverlayID(int index) {
+        return idArray[index];
     }
 
     int getTreeSize() const {
@@ -49,7 +48,7 @@ BuildTree::BuildTree(string fileName) {
 }
 
 int BuildTree::GetHeight(int index) {
-    if (index < pow(2.0, max_height) - treeSize)
+    if (index < (pow(2.0, max_height) - treeSize))
         return max_height - 1;
     return max_height;
 }
@@ -68,11 +67,11 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 }
 
 void BuildTree::execute() {
-    //INIT    
+    //open host list file
     ifstream hostListFile(fileName.c_str());
 
     if (hostListFile.is_open()) {
-
+        // Initialize local variables
         hostListFile >> this->treeSize;
         this->idArray = new OverlayID[treeSize];
         this->hAddArray = new HostAddress[treeSize];
@@ -80,13 +79,22 @@ void BuildTree::execute() {
         this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
+        //rm code
         rm = GlobalData::rm;
         //cout << "k = " << rm->rm->k << endl;
         //cout << "n = " << rm->rm->n << endl;
-        //read file
+
+        //read file and generate overlayid, hostname and port data
         string hostName;
         int hostPort;
+        //the following variable are required for method2 of overlay id generation
+        int pattern = 0;
+        int nodesAtMaxHeight = 2 * treeSize - pow(2.0, max_height);
+        int nodesAtPrevLevel = treeSize - nodesAtMaxHeight;
+        int startingNodeAtPrevLevel = pow(2.0, max_height - 1) - nodesAtPrevLevel;
+        int st = startingNodeAtPrevLevel;
         for (int i = 0; i < treeSize; i++) {
+            //hostname and port
             hostListFile >> hostName;
             hostListFile >> hostPort;
             HostAddress ha;
@@ -94,21 +102,46 @@ void BuildTree::execute() {
             ha.SetHostPort(hostPort);
             hAddArray[i] = ha;
 
-            idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
+            //generate overlayids
+            //method 1: not in use
+            //idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
+            //method 2: complicated but makes forwarding easier
+            pattern = (((i < nodesAtMaxHeight) ? i : st++) <<
+                    (rm->rm->k - ((i < nodesAtMaxHeight) ? max_height : (max_height - 1))));
+            cout << "Pattern = " << pattern << endl;
+            idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(pattern, rm->rm->k)), rm->rm->n), (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->n);
+
+            //save in map for later retrieval
             hosts->add(idArray[i], hAddArray[i]);
         }
 
+        //build routing table
         int nbrIndex;
         for (int i = 0; i < this->treeSize; i++) {
             rtArray[i] = LookupTable<OverlayID, HostAddress > ();
-            for (int j = 0; j < GetHeight(i); j++) {
+            //toggle each bit (upto prefix length) and find the nbr
+            OverlayID replica = idArray[i];
+            for (int j = 0; j < idArray[i].GetPrefix_length(); j++) {
                 OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm->rm->n - j - 1);
+                replica = replica.ToggleBitAtPosition(rm->rm->n - j - 1);
                 nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
                 if (idArray[nbrIndex] != idArray[i]) {
                     HostAddress ha;
                     hosts->lookup(idArray[nbrIndex], &ha);
                     rtArray[i].add(idArray[nbrIndex], ha);
                 }
+            }
+            cout << "CW = ";
+            idArray[i].printBits();
+            cout << " pl = " << idArray[i].GetPrefix_length() << " replica = ";
+            replica.printBits();
+            cout << endl;
+            //add link to replica :: toggled all bits (replica)
+            nbrIndex = GetIndexOfLongestMatchedPrefix(replica);
+            if (idArray[nbrIndex] != idArray[i]) {
+                HostAddress ha;
+                hosts->lookup(idArray[nbrIndex], &ha);
+                rtArray[i].add(idArray[nbrIndex], ha);
             }
         }
         hostListFile.close();
@@ -121,7 +154,7 @@ void BuildTree::print() {
     for (int i = 0; i < treeSize; i++) {
         cout << "CW = ";
         idArray[i].printBits();
-        cout << " pl = " << GetHeight(i);
+        cout << " pl = " << idArray[i].GetPrefix_length();
         cout << endl << "RT" << endl;
         vector<OverlayID> keys = rtArray[i].getKeySet();
         for (int j = 0; j < keys.size(); j++) {

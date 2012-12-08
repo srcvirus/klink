@@ -85,7 +85,8 @@ int main(int argc, char* argv[])
 	OverlayID oID(hash_name_to_publish);
 	put_msg->setOID(oID);
 
-	int randHost = rand() % n;
+	//int randHost = rand() % n;
+        int randHost = 5;
 	int ttl = (int)floor(log10(n) / log(2.0)) + 2;
 
 	put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
@@ -103,6 +104,9 @@ int main(int argc, char* argv[])
 	cSocket.send_data(buffer, buffer_len);
 	cSocket.close_socket();
 
+        
+        
+        
 	name_to_publish = "4000";
 	hash_name_to_publish = atoi(name_to_publish.c_str());
 

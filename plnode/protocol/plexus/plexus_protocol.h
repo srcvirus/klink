@@ -94,7 +94,7 @@ public:
             if (currentMatchLength > maxLengthMatch) {
                 maxLengthMatch = currentMatchLength;
                 routing_table->lookup(oid, &next_hop);
-                printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                //printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
             }
         }
         //search in the Cache
@@ -110,6 +110,8 @@ public:
         }
 
         if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+            msg->setDestHost("localhost");
+            msg->setDestPort(container_peer->getListenPortNumber());
             return false;
         } else {
             msg->setDestHost(next_hop.GetHostName().c_str());
