@@ -24,11 +24,16 @@ int fd_max;
 
 void process_and_forward(ABSMessage* rcvd_message)
 {
-	printf("Forwarding Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
+	printf("Processing Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
 	plexus->printRoutingTable();
-	plexus->setNextHop(rcvd_message);
-	printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
+	bool forward = plexus->setNextHop(rcvd_message);
+	if(!forward)
+	{
+		plexus->getMessageProcessor()->processMessage(rcvd_message);
+		return;
+	}
 
+	printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
 
 	string dest_host = rcvd_message->getDestHost();
 	int dest_port = rcvd_message->getDestPort();
@@ -112,8 +117,8 @@ int main(int argc, char* argv[])
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
 					printf("Received %d Bytes\n", buffer_length);
-					for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-					putchar('\n');
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					putchar('\n');*/
 
 					//printf("Received %d Bytes\n", buffer_length);
 					if(buffer_length <= 0)
@@ -135,8 +140,8 @@ int main(int argc, char* argv[])
 						case MSG_PEER_INIT:
 							rcvd_message = new PeerInitMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
-							plexus->getMessageProcessor()->processMessage(rcvd_message);
-							rcvd_message->message_print_dump();
+							//rcvd_message->message_print_dump();
+							process_and_forward(rcvd_message);
 							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
@@ -155,8 +160,7 @@ int main(int argc, char* argv[])
 							rcvd_message = new MessagePUT();
 							rcvd_message->deserialize(buffer, buffer_length);
 							rcvd_message->message_print_dump();
-							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
-							if(forward) process_and_forward(rcvd_message);
+							process_and_forward(rcvd_message);
 							break;
 						}
 						delete[] buffer;

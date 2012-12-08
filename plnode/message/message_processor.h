@@ -42,7 +42,7 @@ public:
 		return container_protocol;
 	}
 
-	virtual bool processMessage(ABSMessage* message) = 0;
+	virtual void processMessage(ABSMessage* message) = 0;
 };
 
 #endif	/* MESSAGE_PROCESSOR_H */

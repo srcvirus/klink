@@ -27,10 +27,10 @@ public:
 		MessageProcessor::setup(routing_table, index_table, NULL);
 	}
 
-	bool processMessage(ABSMessage* message)
+	void processMessage(ABSMessage* message)
 	{
-		message->incrementOverlayHops();
-		message->decrementOverlayTtl();
+		//message->incrementOverlayHops();
+		//message->decrementOverlayTtl();
 
 		//INIT Message
 		if(message->getMessageType() == MSG_PEER_INIT)
@@ -44,14 +44,15 @@ public:
 			container_peer->setOverlayID(pInitMsg->getOID());
 
 			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
-			return false;
 		}
 		//PUT
 		else if (message->getMessageType() == MSG_PLEXUS_PUT)
 		{
 			MessagePUT* putMsg = (MessagePUT*)message;
-			Peer* container_peer = this->getContainerProtocol()->getContainerPeer();
-			if( (container_peer->getOverlayID().GetOverlay_id() == putMsg->getOID().GetOverlay_id()) || putMsg->getOverlayTtl() == 0)
+			/*Peer* container_peer = this->getContainerProtocol()->getContainerPeer();*/
+			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
+
+			/*if( (container_peer->getOverlayID().GetOverlay_id() == putMsg->getOID().GetOverlay_id()) || putMsg->getOverlayTtl() == 0)
 			{
 				index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 				return false;
@@ -59,7 +60,7 @@ public:
 			else
 			{
 				return true;
-			}
+			}*/
 		}
 		//GET
 		else if (message->getMessageType() == MSG_PLEXUS_GET)
@@ -82,7 +83,6 @@ public:
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
 			cache->add(msg->getID(), msg->getIP());
 		}
-		return false;
 	}
 };
 

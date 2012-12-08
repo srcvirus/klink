@@ -77,6 +77,12 @@ public:
         int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
         HostAddress next_hop;
 
+        msg->decrementOverlayTtl();
+        msg->incrementOverlayHops();
+
+        if(msg->getOverlayTtl() == 0)
+        	return false;
+
         Peer *container_peer = getContainerPeer();
         currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getOID());
 

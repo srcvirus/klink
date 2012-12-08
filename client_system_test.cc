@@ -91,21 +91,18 @@ int main(int argc, char* argv[])
 	put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
 	put_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());
 	put_msg->setOverlayTtl(ttl);
-	put_msg->message_print_dump();
+	//put_msg->message_print_dump();
 
 	ClientSocket cSocket(tree.getHostAddress(randHost).GetHostName(), tree.getHostAddress(randHost).GetHostPort());
 	cSocket.connect_to_server();
 	int buffer_len = 0;
 	char* buffer = put_msg->serialize(&buffer_len);
 
-	for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
-	putchar('\n');
+	/*for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
+	putchar('\n');*/
 	cSocket.send_data(buffer, buffer_len);
 	cSocket.close_socket();
 
-	MessagePUT* a = new MessagePUT();
-	a->deserialize(buffer, buffer_len);
-	a->message_print_dump();
 	//plexus->put("name");
 	//plexus->get("name");
 
