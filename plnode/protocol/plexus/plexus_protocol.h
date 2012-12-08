@@ -103,7 +103,7 @@ public:
         }
 
         if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
-            msg->setDestHost("LOCALHOST");
+            msg->setDestHost(NULL);
             msg->setDestPort(0);
         } else {
             msg->setDestHost(next_hop.GetHostName().c_str());

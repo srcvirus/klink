@@ -81,8 +81,8 @@ void BuildTree::execute() {
         this->max_height = ceil(log2(treeSize));
 
         rm = GlobalData::rm;
-        cout << "k = " << rm->rm->k << endl;
-        cout << "n = " << rm->rm->n << endl;
+        //cout << "k = " << rm->rm->k << endl;
+        //cout << "n = " << rm->rm->n << endl;
         //read file
         string hostName;
         int hostPort;
