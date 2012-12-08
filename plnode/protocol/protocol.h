@@ -18,6 +18,8 @@
 #include "../ds/host_address.h"
 #include "../peer/peer.h"
 
+class Peer;
+
 class ABSProtocol
 {
 protected:
