@@ -34,7 +34,7 @@ struct _reedmuller {
   int k;
   int **G;
   int **rows;
-  set s;
+  Set s;
 
   /* this isn't all that elegant, but allocating work vectors / subsets during
      the initialization process prevents us from having to create them

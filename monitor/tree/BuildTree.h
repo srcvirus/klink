@@ -1,11 +1,13 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 
 #include "../../plnode/protocol/plexus/rm/ReadMullerCode.h"
 #include "../../plnode/ds/lookup_table.h"
 #include "../../plnode/ds/overlay_id.h"
 #include "../../plnode/ds/host_address.h"
+#include "../../plnode/ds/GlobalData.h"
 
 class BuildTree {
 private:
@@ -24,6 +26,11 @@ public:
 
     LookupTable<OverlayID, HostAddress>& getRoutingTablePtr(int index) {
         return rtArray[index];
+    }
+
+    OverlayID& getOverlayID(int index)
+    {
+    	return idArray[index];
     }
 
     int getTreeSize() const {
@@ -73,7 +80,9 @@ void BuildTree::execute() {
         this->hosts = new LookupTable<OverlayID, HostAddress>[treeSize];
         this->max_height = ceil(log2(treeSize));
 
-        rm = new ReedMuller(1, 2);
+        rm = GlobalData::rm;
+        cout << "k = " << rm->rm->k << endl;
+        cout << "n = " << rm->rm->n << endl;
         //read file
         string hostName;
         int hostPort;

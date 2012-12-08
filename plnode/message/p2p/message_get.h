@@ -41,6 +41,8 @@ public:
     }
 
     virtual void message_print_dump() {
+    	printf("Get Message");
+    	ABSMessage::message_print_dump();
         printf("Device Name %s\n", deviceName.c_str());
     }
 };

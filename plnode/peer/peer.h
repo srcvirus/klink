@@ -10,12 +10,19 @@
 
 #include <string.h>
 #include "../protocol/protocol.h"
+#include "../protocol/plexus/rm/ReadMullerCode.h"
+#include "../ds/overlay_id.h"
 #include "../ds/ip_address.h"
+
+class ABSProtocol;
 
 class Peer
 {
+	int n_peers;
+
 	int peer_id;
 	int code_word;
+	OverlayID overlay_id;
 
 	IPAddress ip_address;
 	string host_name;
@@ -43,7 +50,6 @@ public:
 		char hostname[100];
 		gethostname(hostname, 100);
 		host_name = hostname;
-
 		listen_port_number = port;
 		server_socket = new ServerSocket(listen_port_number);
 	}
@@ -173,7 +179,26 @@ public:
 		server_socket = socket;
 	}
 
-};
+	void setNPeers(int n)
+	{
+		n_peers = n;
+	}
 
+	int getNPeers()
+	{
+		return n_peers;
+	}
+
+	OverlayID getOverlayID()
+	{
+		return overlay_id;
+	}
+
+	void setOverlayID(OverlayID id)
+	{
+		overlay_id = id;
+	}
+
+};
 
 #endif /* PEER_H_ */

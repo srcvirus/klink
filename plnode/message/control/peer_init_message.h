@@ -24,7 +24,7 @@
 class PeerInitMessage: public ABSMessage
 {
 	LookupTable<OverlayID, HostAddress> routing_table;
-
+	int n_peers;
 public:
 	PeerInitMessage()
 	{
@@ -33,9 +33,12 @@ public:
 	void setRoutingTable(LookupTable <OverlayID, HostAddress>& r_table){ routing_table = r_table; }
 	LookupTable<OverlayID, HostAddress>& getRoutingTable(){	return routing_table; }
 
+	void setNPeers(int n){ n_peers = n; }
+	int getNPeers(){ return n_peers; }
+
 	virtual char* serialize(int* serialize_length)
 	{
-		*serialize_length = sizeof(char) + sizeof(int) * 6 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID);
+		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID);
 		routing_table.reset_iterator();
 		while(routing_table.hasMoreKey())
 		{
@@ -75,6 +78,7 @@ public:
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&oID), sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);
@@ -99,8 +103,10 @@ public:
 			int hostport = value.GetHostPort();
 			memcpy(buffer + offset, (char*)(&hostport), sizeof(int)); offset += sizeof(int);
 		}
+
+
 		//memcpy(buffer, (char*)(this), sizeof(PeerInitMessage));
-		*serialize_length = sizeof(PeerInitMessage);
+		//*serialize_length = sizeof(PeerInitMessage);
 		return buffer;
 	}
 
@@ -110,35 +116,36 @@ public:
 		int destHostLength, sourceHostLength;
 		routing_table.clear();
 
-		memcpy(&messageType, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
-		memcpy(&sequence_no, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
-		memcpy(&destHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&messageType, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&sequence_no, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&destHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 		dest_host = "";
-		printf("DH Length : %d\n", destHostLength);
+		//printf("DH Length : %d\n", destHostLength);
 		for(int i = 0; i < destHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char); printf("offset = %d\n", offset);
+			offset += sizeof(char); //printf("offset = %d\n", offset);
 			dest_host += ch;
 		}
-		memcpy(&dest_port, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
-		memcpy(&sourceHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&dest_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&sourceHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 		source_host = "";
 		for(int i = 0; i < sourceHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char); printf("offset = %d\n", offset);
+			offset += sizeof(char); //printf("offset = %d\n", offset);
 			source_host += ch;
 		}
-		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
-		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
-		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
-		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); printf("offset = %d\n", offset);
+		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&n_peers, buffer + offset, sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize;
-		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 
 		for(int i = 0; i < routingTableSize; i++)
 		{
@@ -148,15 +155,15 @@ public:
 			string hostname;
 			int hostport;
 
-			memcpy(&key, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); printf("offset = %d\n", offset);
-			memcpy(&hostNameLength, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+			memcpy(&key, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+			memcpy(&hostNameLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 			for(int i = 0; i < hostNameLength; i++)
 			{
 				char ch;
-				memcpy(&ch, buffer + offset, sizeof(char)); offset += sizeof(char); printf("offset = %d\n", offset);
+				memcpy(&ch, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 				hostname += ch;
 			}
-			memcpy(&hostport, buffer + offset, sizeof(int)); offset += sizeof(int); printf("offset = %d\n", offset);
+			memcpy(&hostport, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 			value.SetHostName(hostname);
 			value.SetHostPort(hostport);
 			routing_table.add(key, value);

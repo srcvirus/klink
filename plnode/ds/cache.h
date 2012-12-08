@@ -29,6 +29,10 @@ public:
     DLLNode *current;
 
     Cache() {
+    	dll = new DoublyLinkedList();
+    	hm = new LookupTable<OverlayID, DLLNode*>();
+    	size = 0;
+    	current = dll->getHead();
     }
 
     Cache(CacheInsertPolicy *cinPolicy, CacheReplacePolicy *crPolicy, int capacity) {
@@ -48,11 +52,17 @@ public:
     }
     
     bool has_next(){
+    	if(current == NULL)
+    		return false;
+
         return current->next != NULL;
     }
     
     DLLNode* get_next(){
-        current = current->next;
+        if(current == NULL)
+        	return NULL;
+
+    	current = current->next;
         return current->prev;
     }
     

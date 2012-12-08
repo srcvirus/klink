@@ -10,12 +10,16 @@
 
 #include <iostream>
 
+#include "../protocol/plexus/rm/ReadMullerCode.h"
+#include "GlobalData.h"
+
 using namespace std;
 
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;
     int MAX_LENGTH;
+
 public:
 
     OverlayID() {
@@ -25,6 +29,18 @@ public:
         this->overlay_id = overlay_id;
         this->prefix_length = prefix_lenght;
         this->MAX_LENGTH = max_length;
+    }
+
+//    OverlayID(int pattern) {
+//        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
+//        this->prefix_length = Peer::rm->rm->n;
+//        this->MAX_LENGTH = Peer::rm->rm->n;
+//    }
+
+    OverlayID(int pattern) {
+        this->overlay_id = pattern;
+        this->prefix_length = GlobalData::rm->rm->n;
+        this->MAX_LENGTH = GlobalData::rm->rm->n;
     }
 
     void SetPrefix_length(int prefix_length) {
@@ -72,20 +88,20 @@ public:
     }
 
     bool operator!=(const OverlayID &id) const {
-        
+
         return !(*this == id);
     }
 
     //    bool operator<=(const OverlayID &id) {
-//        return this->overlay_id <= id.overlay_id;
-//    }
+    //        return this->overlay_id <= id.overlay_id;
+    //    }
 
     bool operator<(const OverlayID &id) const {
         return this->overlay_id < id.overlay_id;
     }
-    
-    void printBits(){
-        for(int i=MAX_LENGTH-1;i>=0;i--){
+
+    void printBits() {
+        for (int i = MAX_LENGTH - 1; i >= 0; i--) {
             cout << GetBitAtPosition(i);
         }
     }

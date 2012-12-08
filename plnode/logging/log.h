@@ -21,6 +21,7 @@ class Log
 	string log_type;
 	string host_name;
 	string monitor_host_name;
+	string monitor_user_name;
 	string remote_ftp_directory;
 
 	string log_file_name;
@@ -38,7 +39,7 @@ class Log
 public:
 
 	Log();
-	Log(const char* seq_file, const char* type, const char* monitor,  const char* hostname = NULL);
+	Log(const char* seq_file, const char* type, const char* monitor_host,  const char* monitor_user, const char* hostname = NULL);
 
 	void setLogType(const string& type){ log_type = type; }
 	string getLogType(){ return log_type; }
@@ -48,6 +49,9 @@ public:
 
 	void setMonitorHostName(const string& hostname){ monitor_host_name = hostname;}
 	string getMonitorHostName(){ return monitor_host_name; }
+
+	void setMonitorUserName(const string& user){ monitor_user_name = user; }
+	string getMonitorUserName(){ return monitor_user_name; }
 
 	void setLogFileName(const char* name);
 	string getLogFileName(){ return log_file_name; }
@@ -70,6 +74,8 @@ public:
 	int write(const char* key, const char* format, ...);
 	void ftpUploadLog();
 	void ftpUploadArchive();
+	bool sshUploadLog();
+	bool sshUploadArchive();
 	void archiveCurrentLog();
 	void close();
 
@@ -116,6 +122,7 @@ Log::Log()
 	gethostname(hostname, 100);
 	host_name = hostname;
 	monitor_host_name = "";
+	monitor_user_name = "";
 
 	log_file_name = "";
 	seq_file_name = "";
@@ -128,7 +135,7 @@ Log::Log()
 	log_file_ptr = NULL;
 }
 
-Log::Log(const char* seq_file, const char* type, const char* monitor, const char* hostname)
+Log::Log(const char* seq_file, const char* type, const char* monitor_host, const char* monitor_user, const char* hostname)
 {
 	seq_file_name = seq_file;
 
@@ -156,7 +163,9 @@ Log::Log(const char* seq_file, const char* type, const char* monitor, const char
 	this->setArchiveName(NULL);
 
 	mode = "w";
-	monitor_host_name = monitor;
+	monitor_host_name = monitor_host;
+	monitor_user_name = monitor_user;
+	remote_ftp_directory = "/var/ftp/logs";
 	check_point_row_count = 100;
 	current_row_count = 0;
 	current_segment_no = 1;
@@ -237,12 +246,10 @@ int Log::write(const char* key, const char* format, ...)
 	if(current_row_count == check_point_row_count)
 	{
 		fflush(log_file_ptr);
-//		printf("%d\n", current_row_count);
-//		printf("%d\n", current_segment_no);
 		fclose(log_file_ptr);
-		log_file_ptr = NULL;
 
-		this->ftpUploadLog();
+		log_file_ptr = NULL;
+		this->sshUploadLog();
 		this->archiveCurrentLog();
 		this->open("w+");
 	}
@@ -299,44 +306,93 @@ void Log::archiveCurrentLog()
 }
 void Log::ftpUploadLog()
 {
-//	run the ftp command
 	string command = "ftp ";
 	command += monitor_host_name.c_str();
-//	puts("FTP Command 1");
-//	puts(command.c_str());
+
 	FILE* shell_pipe = popen(command.c_str(), "w");
 
-//	upload the current log file to the remote ftp directory in append mode
 	command = "append ";
 	command += log_file_name;
 	command += " ";
 	command += remote_ftp_directory;
 	command += "/";
 	command += log_file_name;
-//	puts("FTP Command 2");
-//	puts(command.c_str());
 	fputs(command.c_str(), shell_pipe);
 	pclose(shell_pipe);
 }
 
+bool Log::sshUploadLog()
+{
+	string command = "cat ";
+	command += log_file_name;
+	command += " | ";
+	command += "ssh ";
+	command += monitor_user_name;
+	command += "@";
+	command += monitor_host_name;
+	command += " ";
+	command += "\" cat >> ";
+	command += remote_ftp_directory;
+	command += "/";
+	command += log_file_name;
+	command += "\"";
+
+	FILE* shell_pipe = popen(command.c_str(), "w");
+	if(shell_pipe == NULL)
+		return false;
+	pclose(shell_pipe);
+	return true;
+}
+
+bool Log::sshUploadArchive()
+{
+	FILE* shell_pipe = NULL;
+
+	string command = "sftp ";
+	command += monitor_user_name;
+	command += "@";
+	command += monitor_host_name;
+	command += ":";
+	command += remote_ftp_directory;
+	command += "/";
+
+	shell_pipe = popen(command.c_str(), "w");
+	if(shell_pipe == NULL) return false;
+
+	/*command = "cd ";
+	command += remote_ftp_directory;
+	command += " ; ";
+	fprintf(shell_pipe, command.c_str());
+	fflush(shell_pipe);*/
+
+	command = "put ";
+	command += archive_name;
+
+	fprintf(shell_pipe, command.c_str());
+	fflush(shell_pipe);
+
+	/*command = "bye";
+	command += " ; ";
+	fprintf(shell_pipe, command.c_str());*/
+
+	fclose(shell_pipe);
+
+	return true;
+}
 void Log::ftpUploadArchive()
 {
-//	run the ftp command
 	string command = "ftp ";
 	command += monitor_host_name.c_str();
-//	puts("FTP Command 1");
-//	puts(command.c_str());
+
 	FILE* shell_pipe = popen(command.c_str(), "w");
 
-//	upload the current log file to the remote ftp directory in append mode
 	command = "append ";
 	command += archive_name;
 	command += " ";
 	command += remote_ftp_directory;
 	command += "/";
 	command += archive_name;
-//	puts("FTP Command 2");
-//	puts(command.c_str());
+
 	fputs(command.c_str(), shell_pipe);
 	pclose(shell_pipe);
 }
@@ -351,7 +407,7 @@ void Log::close()
 
 	if(current_row_count > 0)
 	{
-		this->ftpUploadLog();
+		this->sshUploadLog();
 		this->archiveCurrentLog();
 		current_row_count = 0;
 	}
@@ -368,7 +424,7 @@ Log::~Log()
 
 	if(current_row_count > 0)
 	{
-		this->ftpUploadLog();
+		this->sshUploadLog();
 		this->archiveCurrentLog();
 		current_row_count = 0;
 	}

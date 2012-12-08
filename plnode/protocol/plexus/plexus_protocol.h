@@ -14,6 +14,7 @@
 #include "../protocol.h"
 #include "../../ds/cache.h"
 #include "../../message/message_processor.h"
+#include "plexus_message_processor.h"
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
@@ -37,9 +38,9 @@ public:
 
     PlexusProtocol() :
     ABSProtocol() {
-        this->routing_table = new LookupTable<OverlayID, HostAddress > ();
-        this->index_table = new LookupTable<string, OverlayID > ();
-
+        //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
+        //this->index_table = new LookupTable<string, OverlayID > ();
+    	this->msgProcessor = new PlexusMessageProcessor();
         pthread_mutex_init(&incoming_queue_lock, NULL);
         pthread_mutex_init(&outgoing_queue_lock, NULL);
 
@@ -48,7 +49,7 @@ public:
     }
 
     PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
-            LookupTable<string, OverlayID>* index_table,
+            LookupTable<string, HostAddress>* index_table,
             Cache *cache,
             MessageProcessor* msgProcessor,
             Peer* container) :
@@ -83,7 +84,8 @@ public:
             currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
             if (currentMatchLength > maxLengthMatch) {
                 maxLengthMatch = currentMatchLength;
-                routing_table->lookup(msg->getOID(), &next_hop);
+                routing_table->lookup(oid, &next_hop);
+                printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
             }
         }
         //search in the CAche
@@ -97,6 +99,7 @@ public:
                 cache->lookup(msg->getOID(), next_hop);
             }
         }
+
 
         msg->setDestHost(next_hop.GetHostName().c_str());
         msg->setDestPort(next_hop.GetHostPort());

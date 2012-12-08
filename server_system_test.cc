@@ -24,27 +24,22 @@ int fd_max;
 
 void process_and_forward(ABSMessage* rcvd_message)
 {
-	printf("Received Message Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
-
-	((PlexusProtocol*)plexus)->addToIncomingQueue(rcvd_message);
-
-	ABSMessage* msg_to_process = ((PlexusProtocol*)plexus)->getIncomingQueueFront();
-	plexus->getMessageProcessor()->processMessage(msg_to_process);
-
-	plexus->setNextHop(msg_to_process);
-	((PlexusProtocol*)plexus)->addToOutgoingQueue(msg_to_process);
+	printf("Forwarding Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
+	plexus->printRoutingTable();
+	plexus->setNextHop(rcvd_message);
+	printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
 
 
-	ABSMessage* msg_to_forward = ((PlexusProtocol*)plexus)->getOutgoingQueueFront();
-	msg_to_forward->setOverlayHops(msg_to_forward->getOverlayHops() + 1);
-
-	string dest_host = msg_to_forward->getDestHost();
-	int dest_port = msg_to_forward->getDestPort();
+	string dest_host = rcvd_message->getDestHost();
+	int dest_port = rcvd_message->getDestPort();
 	ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
+
 	c_socket->connect_to_server();
 	int buffer_length = 0;
-	char* buffer = msg_to_forward->serialize(&buffer_length);
+	char* buffer = rcvd_message->serialize(&buffer_length);
 	c_socket->send_data(buffer, buffer_length);
+	c_socket->close_socket();
+	delete c_socket;
 }
 
 int main(int argc, char* argv[])
@@ -54,8 +49,13 @@ int main(int argc, char* argv[])
 
 	this_peer = new Peer(port);
 	plexus = new PlexusProtocol();
-	//ABSProtocol* plexus = new PlexusProtocol(routing_table,index_table,cache,msgProcessor,this_peer);
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+
+	msg_processor->setContainerProtocol(plexus);
+	plexus->setMessageProcess(msg_processor);
+
 	plexus->setContainerPeer(this_peer);
+	this_peer->setProtocol(plexus);
 
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
 			puts("Select Error");
 			exit(1);
 		}
+		bool forward;
 
 		for(int i = 0; i <= fd_max; i++)
 		{
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 					//do the processing with the message
 					else
 					{
-						char messageType;
+						char messageType = 0;
 						ABSMessage* rcvd_message;
 
 						memcpy(&messageType, buffer, sizeof(char));
@@ -134,20 +135,31 @@ int main(int argc, char* argv[])
 						case MSG_PEER_INIT:
 							rcvd_message = new PeerInitMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
+							plexus->getMessageProcessor()->processMessage(rcvd_message);
 							rcvd_message->message_print_dump();
-							fflush(stdout);
 							break;
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							/*forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							if(forward)
+							{
+								puts("forwarding");
+								process_and_forward(rcvd_message);
+							}
+							else puts("stopped");*/
 							break;
 
 						case MSG_PLEXUS_PUT:
 							rcvd_message = new MessagePUT();
 							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							forward = plexus->getMessageProcessor()->processMessage(rcvd_message);
+							if(forward) process_and_forward(rcvd_message);
 							break;
 						}
-						//delete[] buffer;
+						delete[] buffer;
 					}
 				}
 			}

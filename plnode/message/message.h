@@ -65,6 +65,7 @@ public:
 		printf("Destination Port %d\n", dest_port);
 		printf("Source Host %s\n", source_host.c_str());
 		printf("Source Port %d\n", source_port);
+		printf("Overlay ID: %d\n", oID.GetOverlay_id());
 		printf("Overlay Hops %d\n", overlay_hops);
 		printf("Overlay TTL %d\n", overlay_ttl);
 	}
@@ -112,6 +113,17 @@ public:
 	void setOverlayTtl(unsigned char overlayTtl)
 	{
 		overlay_ttl = overlayTtl;
+	}
+
+
+	void decrementOverlayTtl()
+	{
+		overlay_ttl--;
+	}
+
+	void incrementOverlayHops()
+	{
+		overlay_hops++;
 	}
 
 	string getSourceHost()
