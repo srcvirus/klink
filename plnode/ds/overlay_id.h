@@ -20,9 +20,9 @@ class GlobalData;
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;
-    int MAX_LENGTH;
 
 public:
+    static int MAX_LENGTH;
 
     OverlayID() {
     }
@@ -108,5 +108,8 @@ public:
         }
     }
 };
+
+int OverlayID::MAX_LENGTH;
+
 #endif	/* OVERLAY_ID_H */
 

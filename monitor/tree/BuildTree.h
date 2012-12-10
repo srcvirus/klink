@@ -41,6 +41,17 @@ public:
     }
     void execute();
     void print();
+    
+    int GetBitAtPosition(int value, int n) const {
+        return (((value & (1 << n)) >> n) & 0x00000001);
+    }
+
+    void printBits(int value, int length) {
+        for (int i = length - 1; i >= 0; i--) {
+            cout << GetBitAtPosition(value, i);
+        }
+    }
+    
 };
 
 BuildTree::BuildTree(string fileName) {
@@ -108,8 +119,13 @@ void BuildTree::execute() {
             //method 2: complicated but makes forwarding easier
             pattern = (((i < nodesAtMaxHeight) ? i : st++) <<
                     (rm->rm->k - ((i < nodesAtMaxHeight) ? max_height : (max_height - 1))));
-            cout << "Pattern = " << pattern << endl;
-            idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(pattern, rm->rm->k)), rm->rm->n), (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->n);
+            //cout << "Pattern = ";
+            //printBits(pattern, rm->rm->k);
+            //cout << " ";
+            //idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(pattern, rm->rm->k)), rm->rm->n), (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->n);
+            idArray[i] = OverlayID(pattern, (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->k);
+            //idArray[i].printBits();
+            //cout << " pl = " << idArray[i].GetPrefix_length() << endl;
 
             //save in map for later retrieval
             hosts->add(idArray[i], hAddArray[i]);
@@ -123,8 +139,8 @@ void BuildTree::execute() {
             //toggle each bit (upto prefix length) and find the nbr
             OverlayID replica = idArray[i];
             for (int j = 0; j < idArray[i].GetPrefix_length(); j++) {
-                OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(rm->rm->n - j - 1);
-                replica = replica.ToggleBitAtPosition(rm->rm->n - j - 1);
+                OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(OverlayID::MAX_LENGTH - j - 1);
+                replica = replica.ToggleBitAtPosition(OverlayID::MAX_LENGTH - j - 1);
                 nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
                 if (idArray[nbrIndex] != idArray[i]) {
                     HostAddress ha;
@@ -132,11 +148,11 @@ void BuildTree::execute() {
                     rtArray[i].add(idArray[nbrIndex], ha);
                 }
             }
-//            cout << "CW = ";
-//            idArray[i].printBits();
-//            cout << " pl = " << idArray[i].GetPrefix_length() << " replica = ";
-//            replica.printBits();
-//            cout << endl;
+            //            cout << "CW = ";
+            //            idArray[i].printBits();
+            //            cout << " pl = " << idArray[i].GetPrefix_length() << " replica = ";
+            //            replica.printBits();
+            //            cout << endl;
             //add link to replica :: toggled all bits (replica)
             nbrIndex = GetIndexOfLongestMatchedPrefix(replica);
             if (idArray[nbrIndex] != idArray[i]) {
@@ -164,3 +180,4 @@ void BuildTree::print() {
         cout << "==================================" << endl;
     }
 }
+
