@@ -80,21 +80,33 @@ public:
         msg->decrementOverlayTtl();
         msg->incrementOverlayHops();
 
-        if(msg->getOverlayTtl() == 0)
-        	return false;
+        if (msg->getOverlayTtl() == 0)
+            return false;
 
         Peer *container_peer = getContainerPeer();
         currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getOID());
 
+        //cout << endl << "current node match : ";
+        //container_peer->getOverlayID().printBits();
+        //cout << " <> ";
+        //msg->getOID().printBits();
+        //cout << " = " << currentNodeMathLength << endl;
+
         //search in the RT
+//        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
+        //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
         routing_table->reset_iterator();
         while (routing_table->hasMoreKey()) {
             OverlayID oid = routing_table->getNextKey();
+            //cout << endl << "current match ";
+            //oid.printBits();
             currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
+            //cout << " ==== " << currentMatchLength << endl;
+
             if (currentMatchLength > maxLengthMatch) {
                 maxLengthMatch = currentMatchLength;
                 routing_table->lookup(oid, &next_hop);
-                printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                //printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
             }
         }
         //search in the Cache
@@ -109,7 +121,11 @@ public:
             }
         }
 
+        //cout << endl << "max match : = " << maxLengthMatch << endl;
+
         if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+            msg->setDestHost("localhost");
+            msg->setDestPort(container_peer->getListenPortNumber());
             return false;
         } else {
             msg->setDestHost(next_hop.GetHostName().c_str());

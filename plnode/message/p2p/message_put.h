@@ -18,8 +18,10 @@ class MessagePUT : public ABSMessage {
     HostAddress hostAddress;
 public:
 
-    MessagePUT() : ABSMessage() {
+    MessagePUT(string &deviceName, HostAddress &hostAddress) : ABSMessage() {
         messageType = MSG_PLEXUS_PUT;
+        this->deviceName = deviceName;
+        this->hostAddress = hostAddress;
     }
 
     char* serialize(int* serialize_length) {
