@@ -25,7 +25,8 @@ public:
     ReedMuller();
     ReedMuller(int r, int m);
     int* encode(int* message);
-    int* decode(int* codeword);
+    int decode(int codeword);
+    int* __decode(int* codeword);
     unsigned int array2int(int* array, int size);
     int* int2array(unsigned int value, int size);
 };
@@ -48,7 +49,12 @@ int* ReedMuller::encode(int* message) {
     return codeword;
 }
 
-int* ReedMuller::decode(int* codeword) {
+int ReedMuller:: decode(int codeword){
+    return array2int(__decode(int2array(codeword, rm->n)), rm->k);
+}
+
+
+int* ReedMuller::__decode(int* codeword) {
 //    if (size(codeword) != rm->n) {
 //#ifdef DEBUG_MESSAGE
 //        cout << "ERROR in rm.cc: rm-n = " << rm->n << " but codeword length " << getLenght(codeword) << "."

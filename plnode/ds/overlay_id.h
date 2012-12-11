@@ -20,29 +20,27 @@ class GlobalData;
 class OverlayID {
     unsigned int overlay_id;
     int prefix_length;
-
 public:
     static int MAX_LENGTH;
 
     OverlayID() {
+        MAX_LENGTH = GlobalData::rm->rm->k;
     }
 
-    OverlayID(unsigned int overlay_id, int prefix_lenght, int max_length) {
+    OverlayID(unsigned int overlay_id, int prefix_lenght) {
         this->overlay_id = overlay_id;
         this->prefix_length = prefix_lenght;
-        this->MAX_LENGTH = max_length;
     }
 
-//    OverlayID(int pattern) {
-//        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
-//        this->prefix_length = Peer::rm->rm->n;
-//        this->MAX_LENGTH = Peer::rm->rm->n;
-//    }
+    //    OverlayID(int pattern) {
+    //        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
+    //        this->prefix_length = Peer::rm->rm->n;
+    //        this->MAX_LENGTH = Peer::rm->rm->n;
+    //    }
 
     OverlayID(int pattern) {
         this->overlay_id = pattern;
-        this->prefix_length = GlobalData::rm->rm->n;
-        this->MAX_LENGTH = GlobalData::rm->rm->n;
+        this->prefix_length = GlobalData::rm->rm->k;
     }
 
     void SetPrefix_length(int prefix_length) {
@@ -65,8 +63,8 @@ public:
         return (((this->overlay_id & (1 << n)) >> n) & 0x00000001);
     }
 
-    OverlayID ToggleBitAtPosition(int n) {
-        OverlayID id(this->overlay_id, this->prefix_length, MAX_LENGTH);
+    OverlayID ToggleBitAtPosition(int n) const {
+        OverlayID id(this->overlay_id, this->prefix_length);
         id.overlay_id ^= (1 << n);
         return id;
     }
@@ -90,7 +88,6 @@ public:
     }
 
     bool operator!=(const OverlayID &id) const {
-
         return !(*this == id);
     }
 

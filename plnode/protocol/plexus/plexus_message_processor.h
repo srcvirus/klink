@@ -79,7 +79,7 @@ public:
 				//send error message
 			}
 		}
-		//GET REPLY
+		//GET_REPLY
 		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
 		{
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);

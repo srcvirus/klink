@@ -9,6 +9,7 @@
 #define GLOBALDATA_H_
 
 #include "../protocol/plexus/rm/ReadMullerCode.h"
+
 class GlobalData
 {
 public:
@@ -16,4 +17,5 @@ public:
 };
 
 ReedMuller* GlobalData::rm = new ReedMuller(2, 4);
+
 #endif /* GLOBALDATA_H_ */

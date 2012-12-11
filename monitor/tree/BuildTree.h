@@ -123,7 +123,7 @@ void BuildTree::execute() {
             //printBits(pattern, rm->rm->k);
             //cout << " ";
             //idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(pattern, rm->rm->k)), rm->rm->n), (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->n);
-            idArray[i] = OverlayID(pattern, (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->k);
+            idArray[i] = OverlayID(pattern, (i < nodesAtMaxHeight) ? max_height : (max_height - 1));
             //idArray[i].printBits();
             //cout << " pl = " << idArray[i].GetPrefix_length() << endl;
 
@@ -134,6 +134,7 @@ void BuildTree::execute() {
 
         //build routing table
         int nbrIndex;
+        cout << "OID MAX LENGHT " << OverlayID::MAX_LENGTH << endl;
         for (int i = 0; i < this->treeSize; i++) {
             rtArray[i] = LookupTable<OverlayID, HostAddress > ();
             //toggle each bit (upto prefix length) and find the nbr
@@ -158,7 +159,7 @@ void BuildTree::execute() {
             if (idArray[nbrIndex] != idArray[i]) {
                 HostAddress ha;
                 hosts->lookup(idArray[nbrIndex], &ha);
-                rtArray[i].add(idArray[nbrIndex], ha);
+                //rtArray[i].add(idArray[nbrIndex], ha);
             }
         }
     } else
