@@ -81,15 +81,15 @@ int main(int argc, char* argv[]) {
     put_msg->SetHostAddress(my_address);
 
 
-    cout << "pattern = " << hash_name_to_publish << endl;
-    int id = GlobalData::rm->decode(hash_name_to_publish);
-    cout << "decoded id = " << id << endl;
-    OverlayID oID(id);
-    put_msg->setOID(oID);
+//    cout << "pattern = " << hash_name_to_publish << endl;
+//    int id = GlobalData::rm->decode(hash_name_to_publish);
+//    cout << "decoded id = " << id << endl;
+//    OverlayID oID(id);
+    put_msg->setOID(hash_name_to_publish);
 
     //int randHost = rand() % n;
     int randHost = 5;
-    int ttl = 10;//(int) floor(log10(n) / log(2.0)) + 2;
+    int ttl = ceil(log2(n)) + 2;//(int) floor(log10(n) / log(2.0)) + 2;
 
     put_msg->setDestHost(tree.getHostAddress(randHost).GetHostName().c_str());
     put_msg->setDestPort(tree.getHostAddress(randHost).GetHostPort());

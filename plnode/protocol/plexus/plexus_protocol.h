@@ -121,7 +121,7 @@ public:
             }
         }
 
-        cout << endl << "max match : = " << maxLengthMatch << endl;
+        //cout << endl << "max match : = " << maxLengthMatch << endl;
 
         if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
             msg->setDestHost("localhost");

@@ -39,7 +39,8 @@ public:
     //    }
 
     OverlayID(int pattern) {
-        this->overlay_id = pattern;
+        
+        this->overlay_id = GlobalData::rm->decode(pattern);
         this->prefix_length = GlobalData::rm->rm->k;
     }
 

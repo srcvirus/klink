@@ -19,8 +19,10 @@ class MessageGET_REPLY : public ABSMessage {
     IPAddress *ip;
 public:
 
-    MessageGET_REPLY() : ABSMessage() {
+    MessageGET_REPLY(OverlayID *id, IPAddress *ip) : ABSMessage() {
         messageType = MSG_PLEXUS_GET_REPLY;
+        this->id = id;
+        this->ip = ip;
     }
 
     char* serialize(int* serialize_length) {
