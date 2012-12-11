@@ -14,7 +14,7 @@
 #include "../protocol.h"
 #include "../../ds/cache.h"
 #include "../../message/message_processor.h"
-#include "plexus_message_processor.h"
+//#include "plexus_message_processor.h"
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
@@ -40,7 +40,7 @@ public:
     ABSProtocol() {
         //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
         //this->index_table = new LookupTable<string, OverlayID > ();
-        this->msgProcessor = new PlexusMessageProcessor();
+        //this->msgProcessor = new PlexusMessageProcessor();
         pthread_mutex_init(&incoming_queue_lock, NULL);
         pthread_mutex_init(&outgoing_queue_lock, NULL);
 
@@ -84,7 +84,7 @@ public:
             return false;
 
         Peer *container_peer = getContainerPeer();
-        currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getOID());
+        currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
 
         //cout << endl << "current node match : ";
         //container_peer->getOverlayID().printBits();
@@ -100,7 +100,7 @@ public:
             OverlayID oid = routing_table->getNextKey();
             //cout << endl << "current match ";
             //oid.printBits();
-            currentMatchLength = msg->getOID().GetMatchedPrefixLength(oid);
+            currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
             //cout << " ==== " << currentMatchLength << endl;
 
             if (currentMatchLength > maxLengthMatch) {
@@ -114,10 +114,10 @@ public:
         while (cache->has_next()) {
             DLLNode *node = cache->get_next();
             OverlayID *id = node->key;
-            currentMatchLength = msg->getOID().GetMatchedPrefixLength(*id);
+            currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(*id);
             if (currentMatchLength > maxLengthMatch) {
                 maxLengthMatch = currentMatchLength;
-                cache->lookup(msg->getOID(), next_hop);
+                cache->lookup(msg->getDstOid(), next_hop);
             }
         }
 
@@ -134,17 +134,31 @@ public:
         }
     }
 
-    void get(string name) {
-        MessageGET *msg = new MessageGET();
-        msg->SetDeviceName(name);
-        addToOutgoingQueue(msg);
+    void get(string name)
+    {
+    	MessageGET *msg = new MessageGET(container_peer->getHostName(),
+    																   container_peer->getListenPortNumber(),
+    																   msg->getSourceHost(),
+    																   msg->getSourcePort(),
+    																   container_peer->getOverlayID(),
+    																   msg->getDstOid(),
+    																   name);
+        send_message(msg);
+    	//addToOutgoingQueue(msg);
     }
 
-    void put(string name, HostAddress hostAddress) {
-        MessagePUT *msg = new MessagePUT();
-        msg->SetDeviceName(name);
-        msg->SetHostAddress(hostAddress);
-        addToOutgoingQueue(msg);
+    void put(string name, HostAddress hostAddress)
+    {
+    	MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
+									   container_peer->getListenPortNumber(),
+									   msg->getSourceHost(),
+									   msg->getSourcePort(),
+									   container_peer->getOverlayID(),
+									   msg->getDstOid(),
+									   name,
+									   hostAddress);
+        send_message(msg);
+    	//addToOutgoingQueue(msg);
     }
 
     void rejoin() {

@@ -12,6 +12,7 @@
 #include "plnode/message/p2p/message_put.h"
 #include <stdlib.h>
 #include "plnode/ds/GlobalData.h"
+#include "plnode/protocol/plexus/plexus_protocol.h"
 
 int main(int argc, char* argv[]) {
     //char* server_name = argv[1];
@@ -29,6 +30,8 @@ int main(int argc, char* argv[]) {
     int retCode = 0;
     ClientSocket* c_socket;
 
+    PlexusProtocol* plexus = new PlexusProtocol();
+
     for (int i = 0; i < n; i++) {
         HostAddress address = tree.getHostAddress(i);
         printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
@@ -45,7 +48,7 @@ int main(int argc, char* argv[]) {
 
         LookupTable <OverlayID, HostAddress> rt = tree.getRoutingTablePtr(i);
 
-        rt.reset_iterator();
+        //rt.reset_iterator();
         /*while(rt.hasMoreKey())
         {
                 OverlayID key = rt.getNextKey();
@@ -54,7 +57,7 @@ int main(int argc, char* argv[]) {
                 printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
         }*/
 
-        pInit->setOID(tree.getOverlayID(i));
+        pInit->setDstOid(tree.getOverlayID(i));
         pInit->setNPeers(n);
         pInit->setRoutingTable(tree.getRoutingTablePtr(i));
         char* buffer;
@@ -70,7 +73,42 @@ int main(int argc, char* argv[]) {
         delete pInit;
     }
 
-    string name_to_publish = "1378410";
+    char input[1000];
+
+    while(true)
+    {
+    	printf("$");
+    	gets(input);
+
+    	char* command = strtok(input, " ");
+
+    	if(strcmp(command, "exit") == 0)
+    	{
+    		exit(0);
+    	}
+    	else if(strcmp(command, "put") == 0)
+    	{
+    		char* name = strtok(NULL, " ");
+    		char* address = strtok(NULL, " ");
+
+    		char* hostname = strtok(address, ":");
+    		int port = atoi(strtok(NULL, ":"));
+
+    		HostAddress h_address;
+    		h_address.SetHostName(hostname);
+    		h_address.SetHostPort(port);
+
+    		plexus->put(name, h_address);
+    	}
+    	else if(strcmp(command, "get") == 0)
+    	{
+    		char* name = strtok(NULL, " ");
+    		plexus->get(name);
+    	}
+    }
+
+
+    /*string name_to_publish = "1378410";
     int hash_name_to_publish = atoi(name_to_publish.c_str());
     HostAddress my_address;
     my_address.SetHostName("localhost");
@@ -85,7 +123,7 @@ int main(int argc, char* argv[]) {
 //    int id = GlobalData::rm->decode(hash_name_to_publish);
 //    cout << "decoded id = " << id << endl;
 //    OverlayID oID(id);
-    put_msg->setOID(hash_name_to_publish);
+    put_msg->setDstOid(hash_name_to_publish);
 
     //int randHost = rand() % n;
     int randHost = 5;
@@ -101,14 +139,14 @@ int main(int argc, char* argv[]) {
     int buffer_len = 0;
     char* buffer = put_msg->serialize(&buffer_len);
 
-    /*for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
-    putchar('\n');*/
+    for(int k = 0; k < buffer_len; k++) printf(" %x", buffer[k]);
+    putchar('\n');
     cSocket.send_data(buffer, buffer_len);
     cSocket.close_socket();
 
 
 
-    /*
+
     name_to_publish = "4000";
     hash_name_to_publish = atoi(name_to_publish.c_str());
 

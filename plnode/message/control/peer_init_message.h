@@ -38,7 +38,8 @@ public:
 
 	virtual char* serialize(int* serialize_length)
 	{
-		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID);
+		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size()
+				+ 2 * sizeof(char) + sizeof(OverlayID) * 2;
 		routing_table.reset_iterator();
 		while(routing_table.hasMoreKey())
 		{
@@ -77,7 +78,10 @@ public:
 
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
-		memcpy(buffer + offset, (char*)(&oID), sizeof(OverlayID)); offset += sizeof(OverlayID);
+
+		memcpy(buffer + offset, (char*)(&dst_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*)(&src_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
+
 		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
@@ -141,7 +145,9 @@ public:
 		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+
+		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 		memcpy(&n_peers, buffer + offset, sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize;

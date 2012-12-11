@@ -15,7 +15,7 @@
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
 #include "../protocol.h"
-
+#include "../plexus/plexus_protocol.h"
 
 class PlexusMessageProcessor: public MessageProcessor
 {
@@ -29,6 +29,9 @@ public:
 
 	void processMessage(ABSMessage* message)
 	{
+		PlexusProtocol* plexus = (PlexusProtocol*)container_protocol;
+		Peer* container_peer = container_protocol->getContainerPeer();
+
 		//message->incrementOverlayHops();
 		//message->decrementOverlayTtl();
 
@@ -36,12 +39,12 @@ public:
 		if(message->getMessageType() == MSG_PEER_INIT)
 		{
 			PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
-			ABSProtocol* container_protocol = this->getContainerProtocol();
-			Peer* container_peer = container_protocol->getContainerPeer();
+			//ABSProtocol* container_protocol = this->getContainerProtocol();
+			//Peer* container_peer = container_protocol->getContainerPeer();
 
 			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
 			container_peer->setNPeers(pInitMsg->getNPeers());
-			container_peer->setOverlayID(pInitMsg->getOID());
+			container_peer->setOverlayID(pInitMsg->getDstOid());
 
 			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 		}
@@ -70,8 +73,16 @@ public:
 			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
 				puts("Got it :)");
-				MessageGET_REPLY *msg_reply = new MessageGET_REPLY();
-				//msg_reply->setIP(ip);
+				MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
+															   container_peer->getListenPortNumber(),
+															   msg->getSourceHost(),
+															   msg->getSourcePort(),
+															   container_peer->getOverlayID(),
+															   msg->getDstOid(),
+															   SUCCESS,
+															   hostAddress);
+
+				plexus->addToOutgoingQueue(reply);
 				//send message
 			} else
 			{
@@ -83,7 +94,7 @@ public:
 		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
 		{
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
-			cache->add(msg->getID(), msg->getIP());
+			//cache->add(msg->getID(), msg->getIP());
 		}
 	}
 };

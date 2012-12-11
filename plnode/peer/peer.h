@@ -56,6 +56,32 @@ public:
 		server_socket = new ServerSocket(listen_port_number);
 	}
 
+	Peer(const char* hosts_file)
+	{
+		char hostname[100];
+		gethostname(hostname, 100);
+		host_name = hostname;
+		listen_port_number = 0;
+		FILE* hosts_ptr = fopen(hosts_file, "r");
+		char host_name[200];
+		int port = -1;
+		int n_hosts;
+		fscanf(hosts_ptr, "%d", &n_hosts);
+
+		for(int i = 0; i < n_hosts; i++)
+		{
+			fscanf(hosts_ptr, "%s %d", host_name, &port);
+			if(strncmp(this->getHostName().c_str(), host_name, strlen(this->getHostName().c_str())))
+				break;
+		}
+		fclose(hosts_ptr);
+		if(port != -1)
+		{
+			listen_port_number = port;
+			server_socket = new ServerSocket(listen_port_number);
+		}
+	}
+
 	~Peer()
 	{
 		;

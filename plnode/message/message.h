@@ -40,11 +40,14 @@ protected:
 	int source_port;
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
-	OverlayID oID;
+	OverlayID dst_oid;
+	OverlayID src_oid;
 
 	size_t getBaseSize()
 	{
-		size_t size = sizeof(char) * 3 + sizeof(int) * 5 + sizeof(char) * (dest_host.size() + source_host.size()) + sizeof(OverlayID);
+		size_t size = sizeof(char) * 3 + sizeof(int) * 5
+				+ sizeof(char) * (dest_host.size() + source_host.size())
+				+ sizeof(OverlayID) * 2;
 		return size;
 	}
 
@@ -57,8 +60,22 @@ public:
 		source_host = "";
 	}
 
+	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host, int dest_port
+			, OverlayID src_oid, OverlayID dst_id): messageType(messageType), source_host(source_host), source_port(source_port),
+					dest_host(dest_host), dest_port(dest_port), src_oid(src_oid), dst_oid(dst_oid)
+	{
+		sequence_no = sequence_no_generator++;
+		overlay_hops = 0;
+		dest_host = "";
+		source_host = "";
+	}
 
-	virtual ~ABSMessage(){;}
+	virtual ~ABSMessage()
+	{
+		;
+	}
+
+
 
 	virtual char* serialize(int* serialize_length) = 0;
 
@@ -72,7 +89,8 @@ public:
 		printf("Destination Port %d\n", dest_port);
 		printf("Source Host %s\n", source_host.c_str());
 		printf("Source Port %d\n", source_port);
-		printf("Overlay ID: %d\n", oID.GetOverlay_id());
+		printf("Source Overlay ID: %d\n", src_oid.GetOverlay_id());
+		printf("Destination Overlay ID: %d\n", dst_oid.GetOverlay_id());
 		printf("Overlay Hops %d\n", overlay_hops);
 		printf("Overlay TTL %d\n", overlay_ttl);
 	}
@@ -83,9 +101,9 @@ public:
 	}
 
 	/*void setDestHost(const string& destHost)
-	{
-		dest_host = destHost;
-	}*/
+	 {
+	 dest_host = destHost;
+	 }*/
 
 	void setDestHost(const char* destHost)
 	{
@@ -121,7 +139,6 @@ public:
 	{
 		overlay_ttl = overlayTtl;
 	}
-
 
 	void decrementOverlayTtl()
 	{
@@ -163,21 +180,35 @@ public:
 		return sequence_no;
 	}
 
-        void setMessageType(unsigned char messageType) {
-            this->messageType = messageType;
-        }
+	void setMessageType(unsigned char messageType)
+	{
+		this->messageType = messageType;
+	}
 
-        unsigned char getMessageType() const {
-            return messageType;
-        }
+	unsigned char getMessageType() const
+	{
+		return messageType;
+	}
 
-        void setOID(OverlayID oID) {
-            this->oID = oID;
-        }
+	void setSrcOid(OverlayID oID)
+	{
+		this->src_oid = oID;
+	}
 
-        OverlayID getOID() const {
-            return oID;
-        }
+	OverlayID getSrcOid() const
+	{
+		return src_oid;
+	}
+
+	void setDstOid(OverlayID oID)
+	{
+		this->dst_oid = oID;
+	}
+
+	OverlayID getDstOid() const
+	{
+		return dst_oid;
+	}
 };
 
 int ABSMessage::sequence_no_generator;

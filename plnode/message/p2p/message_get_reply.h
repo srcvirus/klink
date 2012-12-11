@@ -15,14 +15,19 @@
 #include <cstring>
 
 class MessageGET_REPLY : public ABSMessage {
-    OverlayID *id;
-    IPAddress *ip;
+	int resolution_status;
+	HostAddress host_address;
+
 public:
 
-    MessageGET_REPLY(OverlayID *id, IPAddress *ip) : ABSMessage() {
-        messageType = MSG_PLEXUS_GET_REPLY;
-        this->id = id;
-        this->ip = ip;
+	MessageGET_REPLY(){}
+
+    MessageGET_REPLY(string source_host, int source_port, string dest_host, int dest_port
+			, OverlayID src_oid, OverlayID dst_id, int status, HostAddress h_address) : ABSMessage(MSG_PLEXUS_GET_REPLY, source_host, source_port, dest_host,
+					dest_port, src_oid, dst_id)
+    {
+        resolution_status = status;
+        host_address = h_address;
     }
 
     char* serialize(int* serialize_length) {
@@ -37,20 +42,24 @@ public:
         return this;
     }
 
-    void setID(OverlayID *id) {
-        this->id = id;
+    void setHostAddress(HostAddress& h_address)
+    {
+    	host_address = h_address;
     }
 
-    OverlayID* getID() const {
-        return id;
+    HostAddress getHostAddress() const
+    {
+    	return host_address;
     }
 
-    void setIP(IPAddress *ip) {
-        this->ip = ip;
+    int getStatus()
+    {
+    	return resolution_status;
     }
 
-    IPAddress* getIP() const {
-        return ip;
+    void setStatus(int status)
+    {
+    	resolution_status = status;
     }
 };
 

@@ -17,16 +17,19 @@ class MessagePUT : public ABSMessage {
     string deviceName;
     HostAddress hostAddress;
 public:
+    MessagePUT(){}
 
-    MessagePUT(string &deviceName, HostAddress &hostAddress) : ABSMessage() {
-        messageType = MSG_PLEXUS_PUT;
-        this->deviceName = deviceName;
-        this->hostAddress = hostAddress;
+    MessagePUT(string source_host, int source_port, string dest_host, int dest_port
+			, OverlayID src_oid, OverlayID dst_id,string &deviceName, HostAddress &hostAddress) :
+				ABSMessage(MSG_PLEXUS_PUT, source_host, source_port, dest_host,
+									dest_port, src_oid, dst_id), deviceName(deviceName), hostAddress(hostAddress)
+    {
+    	;
     }
 
     char* serialize(int* serialize_length) {
     	*serialize_length = sizeof(char) + sizeof(int) * 8 + sizeof(char) * dest_host.size() +
-    			sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID)
+    			sizeof(char) * source_host.size() + 2 * sizeof(char) + sizeof(OverlayID) * 2
     			+ sizeof(char) * deviceName.size() + sizeof(char) * hostAddress.GetHostName().size();
 
 		char* buffer = new char[*serialize_length];
@@ -57,7 +60,9 @@ public:
 
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
-		memcpy(buffer + offset, (char*)(&oID), sizeof(OverlayID)); offset += sizeof(OverlayID);
+
+		memcpy(buffer + offset, (char*)(&dst_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*)(&src_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
 
 		int deviceNameLength = deviceName.size();
 		memcpy(buffer + offset, (char*)(&deviceNameLength), sizeof(int)); offset += sizeof(int);
@@ -111,7 +116,9 @@ public:
 		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
 		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&oID, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+
+		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 
 		memcpy(&deviceNameLength, buffer + offset, sizeof(int)); offset += sizeof(int);
 		deviceName = "";

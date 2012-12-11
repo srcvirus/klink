@@ -12,6 +12,7 @@
 #include "plnode/protocol/plexus/plexus_protocol.h"
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
+#include "plnode/protocol/plexus/plexus_message_processor.h"
 
 #include <stdlib.h>
 
@@ -21,6 +22,24 @@ fd_set connection_pool;
 fd_set read_connection_fds;
 ServerSocket* s_socket = NULL;
 int fd_max;
+
+/*int read_port(const char* hosts_file)
+{
+	FILE* hosts_ptr = fopen(hosts_file, "r");
+	char host_name[200];
+	int port;
+	int n_hosts;
+	fscanf(hosts_ptr, "%d", &n_hosts);
+
+	for(int i = 0; i < n_hosts; i++)
+	{
+		fscanf(hosts_ptr, "%s %d", host_name, &port);
+		if(strncmp(this_peer->getHostName().c_str(), host_name, strlen(this_peer->getHostName().c_str())))
+			return port;
+	}
+
+	return ERROR_NOT_IN_HOSTS_FILE;
+}*/
 
 void process_and_forward(ABSMessage* rcvd_message) {
     printf("Processing Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
@@ -48,11 +67,13 @@ void process_and_forward(ABSMessage* rcvd_message) {
 
 int main(int argc, char* argv[]) {
     
-    int port = atoi(argv[1]);
+    //int port = atoi(argv[1]);
     int error_code;
 
-    this_peer = new Peer(port);
+    //this_peer = new Peer(port);
+    this_peer = new Peer("hostlist");
     plexus = new PlexusProtocol();
+
     PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
 
     msg_processor->setContainerProtocol(plexus);
@@ -126,7 +147,7 @@ int main(int argc, char* argv[]) {
                             case MSG_PEER_INIT:
                                 rcvd_message = new PeerInitMessage();
                                 rcvd_message->deserialize(buffer, buffer_length);
-                                //rcvd_message->message_print_dump();
+                                rcvd_message->message_print_dump();
                                 ((PlexusProtocol*) plexus)->processMessage(rcvd_message);
                                 break;
                             case MSG_PLEXUS_GET:

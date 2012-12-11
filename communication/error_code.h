@@ -17,6 +17,8 @@
 #define ERROR_SERVER_CONNECTION_FAIL	-104
 #define ERROR_OPEN_FILE_FAIL			-105
 #define ERROR_FILE_NOT_OPEN				-106
+#define ERROR_NOT_IN_HOSTS_FILE			-107
+#define ERROR_GET_FAILED				-108
 
 char ERROR_MESSAGES[][100] = {
 		"SUCCESS",
@@ -26,7 +28,9 @@ char ERROR_MESSAGES[][100] = {
 		"Cannot Create a Connection",
 		"Cannot Connect to Server",
 		"Cannot Open File",
-		"File Not Open"
+		"File Not Open",
+		"Not in Hosts File",
+		"Request Not Resolved"
 };
 
 void print_error_message(int error_code)

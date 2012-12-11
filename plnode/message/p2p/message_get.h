@@ -15,11 +15,14 @@
 class MessageGET : public ABSMessage {
     string deviceName;
 public:
+    MessageGET(){}
 
-    MessageGET(string &deviceName) :
-    ABSMessage() {
-        messageType = MSG_PLEXUS_GET;
-        this->deviceName = deviceName;
+    MessageGET(string source_host, int source_port, string dest_host, int dest_port
+			, OverlayID src_oid, OverlayID dst_id,string &deviceName) :
+				ABSMessage(MSG_PLEXUS_GET, source_host, source_port, dest_host,
+									dest_port, src_oid, dst_id), deviceName(deviceName)
+	{
+        ;
     }
 
     virtual char* serialize(int* serialize_length) {
@@ -60,8 +63,13 @@ public:
         offset += sizeof (char);
         memcpy(buffer + offset, (char*) (&overlay_ttl), sizeof (char));
         offset += sizeof (char);
-        memcpy(buffer + offset, (char*) (&oID), sizeof (OverlayID));
+
+        memcpy(buffer + offset, (char*) (&dst_oid), sizeof (OverlayID));
+                offset += sizeof (OverlayID);
+
+        memcpy(buffer + offset, (char*) (&src_oid), sizeof (OverlayID));
         offset += sizeof (OverlayID);
+
 
         int deviceNameLength = deviceName.size();
         memcpy(buffer + offset, (char*) (&deviceNameLength), sizeof (int));
@@ -111,7 +119,11 @@ public:
         offset += sizeof (char); //printf("offset = %d\n", offset);
         memcpy(&overlay_ttl, buffer + offset, sizeof (char));
         offset += sizeof (char); //printf("offset = %d\n", offset);
-        memcpy(&oID, buffer + offset, sizeof (OverlayID));
+
+        memcpy(&dst_oid, buffer + offset, sizeof (OverlayID));
+        offset += sizeof (OverlayID); //printf("offset = %d\n", offset);
+
+        memcpy(&src_oid, buffer + offset, sizeof (OverlayID));
         offset += sizeof (OverlayID); //printf("offset = %d\n", offset);
 
         memcpy(&deviceNameLength, buffer + offset, sizeof (int));

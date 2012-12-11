@@ -17,6 +17,7 @@
 #include "../ds/overlay_id.h"
 #include "../ds/host_address.h"
 #include "../peer/peer.h"
+#include "../../communication/client_socket.h"
 
 class Peer;
 
@@ -114,6 +115,20 @@ public:
 			routing_table->lookup(key, &value);
 			printf("%d %s:%d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
 		}
+	}
+
+	int send_message(ABSMessage* message)
+	{
+		int error_code = 0;
+		ClientSocket c_socket(message->getDestHost(), message->getDestPort());
+		c_socket.connect_to_server();
+		char* buffer;
+		int buffer_length;
+		buffer = message->serialize(&buffer_length);
+		error_code = c_socket.send_data(buffer, buffer_length);
+		c_socket.close_socket();
+		delete[] buffer;
+		return error_code;
 	}
 	virtual ~ABSProtocol(){}
 
