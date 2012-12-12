@@ -136,29 +136,63 @@ public:
 
     void get(string name)
     {
+    	int hash_name_to_get = atoi(name.c_str());
+    	int id = GlobalData::rm->decode(hash_name_to_get);
     	MessageGET *msg = new MessageGET(container_peer->getHostName(),
-    																   container_peer->getListenPortNumber(),
-    																   msg->getSourceHost(),
-    																   msg->getSourcePort(),
-    																   container_peer->getOverlayID(),
-    																   msg->getDstOid(),
-    																   name);
+									   container_peer->getListenPortNumber(),
+									   "",
+									   -1,
+									   container_peer->getOverlayID(),
+									   OverlayID(id),
+									   name);
         send_message(msg);
     	//addToOutgoingQueue(msg);
     }
 
+    void get_from_client(string name, HostAddress destination)
+    {
+    	int hash_name_to_get = atoi(name.c_str());
+		int id = GlobalData::rm->decode(hash_name_to_get);
+		MessageGET *msg = new MessageGET(container_peer->getHostName(),
+									   container_peer->getListenPortNumber(),
+									   destination.GetHostName(),
+									   destination.GetHostPort(),
+									   container_peer->getOverlayID(),
+									   OverlayID(id),
+									   name);
+		send_message(msg);
+    }
     void put(string name, HostAddress hostAddress)
     {
+    	int hash_name_to_publish = atoi(name.c_str());
+    	int id = GlobalData::rm->decode(hash_name_to_publish);
+
     	MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 									   container_peer->getListenPortNumber(),
-									   msg->getSourceHost(),
-									   msg->getSourcePort(),
+									   "",
+									   -1,
 									   container_peer->getOverlayID(),
-									   msg->getDstOid(),
+									   OverlayID(id),
 									   name,
 									   hostAddress);
         send_message(msg);
     	//addToOutgoingQueue(msg);
+    }
+
+    void put_from_client(string name, HostAddress hostAddress, HostAddress destination)
+    {
+    	int hash_name_to_publish = atoi(name.c_str());
+		int id = GlobalData::rm->decode(hash_name_to_publish);
+
+		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
+									   container_peer->getListenPortNumber(),
+									   destination.GetHostName(),
+									   destination.GetHostPort(),
+									   container_peer->getOverlayID(),
+									   OverlayID(id),
+									   name,
+									   hostAddress);
+		send_message(msg);
     }
 
     void rejoin() {

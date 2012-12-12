@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
     }
 
     char input[1000];
-
+    srand(time(NULL));
     while(true)
     {
     	printf("$");
@@ -98,12 +98,14 @@ int main(int argc, char* argv[]) {
     		h_address.SetHostName(hostname);
     		h_address.SetHostPort(port);
 
-    		plexus->put(name, h_address);
+    		HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
+    		plexus->put_from_client(name, h_address, destination);
     	}
     	else if(strcmp(command, "get") == 0)
     	{
     		char* name = strtok(NULL, " ");
-    		plexus->get(name);
+    		HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
+    		plexus->get_from_client(name, destination);
     	}
     }
 
