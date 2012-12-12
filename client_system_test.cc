@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     PlexusProtocol* plexus = new PlexusProtocol();
     plexus->setContainerPeer(this_peer);
 
-    BuildTree tree("hostlist");
+    BuildTree tree(GlobalData::host_file_name);
     tree.execute();
     tree.print();
 

@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     int error_code;
 
     //this_peer = new Peer(port);
-    this_peer = new Peer("hostlist");
+    this_peer = new Peer(GlobalData::host_file_name.c_str());
     plexus = new PlexusProtocol();
 
     PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
