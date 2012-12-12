@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     tree.print();
 
     int n = tree.getTreeSize();
+    printf("n = %d\n", n);
     int retCode = 0;
     ClientSocket* c_socket;
 
@@ -64,11 +65,13 @@ int main(int argc, char* argv[]) {
         int buffer_length = 0;
         buffer = pInit->serialize(&buffer_length);
 
+	puts("Sending Init Packet");
         retCode = c_socket->send_data(buffer, buffer_length);
         if (retCode < 0)
             print_error_message(retCode);
         //else printf("Sent %d Bytes", retCode);
         c_socket->close_socket();
+	puts("Init Packet Sent");
         delete c_socket;
         delete pInit;
     }
