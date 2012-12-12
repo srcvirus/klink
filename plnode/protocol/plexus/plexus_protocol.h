@@ -182,17 +182,17 @@ public:
     void put_from_client(string name, HostAddress hostAddress, HostAddress destination)
     {
     	int hash_name_to_publish = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_publish);
+	int id = GlobalData::rm->decode(hash_name_to_publish);
 
-		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
-									   container_peer->getListenPortNumber(),
-									   destination.GetHostName(),
-									   destination.GetHostPort(),
-									   container_peer->getOverlayID(),
-									   OverlayID(id),
-									   name,
-									   hostAddress);
-		send_message(msg);
+	MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
+				   container_peer->getListenPortNumber(),
+				   destination.GetHostName(),
+				   destination.GetHostPort(),
+				   container_peer->getOverlayID(),
+				   OverlayID(id),
+				   name,
+				   hostAddress);
+	send_message(msg);
     }
 
     void rejoin() {
