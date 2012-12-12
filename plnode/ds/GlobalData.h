@@ -14,8 +14,9 @@ class GlobalData
 {
 public:
 	static ReedMuller* rm;
+        static string host_file_name;
 };
 
 ReedMuller* GlobalData::rm = new ReedMuller(2, 4);
-
+string GlobalData::host_file_name = "ihostlist";
 #endif /* GLOBALDATA_H_ */
