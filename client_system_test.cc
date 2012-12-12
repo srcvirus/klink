@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
     //char* server_name = argv[1];
     //int server_port = atoi(argv[2]);
 
-    /*Peer* this_peer = new Peer();
-    ABSProtocol* plexus = new PlexusProtocol();
-    plexus->setContainerPeer(this_peer);*/
+    Peer* this_peer = new Peer();
+    PlexusProtocol* plexus = new PlexusProtocol();
+    plexus->setContainerPeer(this_peer);
 
     BuildTree tree("hostlist");
     tree.execute();
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     int retCode = 0;
     ClientSocket* c_socket;
 
-    PlexusProtocol* plexus = new PlexusProtocol();
+    //PlexusProtocol* plexus = new PlexusProtocol();
 
     for (int i = 0; i < n; i++) {
         HostAddress address = tree.getHostAddress(i);
@@ -88,22 +88,29 @@ int main(int argc, char* argv[]) {
     	}
     	else if(strcmp(command, "put") == 0)
     	{
-    		char* name = strtok(NULL, " ");
+    		string name = strtok(NULL, " ");
     		char* address = strtok(NULL, " ");
 
-    		char* hostname = strtok(address, ":");
+		//puts(name.c_str());
+		//puts(address);
+
+    		string hostname = strtok(address, ":");
+		//puts(hostname.c_str());
     		int port = atoi(strtok(NULL, ":"));
+		//printf("%d\n", port);
 
     		HostAddress h_address;
     		h_address.SetHostName(hostname);
     		h_address.SetHostPort(port);
 
     		HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
+	//	puts(destination.GetHostName().c_str());
+	//	printf("%d\n",destination.GetHostPort());
     		plexus->put_from_client(name, h_address, destination);
     	}
     	else if(strcmp(command, "get") == 0)
     	{
-    		char* name = strtok(NULL, " ");
+    		string name = strtok(NULL, " ");
     		HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
     		plexus->get_from_client(name, destination);
     	}
