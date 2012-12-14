@@ -270,6 +270,10 @@ void *processing_thread(void* args)
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 		printf("[Processing Thread:]\t pulled a %d type message from the incoming queue\n", message->getMessageType());
 		bool forward = plexus->getMessageProcessor()->processMessage(message);
-		if(forward) ((PlexusProtocol*)plexus)->addToOutgoingQueue(message);
+		if(forward)
+		{
+			printf("[Processing Thread:]\t pushed a %d type message for forwarding\n", message->getMessageType());
+			((PlexusProtocol*)plexus)->addToOutgoingQueue(message);
+		}
 	}
 }

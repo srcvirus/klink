@@ -95,7 +95,7 @@ public:
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
 			//cache->add(msg->getID(), msg->getIP());
 		}
-		return true;
+		return false;
 	}
 };
 
