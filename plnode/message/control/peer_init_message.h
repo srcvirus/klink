@@ -45,7 +45,10 @@ public:
 	{
 		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size()
 				+ 2 * sizeof(char) + sizeof(OverlayID) * 2;
+
 		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+
+		rtable_iterator.reset_iterator();
 		//routing_table.reset_iterator();
 		//while(routing_table.hasMoreKey())
 		while(rtable_iterator.hasMoreKey())
@@ -54,6 +57,7 @@ public:
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
+			printf("<< %d %s %d >>\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
 			*serialize_length += sizeof(OverlayID) + sizeof(int) * 2;
 			*serialize_length += sizeof(char) * value.GetHostName().size();
 		}

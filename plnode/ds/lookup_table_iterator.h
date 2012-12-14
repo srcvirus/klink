@@ -4,6 +4,8 @@
  *  Created on: 2012-12-14
  *      Author: sr2chowd
  */
+#ifndef LOOKUP_ITERATOR_H
+#define LOOKUP_ITERATOR_H
 
 #include "lookup_table.h"
 #include <pthread.h>
@@ -19,7 +21,11 @@ class LookupTableIterator
 public:
 
 	LookupTableIterator(){ table_ptr = NULL; }
-	LookupTableIterator(LookupTable <KeyType, ValueType>* ptr){ table_ptr = ptr; }
+	LookupTableIterator(LookupTable <KeyType, ValueType>* ptr)
+	{
+		table_ptr = ptr;
+		table_iterator = table_ptr->begin();
+	}
 
 	void reset_iterator()
 	{
@@ -39,4 +45,5 @@ public:
 	}
 };
 
+#endif
 

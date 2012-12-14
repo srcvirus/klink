@@ -33,12 +33,14 @@ int main(int argc, char* argv[]) {
 
     //PlexusProtocol* plexus = new PlexusProtocol();
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         HostAddress address = tree.getHostAddress(i);
         printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
         c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
         retCode = c_socket->connect_to_server();
+        puts("Connected to server");
 
         if (retCode < 0) {
             print_error_message(retCode);
@@ -63,9 +65,12 @@ int main(int argc, char* argv[]) {
         pInit->setRoutingTable(tree.getRoutingTablePtr(i));
         char* buffer;
         int buffer_length = 0;
-        buffer = pInit->serialize(&buffer_length);
 
-	puts("Sending Init Packet");
+        puts("Serializing INIT packet");
+        buffer = pInit->serialize(&buffer_length);
+        printf("Serialized Length = %d bytes\n", buffer_length);
+
+        puts("Sending Init Packet");
         retCode = c_socket->send_data(buffer, buffer_length);
         if (retCode < 0)
             print_error_message(retCode);
@@ -85,7 +90,9 @@ int main(int argc, char* argv[]) {
 
     	char* command = strtok(input, " ");
 
-    	if(strcmp(command, "exit") == 0)
+    	if(strcmp(command, "exit") == 0
+    			|| strcmp(command, "bye") == 0
+    			|| strcmp(command, "quit") == 0)
     	{
     		exit(0);
     	}
