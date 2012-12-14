@@ -19,15 +19,20 @@
 //Globals
 Peer* this_peer;
 ABSProtocol* plexus;
+
+int fd_max;
 fd_set connection_pool;
 fd_set read_connection_fds;
+
 ServerSocket* s_socket = NULL;
 
 
 void system_init();
+void cleanup();
 
-
-int fd_max;
+void *listener_thread(void*);
+void *forwarding_thread(void*);
+void *processing_thread(void*);
 
 /*int read_port(const char* hosts_file)
 {
@@ -160,7 +165,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    delete s_socket;
+    cleanup();
 }
 
 void system_init()
@@ -206,6 +211,117 @@ void system_init()
 	s_socket->print_socket_info();
 }
 
+void cleanup()
+{
+	delete this_peer;
+	this_peer = NULL;
+	plexus = NULL;
+}
 
+void *listener_thread(void* args)
+{
+	int buffer_length;
+	char* buffer;
 
+	while(true)
+	{
+		read_connection_fds = connection_pool;
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
+		if (n_select < 0)
+		{
+			puts("Select Error");
+			exit(1);
+		}
+		for (int i = 0; i <= fd_max; i++)
+		{
+			if (FD_ISSET(i, &read_connection_fds))
+			{
+				if (i == s_socket->getSocketFd())
+				{
+					int connection_fd = s_socket->accept_connection();
+
+					if (connection_fd < 0)
+					{
+						print_error_message(connection_fd);
+						exit(1);
+					}
+
+					FD_SET(connection_fd, &connection_pool);
+					if (connection_fd > fd_max)
+						fd_max = connection_fd;
+				}
+				else
+				{
+					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("Received %d Bytes\n", buffer_length);
+
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					putchar('\n');*/
+
+					if (buffer_length <= 0)
+					{
+						s_socket->close_connection(i);
+						FD_CLR(i, &connection_pool);
+					}
+					else
+					{
+						char messageType = 0;
+						ABSMessage* rcvd_message = NULL;
+
+						memcpy(&messageType, buffer, sizeof (char));
+						printf("Message Type: %d\n", messageType);
+
+						switch (messageType)
+						{
+							case MSG_PEER_INIT:
+								rcvd_message = new PeerInitMessage();
+								rcvd_message->deserialize(buffer, buffer_length);
+								rcvd_message->message_print_dump();
+								break;
+							case MSG_PLEXUS_GET:
+								rcvd_message = new MessageGET();
+								rcvd_message->deserialize(buffer, buffer_length);
+								rcvd_message->message_print_dump();
+								break;
+
+							case MSG_PLEXUS_PUT:
+								rcvd_message = new MessagePUT();
+								rcvd_message->deserialize(buffer, buffer_length);
+								rcvd_message->message_print_dump();
+								break;
+						}
+
+						if(rcvd_message != NULL)
+							((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
+
+						delete[] buffer;
+					}
+				}
+			}
+		}
+	}
+}
+
+void *forwarding_thread(void* args)
+{
+	char* buffer;
+	int buffer_length;
+
+	ABSMessage* message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+	ClientSocket* c_socket = new ClientSocket(message->getDestHost(), message->getDestPort());
+	c_socket->connect_to_server();
+
+	buffer = message->serialize(&buffer_length);
+	c_socket->send_data(buffer, buffer_length);
+
+	delete message;
+	delete buffer;
+}
+
+void *processing_thread(void* args)
+{
+	ABSMessage* message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
+	bool forward = plexus->getMessageProcessor()->processMessage(message);
+	if(forward) ((PlexusProtocol*)plexus)->addToOutgoingQueue(message);
+}

@@ -8,8 +8,13 @@
 #ifndef PEER_INIT_MESSAGE_H_
 #define PEER_INIT_MESSAGE_H_
 
+#include "../../../plnode/ds/host_address.h"
+#include "../../../plnode/ds/overlay_id.h"
+#include "../../../plnode/ds/lookup_table.h"
+#include "../../../plnode/ds/lookup_table_iterator.h"
 #include "../message.h"
 #include <memory.h>
+
 /*
  * unsigned char messageType;
 	unsigned int sequence_no;
@@ -40,10 +45,13 @@ public:
 	{
 		*serialize_length = sizeof(char) + sizeof(int) * 7 + sizeof(char) * dest_host.size() + sizeof(char) * source_host.size()
 				+ 2 * sizeof(char) + sizeof(OverlayID) * 2;
-		routing_table.reset_iterator();
-		while(routing_table.hasMoreKey())
+		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+		//routing_table.reset_iterator();
+		//while(routing_table.hasMoreKey())
+		while(rtable_iterator.hasMoreKey())
 		{
-			OverlayID key = routing_table.getNextKey();
+			//OverlayID key = routing_table.getNextKey();
+			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
 			*serialize_length += sizeof(OverlayID) + sizeof(int) * 2;
@@ -87,10 +95,13 @@ public:
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);
 
-		routing_table.reset_iterator();
-		while(routing_table.hasMoreKey())
+		rtable_iterator.reset_iterator();
+		//routing_table.reset_iterator();
+		while(rtable_iterator.hasMoreKey())
+		//while(routing_table.hasMoreKey())
 		{
-			OverlayID key = routing_table.getNextKey();
+			OverlayID key = rtable_iterator.getNextKey();
+			//OverlayID key = routing_table.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
 			int hostNameLength = value.GetHostName().size();
@@ -184,10 +195,15 @@ public:
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 		printf("Init Message\n");
 		ABSMessage::message_print_dump();
-		routing_table.reset_iterator();
-		while(routing_table.hasMoreKey())
+		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+		//routing_table.reset_iterator();
+		rtable_iterator.reset_iterator();
+
+		while(rtable_iterator.hasMoreKey())
+		//while(routing_table.hasMoreKey())
 		{
-			OverlayID key = routing_table.getNextKey();
+			OverlayID key = rtable_iterator.getNextKey();
+			//OverlayID key = routing_table.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
 			printf("Overlay ID = %d, Hostname = %s, Host Port = %d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());

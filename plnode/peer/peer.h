@@ -84,7 +84,8 @@ public:
 
 	~Peer()
 	{
-		;
+		delete protocol;
+		delete server_socket;
 	}
 
 	double getAlpha()

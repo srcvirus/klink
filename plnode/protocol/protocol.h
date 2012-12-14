@@ -10,6 +10,7 @@
 
 #include <cstring>
 
+#include "../ds/lookup_table_iterator.h"
 #include "../message/message.h"
 #include "../message/message_processor.h"
 #include "../ds/lookup_table.h"
@@ -107,10 +108,15 @@ public:
 
 	void printRoutingTable()
 	{
-		routing_table->reset_iterator();
-		while(routing_table->hasMoreKey())
+		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(routing_table);
+		rtable_iterator.reset_iterator();
+
+		//routing_table->reset_iterator();
+		while(rtable_iterator.hasMoreKey())
+		//while(routing_table->hasMoreKey())
 		{
-			OverlayID key = routing_table->getNextKey();
+			//OverlayID key = routing_table->getNextKey();
+			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table->lookup(key, &value);
 			printf("%d %s:%d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
@@ -130,7 +136,14 @@ public:
 		delete[] buffer;
 		return error_code;
 	}
-	virtual ~ABSProtocol(){}
+	virtual ~ABSProtocol()
+	{
+		delete routing_table;
+		delete index_table;
+		delete cache;
+		delete msgProcessor;
+		container_peer = NULL;
+	}
 
 	virtual void initiate_join() = 0;
 	virtual void process_join() = 0;
