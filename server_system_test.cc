@@ -16,11 +16,17 @@
 
 #include <stdlib.h>
 
+//Globals
 Peer* this_peer;
 ABSProtocol* plexus;
 fd_set connection_pool;
 fd_set read_connection_fds;
 ServerSocket* s_socket = NULL;
+
+
+void system_init();
+
+
 int fd_max;
 
 /*int read_port(const char* hosts_file)
@@ -70,32 +76,8 @@ int main(int argc, char* argv[]) {
     //int port = atoi(argv[1]);
     int error_code;
 
+    system_init();
     //this_peer = new Peer(port);
-    this_peer = new Peer(GlobalData::host_file_name.c_str());
-    plexus = new PlexusProtocol();
-
-    PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
-
-    msg_processor->setContainerProtocol(plexus);
-    plexus->setMessageProcess(msg_processor);
-
-    plexus->setContainerPeer(this_peer);
-    this_peer->setProtocol(plexus);
-
-    FD_ZERO(&connection_pool);
-    FD_ZERO(&read_connection_fds);
-
-    s_socket = this_peer->getServerSocket();
-    error_code = s_socket->init_connection();
-    FD_SET(s_socket->getSocketFd(), &connection_pool);
-
-    if (error_code < 0) {
-        print_error_message(error_code);
-        exit(1);
-    }
-
-    fd_max = s_socket->getSocketFd();
-    s_socket->print_socket_info();
 
     char* buffer;
     int buffer_length;
@@ -180,6 +162,50 @@ int main(int argc, char* argv[]) {
 
     delete s_socket;
 }
+
+void system_init()
+{
+	int error_code;
+
+	/* creating the peer container */
+	this_peer = new Peer(GlobalData::host_file_name.c_str());
+
+	/* creating the plexus protocol object */
+	plexus = new PlexusProtocol();
+
+	/* creating the message processor for plexus */
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+
+	/* setting the message processor's protocol */
+	msg_processor->setContainerProtocol(plexus);
+
+	/* setting the container and message processor for plexus */
+	plexus->setMessageProcess(msg_processor);
+	plexus->setContainerPeer(this_peer);
+
+	/* setting the protocol of the peer */
+	this_peer->setProtocol(plexus);
+
+	/* initializing the connection sets */
+	FD_ZERO(&connection_pool);
+	FD_ZERO(&read_connection_fds);
+
+	/* crearting the server socket for accepting connection from other peers */
+	s_socket = this_peer->getServerSocket();
+	error_code = s_socket->init_connection();
+
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
+
+	if (error_code < 0)
+	{
+		print_error_message(error_code);
+		exit(1);
+	}
+
+	fd_max = s_socket->getSocketFd();
+	s_socket->print_socket_info();
+}
+
 
 
 

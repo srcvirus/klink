@@ -175,7 +175,9 @@ public:
 									   OverlayID(id),
 									   name,
 									   hostAddress);
-        send_message(msg);
+    	if(!setNextHop(msg))
+    		this->msgProcessor->processMessage(msg);
+    	else send_message(msg);
     	//addToOutgoingQueue(msg);
     }
 

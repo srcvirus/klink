@@ -14,7 +14,7 @@ class GlobalData
 {
 public:
 	static ReedMuller* rm;
-        static string host_file_name;
+    static string host_file_name;
 };
 
 ReedMuller* GlobalData::rm = new ReedMuller(2, 4);
