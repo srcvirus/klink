@@ -9,7 +9,7 @@
 #define	CACHE_INSERT_POLICY_H
 
 #include "overlay_id.h"
-#include "ip_address.h"
+#include "host_address.h"
 #include "double_linked_list.h"
 #include "lookup_table.h"
 
@@ -27,7 +27,7 @@ public:
         this->hm = hm;
     }
     
-    virtual void insert(OverlayID *key, IPAddress *value) = 0;
+    virtual void insert(OverlayID *key, HostAddress *value) = 0;
 };
 
 #endif	/* CACHE_INSERT_POLICY_H */

@@ -16,7 +16,7 @@ using namespace std;
 #include "cache_insert_policy.h"
 #include "cache_replace_policy.h"
 #include "overlay_id.h"
-#include "ip_address.h"
+#include "host_address.h"
 
 class Cache {
 public:
@@ -66,7 +66,7 @@ public:
         return current->prev;
     }
     
-    void add(OverlayID *key, IPAddress *value) {
+    void add(OverlayID *key, HostAddress *value) {
         crPolicy->processHit(key);
         if (size == capacity) {
             crPolicy->evict();

@@ -125,7 +125,7 @@ void system_init()
 	FD_ZERO(&connection_pool);
 	FD_ZERO(&read_connection_fds);
 
-	/* crearting the server socket for accepting connection from other peers */
+	/* creating the server socket for accepting connection from other peers */
 	s_socket = this_peer->getServerSocket();
 	error_code = s_socket->init_connection();
 
@@ -211,13 +211,20 @@ void *listener_thread(void* args)
 								rcvd_message->deserialize(buffer, buffer_length);
 								//rcvd_message->message_print_dump();
 								break;
+                                                                
 							case MSG_PLEXUS_GET:
 								rcvd_message = new MessageGET();
 								rcvd_message->deserialize(buffer, buffer_length);
 								//rcvd_message->message_print_dump();
 								break;
 
-							case MSG_PLEXUS_PUT:
+							case MSG_PLEXUS_GET_REPLY:
+								rcvd_message = new MessageGET_REPLY();
+								rcvd_message->deserialize(buffer, buffer_length);
+								//rcvd_message->message_print_dump();
+								break;
+
+                                                    case MSG_PLEXUS_PUT:
 								rcvd_message = new MessagePUT();
 								rcvd_message->deserialize(buffer, buffer_length);
 								//rcvd_message->message_print_dump();
@@ -251,7 +258,7 @@ void *forwarding_thread(void* args)
 		ClientSocket* c_socket = new ClientSocket(message->getDestHost(), message->getDestPort());
 		c_socket->connect_to_server();
 
-		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n", message->getDestHost().c_str(), message->getDestPort());
+		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n", message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
 
 		buffer = message->serialize(&buffer_length);
 		c_socket->send_data(buffer, buffer_length);
