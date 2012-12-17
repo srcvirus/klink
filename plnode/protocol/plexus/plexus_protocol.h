@@ -92,6 +92,7 @@ public:
 		case MSG_PEER_CHANGE_STATUS:
 		case MSG_PEER_START:
 		case MSG_PLEXUS_GET_REPLY:
+		case MSG_PEER_INITIATE_GET:
 			return false;
 			break;
 		}
@@ -171,8 +172,9 @@ public:
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
 				container_peer->getOverlayID(), OverlayID(id), name);
-		send_message(msg);
-		//addToOutgoingQueue(msg);
+
+		if(msgProcessor->processMessage(msg))
+			addToOutgoingQueue(msg);
 	}
 
 	void get_from_client(string name, HostAddress destination)
@@ -201,11 +203,9 @@ public:
 				container_peer->getListenPortNumber(), "", -1,
 				container_peer->getOverlayID(), OverlayID(id), name,
 				hostAddress);
-		if (!setNextHop(msg))
-			this->msgProcessor->processMessage(msg);
-		else
-			send_message(msg);
-		//addToOutgoingQueue(msg);
+
+		if(msgProcessor->processMessage(msg))
+			addToOutgoingQueue(msg);
 	}
 
 	void put_from_client(string name, HostAddress hostAddress,

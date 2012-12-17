@@ -20,6 +20,7 @@ using namespace std;
 #define MSG_PEER_START					2
 #define MSG_PEER_CHANGE_STATUS			3
 #define MSG_PEER_INIT					4
+#define MSG_PEER_INITIATE_GET			5
 #define MSG_DYN_CHANGE_STATUS			11
 #define MSG_DYN_CONFIG					12
 #define MSG_LOOKUP_CHANGE_STATUS		21

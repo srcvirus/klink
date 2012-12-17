@@ -1,4 +1,8 @@
+#ifndef UTIL_H_
+#define UTIL_H_
+
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -12,3 +16,9 @@ void printBits(int value, int length) {
     }
 }
 
+int stringHash(string str)
+{
+	return atoi(str.c_str());
+}
+
+#endif

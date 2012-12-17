@@ -255,10 +255,13 @@ void *forwarding_thread(void* args)
 	while(true)
 	{
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+		message->incrementOverlayHops();
+
 		ClientSocket* c_socket = new ClientSocket(message->getDestHost(), message->getDestPort());
 		c_socket->connect_to_server();
 
 		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n", message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
+		message->message_print_dump();
 
 		buffer = message->serialize(&buffer_length);
 		c_socket->send_data(buffer, buffer_length);
@@ -280,8 +283,8 @@ void *processing_thread(void* args)
 		if(forward)
 		{
 			printf("[Processing Thread:]\t pushed a %d type message for forwarding\n", message->getMessageType());
-                        message->getDstOid().printBits();
-                        printf(" host: %s:%d TTL: %d Hops: %d\n", message->getDestHost().c_str(), message->getDestPort(), message->getOverlayTtl(), message->getOverlayHops());
+            message->getDstOid().printBits();
+			printf(" host: %s:%d TTL: %d Hops: %d\n", message->getDestHost().c_str(), message->getDestPort(), message->getOverlayTtl(), message->getOverlayHops());
 			((PlexusProtocol*)plexus)->addToOutgoingQueue(message);
 		}
 	}
