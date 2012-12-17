@@ -11,60 +11,82 @@
 #include "../message.h"
 #include <memory.h>
 
-class PeerConfigMessage:public ABSMessage
-{
-	int parameter_k;
-	double parameter_alpha;
+class PeerConfigMessage : public ABSMessage {
+        int parameter_k;
+        double parameter_alpha;
 
 public:
-	PeerConfigMessage():ABSMessage()
-	{
-		messageType = MSG_PEER_CONFIG;
-	}
 
-	void setK(int k)
-	{
-		parameter_k = k;
-	}
+        PeerConfigMessage() : ABSMessage() {
+                messageType = MSG_PEER_CONFIG;
+        }
 
-	int getK()
-	{
-		return parameter_k;
-	}
+        void setK(int k) {
+                parameter_k = k;
+        }
 
-	void setAlpha(double alpha)
-	{
-		parameter_alpha = alpha;
-	}
+        int getK() {
+                return parameter_k;
+        }
 
-	double getAlpha()
-	{
-		return parameter_alpha;
-	}
+        void setAlpha(double alpha) {
+                parameter_alpha = alpha;
+        }
 
-	virtual char* serialize(int* serialize_length)
-	{
-		char* buffer = new char[sizeof(PeerConfigMessage)];
-		memcpy(buffer, (char*)(this), sizeof(PeerConfigMessage));
-		*serialize_length = sizeof(PeerConfigMessage);
-		return buffer;
-	}
+        double getAlpha() {
+                return parameter_alpha;
+        }
 
-	virtual ABSMessage* deserialize(char* buffer, int buffer_length)
-	{
-		memcpy(this, buffer, buffer_length);
-		return this;
-	}
+        size_t getSize() {
+                int ret = getBaseSize();
+                ret += sizeof (int);
+                ret += sizeof (double);
+                return ret;
+        }
 
-	virtual void message_print_dump()
-	{
-		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
-		printf("Configuration Message\n");
-		ABSMessage::message_print_dump();
-		printf("Parameter K = %d\n", parameter_k);
-		printf("Parameter alpha = %.2lf\n", parameter_alpha);
-		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
-	}
+        virtual char* serialize(int* serialize_length) {
+                *serialize_length = getSize();
+
+                int offset = 0;
+                int parent_size = 0;
+
+                char* parent_buffer = ABSMessage::serialize(&parent_size);
+                char* buffer = new char[*serialize_length];
+
+                memcpy(buffer + offset, parent_buffer, parent_size);
+                offset += parent_size;
+                memcpy(buffer + offset, (char*) (&parameter_k), sizeof (int));
+                offset += sizeof (int);
+                memcpy(buffer + offset, (char*) (&parameter_alpha), sizeof (double));
+                offset += sizeof (double);
+
+                delete[] parent_buffer;
+
+                return buffer;
+        }
+
+        virtual ABSMessage* deserialize(char* buffer, int buffer_length) {
+                int offset = 0;
+
+                ABSMessage::deserialize(buffer, buffer_length);
+                offset = getBaseSize();
+
+                memcpy(&parameter_k, buffer + offset, sizeof (int));
+                offset += sizeof (int);
+                memcpy(&parameter_alpha, buffer + offset, sizeof (double));
+                offset += sizeof (double);
+
+                return this;
+        }
+
+        virtual void message_print_dump() {
+                puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
+                printf("Configuration Message\n");
+                ABSMessage::message_print_dump();
+                printf("Parameter K = %d\n", parameter_k);
+                printf("Parameter alpha = %.2lf\n", parameter_alpha);
+                puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
+        }
 };
 
 
