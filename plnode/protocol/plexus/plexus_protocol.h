@@ -178,16 +178,17 @@ public:
 	void get_from_client(string name, HostAddress destination)
 	{
 		int hash_name_to_get = atoi(name.c_str());
-                OverlayID destID(hash_name_to_get);
-                
-                cout << "id = " << hash_name_to_get << ends << " odi = ";
-                destID.printBits(); cout << endl;
-                
+		OverlayID destID(hash_name_to_get);
+
+		cout << "id = " << hash_name_to_get << ends << " odi = ";
+		destID.printBits();
+		cout << endl;
+
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name);
-                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);
 	}
 	void put(string name, HostAddress hostAddress)
@@ -210,17 +211,17 @@ public:
 			HostAddress destination)
 	{
 		int hash_name_to_publish = atoi(name.c_str());
-                OverlayID destID(hash_name_to_publish);
-                
-                cout << "id = " << hash_name_to_publish << ends << " odi = ";
-                destID.printBits(); cout << endl;
-                
+		OverlayID destID(hash_name_to_publish);
+
+		cout << "id = " << hash_name_to_publish << ends << " odi = ";
+		destID.printBits();
+		cout << endl;
+
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
-				container_peer->getOverlayID(), destID, name,
-				hostAddress);
-                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+				container_peer->getOverlayID(), destID, name, hostAddress);
+		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);
 	}
 
@@ -238,7 +239,11 @@ public:
 
 	bool isIncomingQueueEmpty()
 	{
-		return incoming_message_queue.empty();
+		bool status;
+		pthread_mutex_lock(&incoming_queue_lock);
+		status = incoming_message_queue.empty();
+		pthread_mutex_unlock(&incoming_queue_lock);
+		return status;
 	}
 
 	ABSMessage* getIncomingQueueFront()
@@ -258,6 +263,7 @@ public:
 	{
 		pthread_mutex_lock(&outgoing_queue_lock);
 		outgoing_message_queue.push(message);
+		pthread_cond_signal(&cond_outgoing_queue_empty);
 		pthread_mutex_unlock(&outgoing_queue_lock);
 	}
 
@@ -266,7 +272,6 @@ public:
 		bool status;
 		pthread_mutex_lock(&outgoing_queue_lock);
 		status = outgoing_message_queue.empty();
-		pthread_cond_signal(&cond_outgoing_queue_empty);
 		pthread_mutex_unlock(&outgoing_queue_lock);
 		return status;
 	}
@@ -276,11 +281,15 @@ public:
 		pthread_mutex_lock(&outgoing_queue_lock);
 
 		while (outgoing_message_queue.empty())
+		{
+			//printf("Waiting for a message in outgoing queue");
 			pthread_cond_wait(&cond_outgoing_queue_empty, &outgoing_queue_lock);
+		}
 
 		ABSMessage* ret = outgoing_message_queue.front();
+		//printf("Got a messge from the outgoing queue");
 		outgoing_message_queue.pop();
-		pthread_mutex_lock(&outgoing_queue_lock);
+		pthread_mutex_unlock(&outgoing_queue_lock);
 		return ret;
 	}
 
