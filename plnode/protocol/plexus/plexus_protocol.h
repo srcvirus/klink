@@ -18,6 +18,7 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
+#include "../../message/control/peer_initiate_get.h"
 #include "../../ds/host_address.h"
 #include "../../message/message.h"
 
@@ -186,12 +187,13 @@ public:
 		destID.printBits();
 		cout << endl;
 
-		MessageGET *msg = new MessageGET(container_peer->getHostName(),
+
+		PeerInitiateGET *msg = new PeerInitiateGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
-                msg->message_print_dump();
+        msg->message_print_dump();
 		send_message(msg);
 	}
 	void put(string name, HostAddress hostAddress)
@@ -217,6 +219,7 @@ public:
 		cout << "id = " << hash_name_to_publish << ends << " odi = ";
 		destID.printBits();
 		cout << endl;
+
 
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
