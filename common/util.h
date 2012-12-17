@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int getBitAtPosition(int value, int n) const {
+int getBitAtPosition(int value, int n) {
     return (((value & (1 << n)) >> n) & 0x00000001);
 }
 
