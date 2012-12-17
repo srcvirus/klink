@@ -178,13 +178,15 @@ public:
 	void get_from_client(string name, HostAddress destination)
 	{
 		int hash_name_to_get = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_get);
-                cout << "id = " << id << ends << "odi = ";
-                OverlayID(id).printBits(); cout << endl;
+                OverlayID destID(hash_name_to_get);
+                
+                cout << "id = " << hash_name_to_get << ends << " odi = ";
+                destID.printBits(); cout << endl;
+                
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
-				container_peer->getOverlayID(), OverlayID(id), name);
+				container_peer->getOverlayID(), destID, name);
                 msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);
 	}
@@ -208,13 +210,15 @@ public:
 			HostAddress destination)
 	{
 		int hash_name_to_publish = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_publish);
-                cout << "id = " << id << ends << "odi = ";
-                OverlayID(id).printBits(); cout << endl;
+                OverlayID destID(hash_name_to_publish);
+                
+                cout << "id = " << hash_name_to_publish << ends << " odi = ";
+                destID.printBits(); cout << endl;
+                
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
-				container_peer->getOverlayID(), OverlayID(id), name,
+				container_peer->getOverlayID(), destID, name,
 				hostAddress);
                 msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);

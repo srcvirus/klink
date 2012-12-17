@@ -280,6 +280,8 @@ void *processing_thread(void* args)
 		if(forward)
 		{
 			printf("[Processing Thread:]\t pushed a %d type message for forwarding\n", message->getMessageType());
+                        message->getDstOid().printBits();
+                        printf(" host: %s:%d TTL: %d Hops: %d\n", message->getDestHost().c_str(), message->getDestPort(), message->getOverlayTtl(), message->getOverlayHops());
 			((PlexusProtocol*)plexus)->addToOutgoingQueue(message);
 		}
 	}
