@@ -69,7 +69,9 @@ public:
 		return table.end();
 	}
 
-	template <typename KeyType>
+
+
+/*	template <typename KeyType>
 	vector <KeyType> getKeySet()
 	{
 		vector <KeyType> keySet;
@@ -83,7 +85,7 @@ public:
 		pthread_rwlock_unlock(&table_lock);
 
 		return keySet;
-	}
+	}*/
 
 	/*void reset_iterator()
 	{
