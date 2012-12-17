@@ -153,8 +153,8 @@ public:
 
 		if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength)
 		{
-			msg->setDestHost("localhost");
-			msg->setDestPort(container_peer->getListenPortNumber());
+			//msg->setDestHost("localhost");
+			//msg->setDestPort(container_peer->getListenPortNumber());
 			return false;
 		} else
 		{

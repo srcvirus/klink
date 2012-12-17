@@ -69,7 +69,7 @@ public:
                         msg->getDstOid(),
                         ERROR_GET_FAILED,
                         hostAddress);
-                plexus->addToOutgoingQueue(message);
+                plexus->addToOutgoingQueue(reply);
             }
         }            //GET_REPLY
         else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
