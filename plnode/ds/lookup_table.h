@@ -69,9 +69,10 @@ public:
 		return table.end();
 	}
 
-	typename vector <KeyType> getKeySet()
+	template <typename KeyType>
+	vector <KeyType> getKeySet()
 	{
-		typename vector <KeyType> keySet;
+		vector <KeyType> keySet;
 
 		typename map <KeyType, ValueType>::iterator mapIt;
 
