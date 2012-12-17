@@ -5,6 +5,9 @@
  *      Author: sr2chowd
  */
 
+#ifndef PEER_INIT_GET_H
+#define PEER_INIT_GET_H
+
 #include "../message.h"
 
 class PeerInitiateGET: public ABSMessage
@@ -79,5 +82,6 @@ public:
 	}
 };
 
+#endif
 
 

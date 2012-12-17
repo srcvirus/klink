@@ -13,6 +13,7 @@
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
 #include "plnode/protocol/plexus/plexus_message_processor.h"
+#include "plnode/message/control/peer_initiate_get.h"
 
 #include <stdlib.h>
 #include <pthread.h>
@@ -224,11 +225,16 @@ void *listener_thread(void* args)
 								//rcvd_message->message_print_dump();
 								break;
 
-                                                    case MSG_PLEXUS_PUT:
+                            case MSG_PLEXUS_PUT:
 								rcvd_message = new MessagePUT();
 								rcvd_message->deserialize(buffer, buffer_length);
 								//rcvd_message->message_print_dump();
 								break;
+
+                            case MSG_PEER_INITIATE_GET:
+                            	rcvd_message = new PeerInitiateGET();
+                            	rcvd_message->deserialize(buffer, buffer_length);
+                            	break;
 						}
 
 						if(rcvd_message != NULL)
