@@ -63,7 +63,7 @@ public:
 	}
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host, int dest_port
-			, OverlayID src_oid, OverlayID dst_id): messageType(messageType), source_host(source_host), source_port(source_port),
+			, OverlayID src_oid, OverlayID dst_oid): messageType(messageType), source_host(source_host), source_port(source_port),
 					dest_host(dest_host), dest_port(dest_port), src_oid(src_oid), dst_oid(dst_oid)
 	{
 		sequence_no = sequence_no_generator++;

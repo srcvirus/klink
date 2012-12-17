@@ -189,6 +189,7 @@ public:
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+                msg->message_print_dump();
 		send_message(msg);
 	}
 	void put(string name, HostAddress hostAddress)
@@ -222,6 +223,7 @@ public:
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name, hostAddress);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+                msg->message_print_dump();
 		send_message(msg);
 	}
 
