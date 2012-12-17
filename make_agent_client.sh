@@ -7,9 +7,10 @@ if [ -f client ]
 then
 	rm client
 fi
-g++ -static -W server_system_test.cc -lpthread -o agent &>> output
-g++ -static -W client_system_test.cc -lpthread -o client &>> output
-grep error output
-rm output
+g++ -static -W server_system_test.cc -lpthread -o agent &> output_agent
+grep error output_agent
+g++ -static -W client_system_test.cc -lpthread -o client &> output_client
+grep error output_client
+rm output_*
 
 
