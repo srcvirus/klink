@@ -9,6 +9,13 @@ private:
     int hostPort;
 public:
 
+    HostAddress(){}
+    
+    HostAddress(string name, int port){
+        hostName = name;
+        hostPort = port;
+    }
+    
     void SetHostPort(int hostPort) {
         this->hostPort = hostPort;
     }

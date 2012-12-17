@@ -179,10 +179,13 @@ public:
 	{
 		int hash_name_to_get = atoi(name.c_str());
 		int id = GlobalData::rm->decode(hash_name_to_get);
+                cout << "id = " << id << ends << "odi = ";
+                OverlayID(id).printBits(); cout << endl;
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), OverlayID(id), name);
+                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);
 	}
 	void put(string name, HostAddress hostAddress)
@@ -206,12 +209,14 @@ public:
 	{
 		int hash_name_to_publish = atoi(name.c_str());
 		int id = GlobalData::rm->decode(hash_name_to_publish);
-
+                cout << "id = " << id << ends << "odi = ";
+                OverlayID(id).printBits(); cout << endl;
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), OverlayID(id), name,
 				hostAddress);
+                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		send_message(msg);
 	}
 

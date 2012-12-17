@@ -22,17 +22,17 @@ public:
 		messageType = MSG_PEER_CONFIG;
 	}
 
-	void setParameterK(int k)
+	void setK(int k)
 	{
 		parameter_k = k;
 	}
 
-	int getParameterK()
+	int getK()
 	{
 		return parameter_k;
 	}
 
-	void setParameterAlpha(double alpha)
+	void setAlpha(double alpha)
 	{
 		parameter_alpha = alpha;
 	}

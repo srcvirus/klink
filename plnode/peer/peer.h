@@ -25,7 +25,8 @@ class Peer
 	int peer_id;
 	int code_word;
 	OverlayID overlay_id;
-
+        int status;
+        
 	IPAddress ip_address;
 	string host_name;
 	int listen_port_number;
@@ -230,6 +231,14 @@ public:
 	{
 		overlay_id = id;
 	}
+
+        void setStatus(int status) {
+            this->status = status;
+        }
+
+        int getStatus() const {
+            return status;
+        }
 
 };
 

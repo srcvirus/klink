@@ -58,6 +58,7 @@ public:
 		overlay_hops = 0;
 		dest_host = "";
 		source_host = "";
+                calculateOverlayTTL(GlobalData::network_size);
 	}
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host, int dest_port
@@ -68,6 +69,7 @@ public:
 		overlay_hops = 0;
 		dest_host = "";
 		source_host = "";
+                calculateOverlayTTL(GlobalData::network_size);
 	}
 
 	virtual ~ABSMessage()
@@ -209,8 +211,13 @@ public:
 	{
 		return dst_oid;
 	}
+        
+        void calculateOverlayTTL(int networkSize){
+            overlay_ttl = 10;
+            //overlay_ttl = ceil(log2(n)) + 2;//(int) floor(log10(n) / log(2.0)) + 2;
+        }
 };
 
 int ABSMessage::sequence_no_generator;
 
-#endif /* MESSAGE_H_ */
+#endif /* MESSAGE_H */
