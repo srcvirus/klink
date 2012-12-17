@@ -69,9 +69,12 @@ public:
 		return table.end();
 	}
 
+
+
+/*	template <typename KeyType>
 	vector <KeyType> getKeySet()
 	{
-		typename::vector <KeyType> keySet;
+		vector <KeyType> keySet;
 
 		typename map <KeyType, ValueType>::iterator mapIt;
 
@@ -82,7 +85,7 @@ public:
 		pthread_rwlock_unlock(&table_lock);
 
 		return keySet;
-	}
+	}*/
 
 	/*void reset_iterator()
 	{

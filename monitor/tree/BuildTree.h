@@ -5,6 +5,7 @@
 
 #include "../../plnode/protocol/plexus/rm/ReadMullerCode.h"
 #include "../../plnode/ds/lookup_table.h"
+#include "../../plnode/ds/lookup_table_iterator.h"
 #include "../../plnode/ds/overlay_id.h"
 #include "../../plnode/ds/host_address.h"
 #include "../../plnode/ds/GlobalData.h"
@@ -173,11 +174,21 @@ void BuildTree::print() {
         idArray[i].printBits();
         cout << " pl = " << idArray[i].GetPrefix_length();
         cout << endl << "RT" << endl;
-        vector<OverlayID> keys = rtArray[i].getKeySet();
+
+        LookupTableIterator <OverlayID, HostAddress> rtable_itr(&rtArray[i]);
+        rtable_itr.reset_iterator();
+        while(rtable_itr.hasMoreKey())
+        {
+        	OverlayID key = rtable_itr.getNextKey();
+        	key.printBits();
+        	cout << endl;
+        }
+
+        /*vector<OverlayID> keys = rtArray[i].getKeySet();
         for (int j = 0; j < keys.size(); j++) {
             keys[j].printBits();
             cout << endl;
-        }
+        }*/
         cout << "==================================" << endl;
     }
 }
