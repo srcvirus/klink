@@ -12,6 +12,7 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/message_processor.h"
 #include "../../message/control/peer_init_message.h"
+#include "../../message/control/peer_initiate_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
 #include "../../message/control/peer_config_msg.h"
