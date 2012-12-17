@@ -43,6 +43,12 @@ public:
 	void setNPeers(int n){ n_peers = n; }
 	int getNPeers(){ return n_peers; }
 
+	void setK(int k){ this->k = k; }
+	int getK(){ return k; }
+
+	void setAlpha(double alpha){ this->alpha = alpha; }
+	double getAlpha(){ return alpha; }
+
 	size_t getSize()
 	{
 		int ret = getBaseSize();
@@ -74,9 +80,7 @@ public:
 		char* parent_buffer = ABSMessage::serialize(&parent_size);
 		char* buffer = new char[*serialize_length];
 
-		for(int i = 0; i < parent_size; i++) buffer[i] = parent_buffer[i];
-		offset = parent_size;
-
+		memcpy(buffer + offset, parent_buffer, parent_size); offset += parent_size;
 		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&k), sizeof(int)); offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&alpha), sizeof(double)); offset += sizeof(double);
@@ -151,6 +155,7 @@ public:
 		return this;
 	}
 
+
 	virtual void message_print_dump()
 	{
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
@@ -169,8 +174,12 @@ public:
 			routing_table.lookup(key, &value);
 			printf("Overlay ID = %d, Hostname = %s, Host Port = %d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
 		}
+		printf("N Peers = %d\n", n_peers);
+		printf("Alpha = %.4lf\n", alpha);
+		printf("K = %d\n", k);
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
+
 };
 
 

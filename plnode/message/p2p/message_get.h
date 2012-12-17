@@ -25,13 +25,26 @@ public:
         ;
     }
 
-    virtual char* serialize(int* serialize_length) {
-        *serialize_length = getBaseSize();
-        *serialize_length += (sizeof (int) + sizeof (char) * deviceName.size());
+    size_t getSize()
+    {
+    	int ret = getBaseSize();
+    	ret += sizeof(int);
+    	ret += sizeof(char) * deviceName.size();
+    }
 
+    virtual char* serialize(int* serialize_length) {
+    	*serialize_length = getSize();
+
+        //*serialize_length = getBaseSize();
+        //*serialize_length += (sizeof (int) + sizeof (char) * deviceName.size());
+    	int parent_size = 0;
         char* buffer = new char[*serialize_length];
+        char* parent_buffer = ABSMessage::serialize(&parent_size);
+
         int offset = 0;
-        int destHostLength = dest_host.size();
+        memcpy(buffer + offset, parent_buffer, parent_size); offset += parent_size;
+
+        /*int destHostLength = dest_host.size();
         int sourceHostLength = source_host.size();
 
         memcpy(buffer + offset, (char*) (&messageType), sizeof (char));
@@ -68,18 +81,18 @@ public:
                 offset += sizeof (OverlayID);
 
         memcpy(buffer + offset, (char*) (&src_oid), sizeof (OverlayID));
-        offset += sizeof (OverlayID);
+        offset += sizeof (OverlayID);*/
 
 
         int deviceNameLength = deviceName.size();
-        memcpy(buffer + offset, (char*) (&deviceNameLength), sizeof (int));
-        offset += sizeof (int);
+        memcpy(buffer + offset, (char*) (&deviceNameLength), sizeof (int)); offset += sizeof (int);
+
         for (int i = 0; i < deviceNameLength; i++) {
             char ch = deviceName[i];
-            memcpy(buffer + offset, (char*) (&ch), sizeof (char));
-            offset += sizeof (char);
+            memcpy(buffer + offset, (char*) (&ch), sizeof (char));offset += sizeof (char);
         }
 
+        delete[] parent_buffer;
         return buffer;
     }
 
@@ -88,7 +101,10 @@ public:
         int destHostLength, sourceHostLength, deviceNameLength,
                 hostAddrNameLength;
 
-        memcpy(&messageType, buffer + offset, sizeof (char));
+        ABSMessage::deserialize(buffer, buffer_length);
+        offset += getBaseSize();
+
+        /*memcpy(&messageType, buffer + offset, sizeof (char));
         offset += sizeof (char); //printf("offset = %d\n", offset);
         memcpy(&sequence_no, buffer + offset, sizeof (int));
         offset += sizeof (int); //printf("offset = %d\n", offset);
@@ -124,7 +140,7 @@ public:
         offset += sizeof (OverlayID); //printf("offset = %d\n", offset);
 
         memcpy(&src_oid, buffer + offset, sizeof (OverlayID));
-        offset += sizeof (OverlayID); //printf("offset = %d\n", offset);
+        offset += sizeof (OverlayID); //printf("offset = %d\n", offset);*/
 
         memcpy(&deviceNameLength, buffer + offset, sizeof (int));
         offset += sizeof (int);
