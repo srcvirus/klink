@@ -209,7 +209,7 @@ void *listener_thread(void* args)
 							case MSG_PEER_INIT:
 								rcvd_message = new PeerInitMessage();
 								rcvd_message->deserialize(buffer, buffer_length);
-								//rcvd_message->message_print_dump();
+								rcvd_message->message_print_dump();
 								break;
                                                                 
 							case MSG_PLEXUS_GET:

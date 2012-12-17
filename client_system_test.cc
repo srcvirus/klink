@@ -65,18 +65,22 @@ int main(int argc, char* argv[]) {
         pInit->setRoutingTable(tree.getRoutingTablePtr(i));
         char* buffer;
         int buffer_length = 0;
+        pInit->message_print_dump();
 
         puts("Serializing INIT packet");
         buffer = pInit->serialize(&buffer_length);
         printf("Serialized Length = %d bytes\n", buffer_length);
 
-        puts("Sending Init Packet");
+        PeerInitMessage* a = new PeerInitMessage();
+        a->deserialize(buffer, buffer_length);
+        a->message_print_dump();
+        //puts("Sending Init Packet");
         retCode = c_socket->send_data(buffer, buffer_length);
         if (retCode < 0)
             print_error_message(retCode);
         //else printf("Sent %d Bytes", retCode);
         c_socket->close_socket();
-	puts("Init Packet Sent");
+        //puts("Init Packet Sent");
         delete c_socket;
         delete pInit;
     }
