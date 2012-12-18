@@ -14,6 +14,7 @@
 
 class MessageGET : public ABSMessage {
     string deviceName;
+
 public:
     MessageGET(){}
 
@@ -22,7 +23,7 @@ public:
 				ABSMessage(MSG_PLEXUS_GET, source_host, source_port, dest_host,
 									dest_port, src_oid, dst_id), deviceName(deviceName)
 	{
-        ;
+        issue_time_stamp = 0;
     }
 
     size_t getSize()

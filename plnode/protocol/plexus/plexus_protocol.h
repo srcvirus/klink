@@ -22,12 +22,16 @@
 #include "../../message/control/peer_initiate_put.h"
 #include "../../ds/host_address.h"
 #include "../../message/message.h"
+#include "../../logging/log.h"
 
 using namespace std;
 
 class ABSProtocol;
 
 class PlexusProtocol : public ABSProtocol {
+
+		Log  *get_log, *put_log;
+
         queue<ABSMessage*> incoming_message_queue;
         queue<ABSMessage*> outgoing_message_queue;
 
@@ -49,13 +53,23 @@ public:
 
                 pthread_cond_init(&cond_incoming_queue_empty, NULL);
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+
+                get_log = new Log("seq", "get", "scspc394.cs.uwaterloo.ca", "sr2chowd");
+                put_log = new Log("seq", "put", "scspc394.cs.uwaterloo.ca", "sr2chowd");
+                get_log->open("a");
+                put_log->open("a");
         }
 
         PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
                 LookupTable<string, HostAddress>* index_table, Cache *cache,
                 MessageProcessor* msgProcessor, Peer* container) :
         ABSProtocol(routing_table, index_table, cache, msgProcessor,
-        container) {
+        container)
+        {
+        		get_log = new Log("seq", "get", "scspc394.cs.uwaterloo.ca", "sr2chowd");
+				put_log = new Log("seq", "put", "scspc394.cs.uwaterloo.ca", "sr2chowd");
+				get_log->open("a");
+				put_log->open("a");
                 this->msgProcessor->setContainerProtocol(this);
 
                 pthread_mutex_init(&incoming_queue_lock, NULL);
@@ -162,7 +176,10 @@ public:
                         container_peer->getOverlayID(), destID, name);
 
                 if (msgProcessor->processMessage(msg))
+                {
+                		msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
+                }
         }
 
         void get_from_client(string name, HostAddress destination) {
@@ -193,7 +210,10 @@ public:
                         hostAddress);
 
                 if (msgProcessor->processMessage(msg))
+                {
+                		msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
+                }
         }
 
         void put_from_client(string name, HostAddress hostAddress,
@@ -274,6 +294,16 @@ public:
                 outgoing_message_queue.pop();
                 pthread_mutex_unlock(&outgoing_queue_lock);
                 return ret;
+        }
+
+        Log* getGetLog()
+        {
+        	return get_log;
+        }
+
+        Log* getPutLog()
+        {
+        	return put_log;
         }
 
         ~PlexusProtocol() {

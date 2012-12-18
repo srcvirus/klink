@@ -16,6 +16,7 @@
 
 class MessageGET_REPLY : public ABSMessage {
     int resolution_status;
+    int resolution_hops;
     HostAddress host_address;
 
 public:
@@ -50,6 +51,7 @@ public:
 
         memcpy(buffer + offset, parent_buffer, parent_length); offset += parent_length;
         memcpy(buffer + offset, (char*)&resolution_status, sizeof(int)); offset += sizeof(int);
+        memcpy(buffer + offset, (char*)&resolution_hops, sizeof(int)); offset += sizeof(int);
 
         int destHostLength = host_address.GetHostName().size();
         memcpy(buffer + offset, (char*)&destHostLength, sizeof(int)); offset += sizeof(int);
@@ -72,6 +74,8 @@ public:
     	int offset = getBaseSize();
 
     	memcpy(&resolution_status, buffer + offset, sizeof(int)); offset += sizeof(int);
+    	memcpy(&resolution_hops, buffer + offset, sizeof(int)); offset += sizeof(int);
+
     	int hostLength = 0;
     	memcpy(&hostLength, buffer + offset, sizeof(int)); offset += sizeof(int);
 
@@ -105,6 +109,16 @@ public:
 
     void setStatus(int status) {
         resolution_status = status;
+    }
+
+    int getResolutionHops() const
+    {
+    	return resolution_hops;
+    }
+
+    void setResolutionHops(int hops)
+    {
+    	resolution_hops = hops;
     }
 };
 

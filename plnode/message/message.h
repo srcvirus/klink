@@ -45,12 +45,15 @@ protected:
 	unsigned char overlay_ttl;
 	OverlayID dst_oid;
 	OverlayID src_oid;
+    long issue_time_stamp;
 
 	size_t getBaseSize()
 	{
 		size_t size = sizeof(char) * 3 + sizeof(int) * 5
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(OverlayID) * 2;
+				+ sizeof(OverlayID) * 2
+				+ sizeof(long);
+
 		return size;
 	}
 
@@ -118,7 +121,7 @@ public:
 
 		memcpy(buffer + offset, (char*)(&dst_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
 		memcpy(buffer + offset, (char*)(&src_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
-
+		memcpy(buffer + offset, (char*)(&issue_time_stamp), sizeof(long)); offset += sizeof(long);
 
 		return buffer;
 	}
@@ -159,6 +162,7 @@ public:
 
 		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&issue_time_stamp, buffer + offset, sizeof(long)); offset += sizeof(long);
 	}
 
 	virtual void message_print_dump()
@@ -173,6 +177,22 @@ public:
 		printf("Destination Overlay ID: %d\n", dst_oid.GetOverlay_id());
 		printf("Overlay Hops %d\n", overlay_hops);
 		printf("Overlay TTL %d\n", overlay_ttl);
+		printf("Issue time stamp = %ld\n", issue_time_stamp);
+	}
+
+	long getIssueTimeStamp() const
+	{
+		return issue_time_stamp;
+	}
+
+	void setIssueTimeStamp()
+	{
+		issue_time_stamp = clock();
+	}
+
+	void setIssueTimeStamp(long timestamp)
+	{
+		issue_time_stamp = timestamp;
 	}
 
 	string getDestHost()
