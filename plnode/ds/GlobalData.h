@@ -19,6 +19,6 @@ public:
 };
 
 ReedMuller* GlobalData::rm = new ReedMuller(2, 4);
-string GlobalData::host_file_name = "ihostlist";
+string GlobalData::host_file_name = "pl_hostlist";
 int GlobalData::network_size;
 #endif /* GLOBALDATA_H_ */
