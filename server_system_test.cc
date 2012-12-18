@@ -131,8 +131,7 @@ void *listener_thread(void* args)
 	while (true)
 	{
 		read_connection_fds = connection_pool;
-		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
-				NULL);
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
 		if (n_select < 0)
 		{
