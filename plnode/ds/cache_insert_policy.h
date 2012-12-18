@@ -12,20 +12,19 @@
 #include "host_address.h"
 #include "double_linked_list.h"
 #include "lookup_table.h"
-#include "routing_table.h"
 
 class CacheInsertPolicy{
 protected:
     DoublyLinkedList *dll;
     LookupTable<OverlayID, DLLNode*> *hm;
-    RoutingTable *rt;
+    LookupTable<OverlayID, HostAddress>* rt;
 public:
 
     CacheInsertPolicy(){
             
     }
     
-    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm, RoutingTable *rt){
+    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm, LookupTable<OverlayID, HostAddress>* rt){
         this->dll = dll;
         this->hm = hm;
         this->rt = rt;

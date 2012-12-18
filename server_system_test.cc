@@ -42,48 +42,6 @@ void *forwarding_thread(void*);
 void *processing_thread(void*);
 void *controlling_thread(void*);
 
-/*int read_port(const char* hosts_file)
- {
- FILE* hosts_ptr = fopen(hosts_file, "r");
- char host_name[200];
- int port;
- int n_hosts;
- fscanf(hosts_ptr, "%d", &n_hosts);
-
- for(int i = 0; i < n_hosts; i++)
- {
- fscanf(hosts_ptr, "%s %d", host_name, &port);
- if(strncmp(this_peer->getHostName().c_str(), host_name, strlen(this_peer->getHostName().c_str())))
- return port;
- }
-
- return ERROR_NOT_IN_HOSTS_FILE;
- }*/
-
-/*void process_and_forward(ABSMessage* rcvd_message) {
- printf("Processing Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
- //plexus->printRoutingTable();
- bool forward = plexus->setNextHop(rcvd_message);
- if (!forward) {
- printf("Local Processing...\n");
- ((PlexusProtocol*) plexus)->processMessage(rcvd_message);
- return;
- } else {
- printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
-
- string dest_host = rcvd_message->getDestHost();
- int dest_port = rcvd_message->getDestPort();
- ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
-
- c_socket->connect_to_server();
- int buffer_length = 0;
- char* buffer = rcvd_message->serialize(&buffer_length);
- c_socket->send_data(buffer, buffer_length);
- c_socket->close_socket();
- delete c_socket;
- }
- }*/
-
 int main(int argc, char* argv[])
 {
 	system_init();
@@ -150,6 +108,10 @@ void system_init()
 
 	fd_max = s_socket->getSocketFd();
 	s_socket->print_socket_info();
+
+	this_peer->setNRetry(1);
+	this_peer->setTimeoutSec(2);
+	this_peer->setTimeoutMicroSec(500);
 }
 
 void cleanup()
@@ -293,17 +255,16 @@ void *forwarding_thread(void* args)
 				message->getMessageType(), message->getDestHost().c_str(),
 				message->getDestPort());
 
-		plexus->send_message(message);
+		int retry = 0;
+		while(retry < this_peer->getNRetry())
+		{
+			int error_code = plexus->send_message(message);
 
-
-		/*ClientSocket* c_socket = new ClientSocket(message->getDestHost(),
-				message->getDestPort());
-		c_socket->connect_to_server();
-
-		message->message_print_dump();
-
-		buffer = message->serialize(&buffer_length);
-		c_socket->send_data(buffer, buffer_length);*/
+			if(error_code == ERROR_CONNECTION_TIMEOUT)
+				retry++;
+			else
+				break;
+		}
 
 		delete message;
 	}

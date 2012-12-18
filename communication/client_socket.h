@@ -38,7 +38,7 @@ public:
 	string getServerHostName(){ return server_host_name; }
 	int getServerPortNumber(){ return server_port_number; }
 
-	int send_data(char* buffer, int n_bytes, timeval* timeout = NULL );
+	int send_data(char* buffer, int n_bytes, timeval* timeout );
 	int receive_data(char** buffer);
 
 	~ClientSocket();
@@ -79,7 +79,7 @@ int ClientSocket::receive_data(char** buffer)
 	return n_bytes;
 }
 
-int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
+int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout = NULL)
 {
 	int ret_code;
 	if(timeout == NULL)
