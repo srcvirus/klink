@@ -25,7 +25,7 @@
 
 using namespace std;
 
-#define MAX_CONNECTIONS 1500
+#define MAX_CONNECTIONS 3000
 #define MAX_INCOMING_DATA_LENGTH 4096
 
 class ABSSocket {
