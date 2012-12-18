@@ -18,8 +18,11 @@
 #include "plnode/message/control/peer_start_message.h"
 #include "plnode/message/control/peer_change_status_message.h"
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
 #include <pthread.h>
+
+using namespace std;
 
 //Globals
 Peer* this_peer;
@@ -38,6 +41,7 @@ void cleanup();
 void *listener_thread(void*);
 void *forwarding_thread(void*);
 void *processing_thread(void*);
+void *controlling_thread(void*);
 
 /*int read_port(const char* hosts_file)
 {
@@ -83,15 +87,17 @@ void *processing_thread(void*);
 
 int main(int argc, char* argv[]) {
         system_init();
-        pthread_t listener, processor, forwarder;
+        pthread_t listener, processor, forwarder, controller;
 
         pthread_create(&listener, NULL, listener_thread, NULL);
         pthread_create(&forwarder, NULL, forwarding_thread, NULL);
         pthread_create(&processor, NULL, processing_thread, NULL);
+        pthread_create(&controller, NULL, controlling_thread, NULL);
 
         pthread_join(listener, NULL);
         pthread_join(forwarder, NULL);
         pthread_join(processor, NULL);
+        pthread_join(controller, NULL);
 
         cleanup();
 }
@@ -285,4 +291,23 @@ void *processing_thread(void* args) {
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
                 }
         }
+}
+
+void *controlling_thread(void* args) {
+        //publish names
+        char buffer[33];
+        for (int i = this_peer->getPublish_name_range_start(); i < this_peer->getPublish_name_range_end(); i++) {
+                HostAddress ha("dummyhost", i);
+                //itoa(i, buffer, 10);
+                sprintf(buffer, "%d", i);
+                this_peer->getProtocol()->put(string(buffer), ha);
+        }
+        //lookup names
+        for (int i = this_peer->getLookup_name_range_start(); i < this_peer->getLookup_name_range_end(); i++) {
+                HostAddress ha("dummyhost", i);
+                //itoa(i, buffer, 10);
+                sprintf(buffer, "%d", i);
+                this_peer->getProtocol()->get(string(buffer));
+        }
+
 }

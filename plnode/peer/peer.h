@@ -31,8 +31,10 @@ class Peer
 	string host_name;
 	int listen_port_number;
 
-	int name_range_start;
-	int name_range_end;
+	int publish_name_range_start;
+	int publish_name_range_end;
+	int lookup_name_range_start;
+	int lookup_name_range_end;
 	double alpha;
 	int k;
 
@@ -142,26 +144,6 @@ public:
 		this->k = k;
 	}
 
-	int getNameRangeEnd()
-	{
-		return name_range_end;
-	}
-
-	void setNameRangeEnd(int nameRangeEnd)
-	{
-		name_range_end = nameRangeEnd;
-	}
-
-	int getNameRangeStart()
-	{
-		return name_range_start;
-	}
-
-	void setNameRangeStart(int nameRangeStart)
-	{
-		name_range_start = nameRangeStart;
-	}
-
 	int getPeerId()
 	{
 		return peer_id;
@@ -238,6 +220,38 @@ public:
 
         int getStatus() const {
             return status;
+        }
+
+        void setLookup_name_range_end(int lookup_name_range_end) {
+                this->lookup_name_range_end = lookup_name_range_end;
+        }
+
+        int getLookup_name_range_end() const {
+                return lookup_name_range_end;
+        }
+
+        void setLookup_name_range_start(int lookup_name_range_start) {
+                this->lookup_name_range_start = lookup_name_range_start;
+        }
+
+        int getLookup_name_range_start() const {
+                return lookup_name_range_start;
+        }
+
+        void setPublish_name_range_end(int publish_name_range_end) {
+                this->publish_name_range_end = publish_name_range_end;
+        }
+
+        int getPublish_name_range_end() const {
+                return publish_name_range_end;
+        }
+
+        void setPublish_name_range_start(int publish_name_range_start) {
+                this->publish_name_range_start = publish_name_range_start;
+        }
+
+        int getPublish_name_range_start() const {
+                return publish_name_range_start;
         }
 
 };
