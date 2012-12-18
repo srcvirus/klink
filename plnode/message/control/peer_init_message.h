@@ -31,6 +31,8 @@ class PeerInitMessage: public ABSMessage
 	LookupTable<OverlayID, HostAddress> routing_table;
 	int n_peers, k;
 	double alpha;
+        int publish_name_range_start, publish_name_range_end;
+        int lookup_name_range_start, lookup_name_range_end;
 
 public:
 	PeerInitMessage()
@@ -54,6 +56,7 @@ public:
 		int ret = getBaseSize();
 		ret += sizeof(int) * 3;
 		ret += sizeof(double);
+                ret += sizeof(int) * 4;
 		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
 		rtable_iterator.reset_iterator();
 
@@ -84,6 +87,11 @@ public:
 		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&k), sizeof(int)); offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&alpha), sizeof(double)); offset += sizeof(double);
+
+		memcpy(buffer + offset, (char*)(&publish_name_range_start), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)(&publish_name_range_end), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)(&lookup_name_range_start), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)(&lookup_name_range_end), sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);
@@ -126,6 +134,11 @@ public:
 		memcpy(&n_peers, buffer + offset, sizeof(int)); offset += sizeof(int);
 		memcpy(&k, buffer + offset, sizeof(int)); offset += sizeof(int);
 		memcpy(&alpha, buffer + offset, sizeof(double)); offset += sizeof(double);
+
+		memcpy(&publish_name_range_start, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&publish_name_range_end, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&lookup_name_range_start, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&lookup_name_range_end, buffer + offset, sizeof(int)); offset += sizeof(int);
 
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
@@ -177,8 +190,42 @@ public:
 		printf("N Peers = %d\n", n_peers);
 		printf("Alpha = %.4lf\n", alpha);
 		printf("K = %d\n", k);
+                printf("Publish Start = %d End = %d\n", publish_name_range_start, publish_name_range_end);
+                printf("Lookup Start = %d End = %d\n", lookup_name_range_start, lookup_name_range_end);
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
+
+        void setLookup_name_range_end(int lookup_name_range_end) {
+                this->lookup_name_range_end = lookup_name_range_end;
+        }
+
+        int getLookup_name_range_end() const {
+                return lookup_name_range_end;
+        }
+
+        void setLookup_name_range_start(int lookup_name_range_start) {
+                this->lookup_name_range_start = lookup_name_range_start;
+        }
+
+        int getLookup_name_range_start() const {
+                return lookup_name_range_start;
+        }
+
+        void setPublish_name_range_end(int publish_name_range_end) {
+                this->publish_name_range_end = publish_name_range_end;
+        }
+
+        int getPublish_name_range_end() const {
+                return publish_name_range_end;
+        }
+
+        void setPublish_name_range_start(int publish_name_range_start) {
+                this->publish_name_range_start = publish_name_range_start;
+        }
+
+        int getPublish_name_range_start() const {
+                return publish_name_range_start;
+        }
 
 };
 

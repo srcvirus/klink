@@ -108,6 +108,8 @@ void system_init() {
 
         /* creating the peer container */
         this_peer = new Peer(GlobalData::host_file_name.c_str());
+        puts("hostname = ");
+        puts(this_peer->getHostName().c_str());
         if (this_peer->getListenPortNumber() == -1) {
                 puts("Port Number Not Found");
                 exit(1);

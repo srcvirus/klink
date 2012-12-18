@@ -28,31 +28,37 @@ using namespace std;
 #define MAX_CONNECTIONS 1500
 #define MAX_INCOMING_DATA_LENGTH 4096
 
-class ABSSocket
-{
+class ABSSocket {
 protected:
-	int socket_fd;
+        int socket_fd;
 
 public:
 
-	int getSocketFd(){ return socket_fd; }
-	void close_socket(){ close(socket_fd); }
+        int getSocketFd() {
+                return socket_fd;
+        }
 
-	void print_socket_info()
-	{
-		struct sockaddr_in sin;
-		unsigned int addrLength = sizeof(sockaddr);
-		getsockname(socket_fd, (sockaddr*)&sin, &addrLength);
+        void close_socket() {
+                close(socket_fd);
+        }
 
-		int port = ntohs(sin.sin_port);
-		char hostName[100];
-		gethostname(hostName, 100);
+        void print_socket_info() {
+                struct sockaddr_in sin;
+                unsigned int addrLength = sizeof (sockaddr);
+                getsockname(socket_fd, (sockaddr*) & sin, &addrLength);
 
-		printf("ADDRESS %s\n",hostName);
-		printf("PORT %d\n", port);
-	}
+                int port = ntohs(sin.sin_port);
+                char hostName[100], domain_name[100];
+                gethostname(hostName, 100);
+                getdomainname(domain_name, 100);
 
-	virtual ~ABSSocket(){ close(socket_fd); };
+                printf("ADDRESS %s %s\n", hostName, domain_name);
+                printf("PORT %d\n", port);
+        }
+
+        virtual ~ABSSocket() {
+                close(socket_fd);
+        };
 };
 
 

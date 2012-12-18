@@ -14,7 +14,7 @@
 #include "plnode/ds/GlobalData.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
 
-void send_init_message(BuildTree &tree) {
+void send_init_message(BuildTree &tree, int name_count) {
 
         int n = tree.getTreeSize();
         printf("n = %d\n", n);
@@ -50,6 +50,18 @@ void send_init_message(BuildTree &tree) {
                 pInit->setDstOid(tree.getOverlayID(i));
                 pInit->setNPeers(n);
                 pInit->setRoutingTable(tree.getRoutingTablePtr(i));
+
+                int name_interval = name_count / n;
+                pInit->setPublish_name_range_start(name_interval * i);
+                pInit->setLookup_name_range_start(name_interval * i);
+                if (i < n - 1) {
+                        pInit->setPublish_name_range_end(name_interval * (i + 1) - 1);
+                        pInit->setLookup_name_range_end(name_interval * (i + 1) - 1);
+                } else {
+                        pInit->setPublish_name_range_end(name_count - 1);
+                        pInit->setLookup_name_range_end(name_count - 1);
+                }
+
                 char* buffer;
                 int buffer_length = 0;
                 pInit->message_print_dump();
@@ -77,6 +89,8 @@ int main(int argc, char* argv[]) {
         //char* server_name = argv[1];
         //int server_port = atoi(argv[2]);
 
+        int name_count = 785;
+        
         Peer* this_peer = new Peer();
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
@@ -85,8 +99,8 @@ int main(int argc, char* argv[]) {
         tree.execute();
         tree.print();
 
-        send_init_message(tree);
-        
+        send_init_message(tree, name_count);
+
         //PlexusProtocol* plexus = new PlexusProtocol();
         char input[1000];
         srand(time(NULL));
@@ -124,9 +138,9 @@ int main(int argc, char* argv[]) {
                         string name = strtok(NULL, " ");
                         HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
                         plexus->get_from_client(name, destination);
-                } else if(strcmp(command, "init") == 0
-                        || strcmp(command, "INIT") == 0){
-                        send_init_message(tree);
+                } else if (strcmp(command, "init") == 0
+                        || strcmp(command, "INIT") == 0) {
+                        send_init_message(tree, name_count);
                 }
         }
 

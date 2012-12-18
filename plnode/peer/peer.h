@@ -18,208 +18,181 @@ class ABSProtocol;
 
 class ABSProtocol;
 
-class Peer
-{
-	int n_peers;
+class Peer {
+        int n_peers;
 
-	int peer_id;
-	int code_word;
-	OverlayID overlay_id;
+        int peer_id;
+        int code_word;
+        OverlayID overlay_id;
         int status;
-        
-	IPAddress ip_address;
-	string host_name;
-	int listen_port_number;
 
-	int publish_name_range_start;
-	int publish_name_range_end;
-	int lookup_name_range_start;
-	int lookup_name_range_end;
-	double alpha;
-	int k;
+        IPAddress ip_address;
+        string host_name;
+        int listen_port_number;
 
-	ABSProtocol* protocol;
-	ServerSocket* server_socket;
+        int publish_name_range_start;
+        int publish_name_range_end;
+        int lookup_name_range_start;
+        int lookup_name_range_end;
+        double alpha;
+        int k;
+
+        ABSProtocol* protocol;
+        ServerSocket* server_socket;
 
 public:
-	Peer()
-	{
-		char hostname[100];
-		gethostname(hostname, 100);
-		host_name = hostname;
-		listen_port_number = 0;
-	}
 
-	Peer(int port)
-	{
-		char hostname[100];
-		gethostname(hostname, 100);
-		host_name = hostname;
-		listen_port_number = port;
-		server_socket = new ServerSocket(listen_port_number);
-	}
+        void INIT() {
+                char hostname[100], domain_name[100];
+                gethostname(hostname, 100);
+                //getdomainname(domain_name, 100);
+                struct hostent* host_info;
+                host_info = gethostbyname(hostname);
+                host_name = string(host_info->h_name);
+                //host_name = string(strcat(hostname, strcat(".", domain_name)));
+        }
 
-	Peer(const char* hosts_file)
-	{
-		char hostname[100];
-		gethostname(hostname, 100);
-		host_name = hostname;
-		listen_port_number = -1;
-		FILE* hosts_ptr = fopen(hosts_file, "r");
-		char host_name[200];
-		int port = -1;
-		int n_hosts;
-		fscanf(hosts_ptr, "%d", &n_hosts);
+        Peer() {
+                INIT();
+                listen_port_number = 0;
+        }
 
-		for(int i = 0; i < n_hosts; i++)
-		{
-			fscanf(hosts_ptr, "%s %d", host_name, &port);
-			if(strncmp(this->getHostName().c_str(), host_name, strlen(this->getHostName().c_str())) == 0)
-			{
-				listen_port_number = port;
-				break;
-			}
-		}
-		fclose(hosts_ptr);
+        Peer(int port) {
+                INIT();
+                listen_port_number = port;
+                server_socket = new ServerSocket(listen_port_number);
+        }
 
-		if(listen_port_number != -1)
-		{
-			server_socket = new ServerSocket(listen_port_number);
-		}
-	}
+        Peer(const char* hosts_file) {
+                INIT();
+                listen_port_number = -1;
+                FILE* hosts_ptr = fopen(hosts_file, "r");
+                char host_name[200];
+                int port = -1;
+                int n_hosts;
+                fscanf(hosts_ptr, "%d", &n_hosts);
 
-	~Peer()
-	{
-		delete protocol;
-		delete server_socket;
-	}
+                for (int i = 0; i < n_hosts; i++) {
+                        fscanf(hosts_ptr, "%s %d", host_name, &port);
+                        if (strncmp(this->getHostName().c_str(), host_name, strlen(this->getHostName().c_str())) == 0) {
+                                listen_port_number = port;
+                                break;
+                        }
+                }
+                fclose(hosts_ptr);
 
-	double getAlpha()
-	{
-		return alpha;
-	}
+                if (listen_port_number != -1) {
+                        server_socket = new ServerSocket(listen_port_number);
+                }
+        }
 
-	void setAlpha(double alpha)
-	{
-		this->alpha = alpha;
-	}
+        ~Peer() {
+                delete protocol;
+                delete server_socket;
+        }
 
-	int getCodeWord()
-	{
-		return code_word;
-	}
+        double getAlpha() {
+                return alpha;
+        }
 
-	void setCodeWord(int codeWord)
-	{
-		code_word = codeWord;
-	}
+        void setAlpha(double alpha) {
+                this->alpha = alpha;
+        }
 
-	IPAddress getIpAddress()
-	{
-		return ip_address;
-	}
+        int getCodeWord() {
+                return code_word;
+        }
 
-	int getIntIpAddress()
-	{
-		return ip_address.getIpAddress();
-	}
+        void setCodeWord(int codeWord) {
+                code_word = codeWord;
+        }
 
-	string getStrIpAddress()
-	{
-		return ip_address.getStrIpAddress();
-	}
+        IPAddress getIpAddress() {
+                return ip_address;
+        }
 
-	void setIpAddress(char* ipAddress)
-	{
-		ip_address.setIp(ipAddress);
-	}
+        int getIntIpAddress() {
+                return ip_address.getIpAddress();
+        }
 
-	int getK()
-	{
-		return k;
-	}
+        string getStrIpAddress() {
+                return ip_address.getStrIpAddress();
+        }
 
-	void setK(int k)
-	{
-		this->k = k;
-	}
+        void setIpAddress(char* ipAddress) {
+                ip_address.setIp(ipAddress);
+        }
 
-	int getPeerId()
-	{
-		return peer_id;
-	}
+        int getK() {
+                return k;
+        }
 
-	void setPeerId(int peerId)
-	{
-		peer_id = peerId;
-	}
+        void setK(int k) {
+                this->k = k;
+        }
 
-	void setHostName(string host_name)
-	{
-		this->host_name = host_name;
-	}
+        int getPeerId() {
+                return peer_id;
+        }
 
-	string getHostName()
-	{
-		return host_name;
-	}
+        void setPeerId(int peerId) {
+                peer_id = peerId;
+        }
 
-	int getListenPortNumber()
-	{
-		return listen_port_number;
-	}
+        void setHostName(string host_name) {
+                this->host_name = host_name;
+        }
 
-	void setListenPortNumber(int port)
-	{
-		listen_port_number = port;
-	}
+        string getHostName() {
+                return host_name;
+        }
 
-	ABSProtocol* getProtocol()
-	{
-		return protocol;
-	}
+        int getListenPortNumber() {
+                return listen_port_number;
+        }
 
-	void setProtocol(ABSProtocol* protocol)
-	{
-		this->protocol = protocol;
-	}
+        void setListenPortNumber(int port) {
+                listen_port_number = port;
+        }
 
-	ServerSocket* getServerSocket()
-	{
-		return server_socket;
-	}
+        ABSProtocol* getProtocol() {
+                return protocol;
+        }
 
-	void setServerSocket(ServerSocket* socket)
-	{
-		server_socket = socket;
-	}
+        void setProtocol(ABSProtocol* protocol) {
+                this->protocol = protocol;
+        }
 
-	void setNPeers(int n)
-	{
-		n_peers = n;
-	}
+        ServerSocket* getServerSocket() {
+                return server_socket;
+        }
 
-	int getNPeers()
-	{
-		return n_peers;
-	}
+        void setServerSocket(ServerSocket* socket) {
+                server_socket = socket;
+        }
 
-	OverlayID getOverlayID()
-	{
-		return overlay_id;
-	}
+        void setNPeers(int n) {
+                n_peers = n;
+        }
 
-	void setOverlayID(OverlayID id)
-	{
-		overlay_id = id;
-	}
+        int getNPeers() {
+                return n_peers;
+        }
+
+        OverlayID getOverlayID() {
+                return overlay_id;
+        }
+
+        void setOverlayID(OverlayID id) {
+                overlay_id = id;
+        }
 
         void setStatus(int status) {
-            this->status = status;
+                this->status = status;
         }
 
         int getStatus() const {
-            return status;
+                return status;
         }
 
         void setLookup_name_range_end(int lookup_name_range_end) {
