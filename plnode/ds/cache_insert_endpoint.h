@@ -1,10 +1,11 @@
 
 #include "cache_insert_policy.h"
+#include "routing_table.h"
 
 class CacheInsertEndpoint : public CacheInsertPolicy {
 public:
 
-    CacheInsertEndpoint() {
+    CacheInsertEndpoint() : CacheInsertPolicy() {
     }
 
     void insert(OverlayID *key, HostAddress *value) {

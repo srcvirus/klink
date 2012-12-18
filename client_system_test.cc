@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
         //char* server_name = argv[1];
         //int server_port = atoi(argv[2]);
 
-        int name_count = 785;
+        int name_count = 14;
         
         Peer* this_peer = new Peer();
         PlexusProtocol* plexus = new PlexusProtocol();

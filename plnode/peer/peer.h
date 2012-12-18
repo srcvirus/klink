@@ -36,7 +36,7 @@ class Peer {
         int lookup_name_range_end;
         double alpha;
         int k;
-
+        bool init_rcvd;
         ABSProtocol* protocol;
         ServerSocket* server_socket;
 
@@ -50,6 +50,7 @@ public:
                 host_info = gethostbyname(hostname);
                 host_name = string(host_info->h_name);
                 //host_name = string(strcat(hostname, strcat(".", domain_name)));
+                init_rcvd = false;
         }
 
         Peer() {
@@ -225,6 +226,14 @@ public:
 
         int getPublish_name_range_start() const {
                 return publish_name_range_start;
+        }
+
+        void SetInitRcvd(bool init_rcvd) {
+                this->init_rcvd = init_rcvd;
+        }
+
+        bool IsInitRcvd() const {
+                return init_rcvd;
         }
 
 };

@@ -92,12 +92,12 @@ int main(int argc, char* argv[]) {
         pthread_create(&listener, NULL, listener_thread, NULL);
         pthread_create(&forwarder, NULL, forwarding_thread, NULL);
         pthread_create(&processor, NULL, processing_thread, NULL);
-        //pthread_create(&controller, NULL, controlling_thread, NULL);
+        pthread_create(&controller, NULL, controlling_thread, NULL);
 
         pthread_join(listener, NULL);
         pthread_join(forwarder, NULL);
         pthread_join(processor, NULL);
-        //pthread_join(controller, NULL);
+        pthread_join(controller, NULL);
 
         cleanup();
 }
@@ -296,20 +296,36 @@ void *processing_thread(void* args) {
 }
 
 void *controlling_thread(void* args) {
-        //publish names
-        char buffer[33];
-        for (int i = this_peer->getPublish_name_range_start(); i < this_peer->getPublish_name_range_end(); i++) {
-                HostAddress ha("dummyhost", i);
-                //itoa(i, buffer, 10);
-                sprintf(buffer, "%d", i);
-                this_peer->getProtocol()->put(string(buffer), ha);
-        }
-        //lookup names
-        for (int i = this_peer->getLookup_name_range_start(); i < this_peer->getLookup_name_range_end(); i++) {
-                HostAddress ha("dummyhost", i);
-                //itoa(i, buffer, 10);
-                sprintf(buffer, "%d", i);
-                this_peer->getProtocol()->get(string(buffer));
-        }
+        puts("Starting a controlling thread");
 
+        while (true) {
+                if (this_peer->IsInitRcvd()) {
+                        char buffer[33];
+
+                        //publish names
+                        printf("[Controlling Thread:]\tPublishing name in range %d %d\n", this_peer->getPublish_name_range_start(), this_peer->getPublish_name_range_end());
+                        for (int i = this_peer->getPublish_name_range_start(); i < this_peer->getPublish_name_range_end(); i++) {
+                                HostAddress ha("dummyhost", i);
+                                //itoa(i, buffer, 10);
+                                sprintf(buffer, "%d", i);
+                                printf("[Controlling Thread:]\tPublishing name: %d\n", i);
+                                this_peer->getProtocol()->put(string(buffer), ha);
+                                if (i % 3 == 0)
+                                        pthread_yield();
+                        }
+                        //lookup names
+                        printf("[Controlling Thread:]\tLooking up name ...\n");
+                        for (int i = this_peer->getLookup_name_range_start(); i < this_peer->getLookup_name_range_end(); i++) {
+                                HostAddress ha("dummyhost", i);
+                                //itoa(i, buffer, 10);
+                                sprintf(buffer, "%d", i);
+                                printf("[Controlling Thread:]\tLooking up name: %d\n", i);
+                                this_peer->getProtocol()->get(string(buffer));
+                                if (i % 3 == 0)
+                                        pthread_yield();
+                        }
+                        break;
+                }
+                pthread_yield();
+        }
 }

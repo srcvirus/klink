@@ -103,7 +103,14 @@ public:
 			container_peer->setNPeers(pInitMsg->getNPeers());
 			GlobalData::network_size = pInitMsg->getNPeers();
 			container_peer->setOverlayID(pInitMsg->getDstOid());
-			this->setup(container_protocol->getRoutingTable(),
+                        
+                        container_peer->SetInitRcvd(true);
+                        container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
+                        container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
+                        container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
+                        container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
+			
+                        this->setup(container_protocol->getRoutingTable(),
 					container_protocol->getIndexTable());
 		}
 		else if (message->getMessageType() == MSG_PEER_CONFIG)
