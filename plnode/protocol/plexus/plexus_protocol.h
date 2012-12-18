@@ -109,8 +109,7 @@ public:
                 //search in the RT
                 //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
                 //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
-                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
-                        routing_table);
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
                 rtable_iterator.reset_iterator();
 
                 //routing_table->reset_iterator();

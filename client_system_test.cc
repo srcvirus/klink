@@ -95,6 +95,8 @@ int main(int argc, char* argv[]) {
 
         
         Peer* this_peer = new Peer();
+        this_peer->setTimeoutSec(5);
+
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
         this_peer->setTimeoutSec(5);
@@ -119,16 +121,42 @@ int main(int argc, char* argv[]) {
                         || strcmp(command, "quit") == 0) {
                         exit(0);
                 } else if (strcmp(command, "put") == 0) {
-                        string name = strtok(NULL, " ");
+                		char* p = strtok(NULL, " ");
+                		if(p == NULL)
+						{
+							puts("usage: put <name> <hostname:port>");
+							continue;
+						}
+                        string name = p;
                         char* address = strtok(NULL, " ");
+
+                        if(address == NULL)
+                        {
+                        	puts("usage: put <name> <hostname:port>");
+                        	continue;
+                        }
+
+                        int nTokens = 0;
 
                         //puts(name.c_str());
                         //puts(address);
+                        p = strtok(address, ":");
+                        if(p == NULL)
+                        {
+                        	puts("usage: put <name> <hostname:port>");
+                        	continue;
+                        }
 
-                        string hostname = strtok(address, ":");
+                        string hostname = p;
                         //puts(hostname.c_str());
-                        int port = atoi(strtok(NULL, ":"));
-                        //printf("%d\n", port);
+                        p = strtok(NULL, ":");
+                        if(p == NULL)
+						{
+							puts("usage: put <name> <hostname:port>");
+							continue;
+						}
+
+                        int port = atoi(p);
 
                         HostAddress h_address;
                         h_address.SetHostName(hostname);
@@ -139,13 +167,27 @@ int main(int argc, char* argv[]) {
                         //	printf("%d\n",destination.GetHostPort());
                         plexus->put_from_client(name, h_address, destination);
                 } else if (strcmp(command, "get") == 0) {
-                        string name = strtok(NULL, " ");
-                        HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
-                        plexus->get_from_client(name, destination);
+                		char* p = strtok(NULL, " ");
+                		if(p == NULL) puts("usage get <name>");
+                		else
+                		{
+							string name = p;
+							HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
+							plexus->get_from_client(name, destination);
+                		}
                 } else if (strcmp(command, "init") == 0
                         || strcmp(command, "INIT") == 0) {
                         send_init_message(tree, name_count);
                 }
+                else if( strcmp(command, "clear") == 0 ||
+                		 strcmp(command, "cls") == 0)
+                {
+                	for(int line = 0; line < 55; line++)
+                	{
+                		putchar('\n');
+                	}
+                }
+                else puts("invalid command");
         }
 
 
