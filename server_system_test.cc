@@ -109,8 +109,8 @@ void system_init()
 	fd_max = s_socket->getSocketFd();
 	s_socket->print_socket_info();
 
-	this_peer->setNRetry(1);
-	this_peer->setTimeoutSec(2);
+	this_peer->setNRetry(2);
+	this_peer->setTimeoutSec(5);
 	this_peer->setTimeoutMicroSec(500);
 }
 
