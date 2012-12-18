@@ -34,7 +34,8 @@ public:
                 MessageProcessor::setup(routing_table,
                         index_table,
                         new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(), 
-                        getContainerProtocol()->getRoutingTable(), 100));
+                        getContainerProtocol()->getRoutingTable(), 
+                        getContainerProtocol()->getContainerPeer()->getOverlayID(), 100));
         }
 
         bool processMessage(ABSMessage* message) {

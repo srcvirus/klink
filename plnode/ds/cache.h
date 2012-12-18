@@ -35,11 +35,11 @@ public:
     	current = dll->getHead();
     }
 
-    Cache(CacheInsertPolicy *cinPolicy, CacheReplacePolicy *crPolicy, LookupTable<OverlayID, HostAddress>* rt, int capacity) {
+    Cache(CacheInsertPolicy *cinPolicy, CacheReplacePolicy *crPolicy, LookupTable<OverlayID, HostAddress>* rt, OverlayID oid, int capacity) {
         dll = new DoublyLinkedList();
         hm = new LookupTable<OverlayID, DLLNode*>();
         this->cinPolicy = cinPolicy;
-        this->cinPolicy->setup(dll, hm, rt);
+        this->cinPolicy->setup(dll, hm, rt, oid);
         this->crPolicy = crPolicy;
         this->crPolicy->setup(dll, hm);
         this->capacity = capacity;

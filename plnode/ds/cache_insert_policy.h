@@ -18,16 +18,18 @@ protected:
     DoublyLinkedList *dll;
     LookupTable<OverlayID, DLLNode*> *hm;
     LookupTable<OverlayID, HostAddress>* rt;
+    OverlayID myOID;
 public:
 
     CacheInsertPolicy(){
             
     }
     
-    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm, LookupTable<OverlayID, HostAddress>* rt){
+    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm, LookupTable<OverlayID, HostAddress>* rt, OverlayID myOID){
         this->dll = dll;
         this->hm = hm;
         this->rt = rt;
+        this->myOID = myOID;
     }
     
     virtual void insert(OverlayID *key, HostAddress *value) = 0;
