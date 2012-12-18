@@ -17,14 +17,14 @@
 using namespace std;
 
 struct DLLNode {
-        OverlayID *key;
-        HostAddress *value;
+        OverlayID key;
+        HostAddress value;
         DLLNode *prev, *next;
 
         DLLNode() {
         }
 
-        DLLNode(OverlayID *key, HostAddress * value) {
+        DLLNode(OverlayID &key, HostAddress &value) {
                 this->key = key;
                 this->value = value;
                 prev = next = NULL;
@@ -52,7 +52,7 @@ public:
         bool contains(OverlayID &key) {
                 DLLNode *temp = tail;
                 while (temp != NULL) {
-                        if((*tail->key) == key)
+                        if(tail->key == key)
                                 return true;
                         temp = temp->prev;
                 }
@@ -69,8 +69,8 @@ public:
                 }
         }
 
-        void append2Head(OverlayID *key, HostAddress *value) {
-                DLLNode *node = new DLLNode(key, value);
+        void append2Head(OverlayID &key, HostAddress &value) {
+                DLLNode *node =new DLLNode(key, value);
                 append2Head(node);
         }
 
@@ -84,7 +84,7 @@ public:
                 }
         }
 
-        void append2Tail(OverlayID *key, HostAddress *value) {
+        void append2Tail(OverlayID &key, HostAddress &value) {
                 DLLNode *node = new DLLNode(key, value);
                 append2Tail(node);
         }
@@ -132,7 +132,7 @@ public:
                 DLLNode *temp = tail;
                 cout << endl << "Nodes in reverse order :" << endl;
                 while (temp != NULL) {
-                        cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value << "> ";
+                        cout << "< " << temp->key.GetOverlay_id() << ", " << temp->value.GetHostName() << " > ";
                         temp = temp->prev;
                 }
                 cout << endl;
@@ -142,7 +142,7 @@ public:
                 DLLNode *temp = head;
                 cout << endl << "Nodes in forward order:" << endl;
                 while (temp != NULL) {
-                        cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->GetHostName() << "--> ";
+                        cout << "< " << temp->key.GetOverlay_id() << ", " << temp->value.GetHostName() << " > ";
                         temp = temp->next;
                 }
                 cout << endl;

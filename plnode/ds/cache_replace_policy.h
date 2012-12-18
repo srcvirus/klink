@@ -24,7 +24,7 @@ public:
         this->hm = hm;
     }
     virtual void evict() = 0;
-    virtual void processHit(OverlayID *key) = 0;
+    virtual void processHit(OverlayID key) = 0;
 };
 
 #endif	/* CACHE_REPLACE_POLICY_H */

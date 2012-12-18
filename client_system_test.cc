@@ -91,12 +91,13 @@ int main(int argc, char* argv[]) {
         //char* server_name = argv[1];
         //int server_port = atoi(argv[2]);
 
-        int name_count = 1400;
+        int name_count = 12;
 
         
         Peer* this_peer = new Peer();
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
+        this_peer->setTimeoutSec(5);
 
         BuildTree tree(GlobalData::host_file_name);
         tree.execute();

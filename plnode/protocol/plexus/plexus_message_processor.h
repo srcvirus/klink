@@ -85,9 +85,8 @@ public:
                 else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
                         MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
                         OverlayID srcID = msg->getSrcOid();
-                        cache->add(&srcID,
-                                new HostAddress(msg->getSourceHost(),
-                                msg->getSourcePort()));
+                        HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
+                        cache->add(srcID, ha);
                         cache->print();
                 }//INIT Message
                 else if (message->getMessageType() == MSG_PEER_INIT) {

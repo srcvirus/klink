@@ -133,8 +133,8 @@ public:
                 cache->reset_iterator();
                 while (cache->has_next()) {
                         DLLNode *node = cache->get_next();
-                        OverlayID *id = node->key;
-                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(*id);
+                        OverlayID id = node->key;
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
                         if (currentMatchLength > maxLengthMatch) {
                                 maxLengthMatch = currentMatchLength;
                                 cache->lookup(msg->getDstOid(), next_hop);
