@@ -23,6 +23,8 @@
 #include "../../ds/cache_insert_endpoint.h"
 #include "../../ds/cache_replace_LRU.h"
 #include "../../ds/cache.h"
+#include "../../peer/peer_status.h"
+#include "../../message/control/peer_change_status_message.h"
 
 class PlexusMessageProcessor: public MessageProcessor
 {
@@ -119,6 +121,15 @@ public:
 		{
 			PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
 			container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
+		}
+		else if(message->getMessageType() == MSG_PEER_START)
+		{
+			container_protocol->getContainerPeer()->setStatus(PEER_RUNNING);
+		}
+		else if(message->getMessageType() == MSG_PEER_CHANGE_STATUS)
+		{
+			PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
+                        container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
 		}
 		return false;
 	}

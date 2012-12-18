@@ -15,6 +15,8 @@
 #include "plnode/protocol/plexus/plexus_message_processor.h"
 #include "plnode/message/control/peer_initiate_get.h"
 #include "plnode/message/control/peer_initiate_put.h"
+#include "plnode/message/control/peer_start_message.h"
+#include "plnode/message/control/peer_change_status_message.h"
 
 #include <stdlib.h>
 #include <pthread.h>
@@ -220,6 +222,14 @@ void *listener_thread(void* args) {
                                                                 break;
                                                         case MSG_PEER_INITIATE_PUT:
                                                                 rcvd_message = new PeerInitiatePUT();
+                                                                rcvd_message->deserialize(buffer, buffer_length);
+                                                                break;
+                                                        case MSG_PEER_START:
+                                                                rcvd_message = new PeerStartMessage();
+                                                                rcvd_message->deserialize(buffer, buffer_length);
+                                                                break;
+                                                        case MSG_PEER_CHANGE_STATUS:
+                                                                rcvd_message = new PeerChangeStatusMessage();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 break;
                                                 }
