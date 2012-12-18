@@ -23,7 +23,7 @@ public:
         }
 
         PeerInitiatePUT(string source_host, int source_port, string dest_host, int dest_port
-                , OverlayID src_oid, OverlayID dst_id, string &device_name, HostAddress &hostAddress) : ABSMessage(MSG_PEER_INITIATE_GET, source_host, source_port, dest_host,
+                , OverlayID src_oid, OverlayID dst_id, string &device_name, HostAddress &hostAddress) : ABSMessage(MSG_PEER_INITIATE_PUT, source_host, source_port, dest_host,
         dest_port, src_oid, dst_id) {
                 this->device_name = device_name;
                 this->hostAddress = hostAddress;

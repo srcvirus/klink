@@ -132,7 +132,7 @@ public:
         DLLNode *temp = head;
         cout << endl << "Nodes in forward order:" << endl;
         while (temp != NULL) {
-            cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->GetHostName() << "> ";
+            cout << "<" << temp->key->GetOverlay_id() << ", " << temp->value->GetHostName() << "--> ";
             temp = temp->next;
         }
         cout << endl;

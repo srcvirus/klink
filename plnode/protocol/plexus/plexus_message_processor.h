@@ -20,6 +20,9 @@
 #include "../protocol.h"
 #include "../plexus/plexus_protocol.h"
 #include "../../../common/util.h"
+#include "../../ds/cache_insert_endpoint.h"
+#include "../../ds/cache_replace_LRU.h"
+#include "../../ds/cache.h"
 
 class PlexusMessageProcessor: public MessageProcessor
 {
@@ -28,7 +31,9 @@ public:
 	void setup(LookupTable<OverlayID, HostAddress>* routing_table,
 			LookupTable<string, HostAddress>* index_table)
 	{
-		MessageProcessor::setup(routing_table, index_table, NULL);
+		MessageProcessor::setup(routing_table,
+				index_table,
+				new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(), 100));
 	}
 
 	bool processMessage(ABSMessage* message)
@@ -87,6 +92,7 @@ public:
 			cache->add(&srcID,
 					new HostAddress(msg->getSourceHost(),
 							msg->getSourcePort()));
+			cache->print();
 		}            //INIT Message
 		else if (message->getMessageType() == MSG_PEER_INIT)
 		{
