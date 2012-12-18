@@ -37,6 +37,7 @@ public:
 	int getSize()
 	{
 		int ret = getBaseSize() + sizeof(int) + sizeof(char) * device_name.size();
+		return ret;
 	}
 
 	virtual char* serialize(int* serialize_length)
