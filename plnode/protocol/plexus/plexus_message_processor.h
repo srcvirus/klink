@@ -13,6 +13,7 @@
 #include "../../message/message_processor.h"
 #include "../../message/control/peer_init_message.h"
 #include "../../message/control/peer_initiate_get.h"
+#include "../../message/control/peer_initiate_put.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
 #include "../../message/control/peer_config_msg.h"
@@ -107,6 +108,11 @@ public:
 		{
 			PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
 			container_protocol->get(pInitGet->getDeviceName());
+		}
+		else if(message->getMessageType() == MSG_PEER_INITIATE_PUT)
+		{
+			PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
+			container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
 		}
 		return false;
 	}
