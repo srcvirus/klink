@@ -9,7 +9,8 @@
 #define PROTOCOL_H_
 
 #include <cstring>
-
+#include <unistd.h>
+#include <fcntl.h>
 #include "../ds/lookup_table_iterator.h"
 #include "../message/message.h"
 #include "../message/message_processor.h"
@@ -126,16 +127,28 @@ public:
 	int send_message(ABSMessage* message)
 	{
 		int error_code = 0;
+
 		ClientSocket c_socket(message->getDestHost(), message->getDestPort());
-		c_socket.connect_to_server();
+		error_code = c_socket.connect_to_server();
+
+		if(error_code < 0)
+			return error_code;
+
 		char* buffer;
 		int buffer_length;
 		buffer = message->serialize(&buffer_length);
-		error_code = c_socket.send_data(buffer, buffer_length);
+
+		timeval timeout;
+		timeout.tv_sec = container_peer->getTimeoutSec();
+		timeout.tv_usec = container_peer->getTimeoutMicroSec();
+
+		error_code = c_socket.send_data(buffer, buffer_length, &timeout);
 		c_socket.close_socket();
+
 		delete[] buffer;
 		return error_code;
 	}
+
 	virtual ~ABSProtocol()
 	{
 		delete routing_table;

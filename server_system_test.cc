@@ -34,7 +34,6 @@ fd_set read_connection_fds;
 
 ServerSocket* s_socket = NULL;
 
-
 void system_init();
 void cleanup();
 
@@ -44,288 +43,339 @@ void *processing_thread(void*);
 void *controlling_thread(void*);
 
 /*int read_port(const char* hosts_file)
-{
-        FILE* hosts_ptr = fopen(hosts_file, "r");
-        char host_name[200];
-        int port;
-        int n_hosts;
-        fscanf(hosts_ptr, "%d", &n_hosts);
+ {
+ FILE* hosts_ptr = fopen(hosts_file, "r");
+ char host_name[200];
+ int port;
+ int n_hosts;
+ fscanf(hosts_ptr, "%d", &n_hosts);
 
-        for(int i = 0; i < n_hosts; i++)
-        {
-                fscanf(hosts_ptr, "%s %d", host_name, &port);
-                if(strncmp(this_peer->getHostName().c_str(), host_name, strlen(this_peer->getHostName().c_str())))
-                        return port;
-        }
+ for(int i = 0; i < n_hosts; i++)
+ {
+ fscanf(hosts_ptr, "%s %d", host_name, &port);
+ if(strncmp(this_peer->getHostName().c_str(), host_name, strlen(this_peer->getHostName().c_str())))
+ return port;
+ }
 
-        return ERROR_NOT_IN_HOSTS_FILE;
-}*/
+ return ERROR_NOT_IN_HOSTS_FILE;
+ }*/
 
 /*void process_and_forward(ABSMessage* rcvd_message) {
-    printf("Processing Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
-    //plexus->printRoutingTable();
-    bool forward = plexus->setNextHop(rcvd_message);
-    if (!forward) {
-        printf("Local Processing...\n");
-        ((PlexusProtocol*) plexus)->processMessage(rcvd_message);
-        return;
-    } else {
-        printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
+ printf("Processing Message, Type: %d, Overlay Hops = %d\n", rcvd_message->getMessageType(), rcvd_message->getOverlayHops());
+ //plexus->printRoutingTable();
+ bool forward = plexus->setNextHop(rcvd_message);
+ if (!forward) {
+ printf("Local Processing...\n");
+ ((PlexusProtocol*) plexus)->processMessage(rcvd_message);
+ return;
+ } else {
+ printf("Forwarding To %s:%d\n", rcvd_message->getDestHost().c_str(), rcvd_message->getDestPort());
 
-        string dest_host = rcvd_message->getDestHost();
-        int dest_port = rcvd_message->getDestPort();
-        ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
+ string dest_host = rcvd_message->getDestHost();
+ int dest_port = rcvd_message->getDestPort();
+ ClientSocket* c_socket = new ClientSocket(dest_host, dest_port);
 
-        c_socket->connect_to_server();
-        int buffer_length = 0;
-        char* buffer = rcvd_message->serialize(&buffer_length);
-        c_socket->send_data(buffer, buffer_length);
-        c_socket->close_socket();
-        delete c_socket;
-    }
-}*/
+ c_socket->connect_to_server();
+ int buffer_length = 0;
+ char* buffer = rcvd_message->serialize(&buffer_length);
+ c_socket->send_data(buffer, buffer_length);
+ c_socket->close_socket();
+ delete c_socket;
+ }
+ }*/
 
-int main(int argc, char* argv[]) {
-        system_init();
-        pthread_t listener, processor, forwarder, controller;
+int main(int argc, char* argv[])
+{
+	system_init();
+	pthread_t listener, processor, forwarder, controller;
 
-        pthread_create(&listener, NULL, listener_thread, NULL);
-        pthread_create(&forwarder, NULL, forwarding_thread, NULL);
-        pthread_create(&processor, NULL, processing_thread, NULL);
-        pthread_create(&controller, NULL, controlling_thread, NULL);
+	pthread_create(&listener, NULL, listener_thread, NULL);
+	pthread_create(&forwarder, NULL, forwarding_thread, NULL);
+	pthread_create(&processor, NULL, processing_thread, NULL);
+	pthread_create(&controller, NULL, controlling_thread, NULL);
 
-        pthread_join(listener, NULL);
-        pthread_join(forwarder, NULL);
-        pthread_join(processor, NULL);
-        pthread_join(controller, NULL);
+	pthread_join(listener, NULL);
+	pthread_join(forwarder, NULL);
+	pthread_join(processor, NULL);
+	pthread_join(controller, NULL);
 
-        cleanup();
+	cleanup();
 }
 
-void system_init() {
-        int error_code;
-        puts("Initializing the System");
+void system_init()
+{
+	int error_code;
+	puts("Initializing the System");
 
-        /* creating the peer container */
-        this_peer = new Peer(GlobalData::host_file_name.c_str());
-        puts("hostname = ");
-        puts(this_peer->getHostName().c_str());
-        if (this_peer->getListenPortNumber() == -1) {
-                puts("Port Number Not Found");
-                exit(1);
-        }
-        /* creating the plexus protocol object */
-        plexus = new PlexusProtocol();
+	/* creating the peer container */
+	this_peer = new Peer(GlobalData::host_file_name.c_str());
+	puts("hostname = ");
+	puts(this_peer->getHostName().c_str());
+	if (this_peer->getListenPortNumber() == -1)
+	{
+		puts("Port Number Not Found");
+		exit(1);
+	}
+	/* creating the plexus protocol object */
+	plexus = new PlexusProtocol();
 
-        /* creating the message processor for plexus */
-        PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+	/* creating the message processor for plexus */
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
 
-        /* setting the message processor's protocol */
-        msg_processor->setContainerProtocol(plexus);
+	/* setting the message processor's protocol */
+	msg_processor->setContainerProtocol(plexus);
 
-        /* setting the container and message processor for plexus */
-        plexus->setMessageProcess(msg_processor);
-        plexus->setContainerPeer(this_peer);
+	/* setting the container and message processor for plexus */
+	plexus->setMessageProcess(msg_processor);
+	plexus->setContainerPeer(this_peer);
 
-        /* setting the protocol of the peer */
-        this_peer->setProtocol(plexus);
+	/* setting the protocol of the peer */
+	this_peer->setProtocol(plexus);
 
-        /* initializing the connection sets */
-        FD_ZERO(&connection_pool);
-        FD_ZERO(&read_connection_fds);
+	/* initializing the connection sets */
+	FD_ZERO(&connection_pool);
+	FD_ZERO(&read_connection_fds);
 
-        /* creating the server socket for accepting connection from other peers */
-        s_socket = this_peer->getServerSocket();
-        error_code = s_socket->init_connection();
+	/* creating the server socket for accepting connection from other peers */
+	s_socket = this_peer->getServerSocket();
+	error_code = s_socket->init_connection();
 
-        FD_SET(s_socket->getSocketFd(), &connection_pool);
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
-        if (error_code < 0) {
-                print_error_message(error_code);
-                exit(1);
-        }
+	if (error_code < 0)
+	{
+		print_error_message(error_code);
+		exit(1);
+	}
 
-        fd_max = s_socket->getSocketFd();
-        s_socket->print_socket_info();
+	fd_max = s_socket->getSocketFd();
+	s_socket->print_socket_info();
 }
 
-void cleanup() {
-        delete this_peer;
-        this_peer = NULL;
-        plexus = NULL;
+void cleanup()
+{
+	delete this_peer;
+	this_peer = NULL;
+	plexus = NULL;
 }
 
-void *listener_thread(void* args) {
-        puts("Starting Listener Thread");
+void *listener_thread(void* args)
+{
+	puts("Starting Listener Thread");
 
-        int buffer_length;
-        char* buffer;
+	int buffer_length;
+	char* buffer;
 
-        while (true) {
-                read_connection_fds = connection_pool;
-                int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
+	while (true)
+	{
+		read_connection_fds = connection_pool;
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
+				NULL);
 
-                if (n_select < 0) {
-                        puts("Select Error");
-                        exit(1);
-                }
-                for (int i = 0; i <= fd_max; i++) {
-                        if (FD_ISSET(i, &read_connection_fds)) {
-                                if (i == s_socket->getSocketFd()) {
-                                        int connection_fd = s_socket->accept_connection();
+		if (n_select < 0)
+		{
+			puts("Select Error");
+			exit(1);
+		}
+		for (int i = 0; i <= fd_max; i++)
+		{
+			if (FD_ISSET(i, &read_connection_fds))
+			{
+				if (i == s_socket->getSocketFd())
+				{
+					int connection_fd = s_socket->accept_connection();
 
-                                        if (connection_fd < 0) {
-                                                print_error_message(connection_fd);
-                                                exit(1);
-                                        }
+					if (connection_fd < 0)
+					{
+						print_error_message(connection_fd);
+						exit(1);
+					}
 
-                                        FD_SET(connection_fd, &connection_pool);
-                                        if (connection_fd > fd_max)
-                                                fd_max = connection_fd;
-                                } else {
-                                        buffer_length = s_socket->receive_data(i, &buffer);
-                                        printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
+					FD_SET(connection_fd, &connection_pool);
+					if (connection_fd > fd_max)
+						fd_max = connection_fd;
+				} else
+				{
+					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("[Listening thread]\t Received %d Bytes\n",
+							buffer_length);
 
-                                        /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                                        putchar('\n');*/
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					 putchar('\n');*/
 
-                                        if (buffer_length <= 0) {
-                                                s_socket->close_connection(i);
-                                                FD_CLR(i, &connection_pool);
-                                        } else {
-                                                char messageType = 0;
-                                                ABSMessage* rcvd_message = NULL;
+					if (buffer_length <= 0)
+					{
+						s_socket->close_connection(i);
+						FD_CLR(i, &connection_pool);
+					} else
+					{
+						char messageType = 0;
+						ABSMessage* rcvd_message = NULL;
 
-                                                memcpy(&messageType, buffer, sizeof (char));
-                                                printf("[Listening thread]\t Message Type: %d\n", messageType);
+						memcpy(&messageType, buffer, sizeof(char));
+						printf("[Listening thread]\t Message Type: %d\n",
+								messageType);
 
-                                                switch (messageType) {
-                                                        case MSG_PEER_INIT:
-                                                                rcvd_message = new PeerInitMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                rcvd_message->message_print_dump();
-                                                                break;
+						switch (messageType)
+						{
+						case MSG_PEER_INIT:
+							rcvd_message = new PeerInitMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_GET:
-                                                                rcvd_message = new MessageGET();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                //rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_GET:
+							rcvd_message = new MessageGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_GET_REPLY:
-                                                                rcvd_message = new MessageGET_REPLY();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                //rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_GET_REPLY:
+							rcvd_message = new MessageGET_REPLY();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_PUT:
-                                                                rcvd_message = new MessagePUT();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                //rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_PUT:
+							rcvd_message = new MessagePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PEER_INITIATE_GET:
-                                                                rcvd_message = new PeerInitiateGET();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_PEER_INITIATE_PUT:
-                                                                rcvd_message = new PeerInitiatePUT();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_PEER_START:
-                                                                rcvd_message = new PeerStartMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_PEER_CHANGE_STATUS:
-                                                                rcvd_message = new PeerChangeStatusMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                }
+						case MSG_PEER_INITIATE_GET:
+							rcvd_message = new PeerInitiateGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_INITIATE_PUT:
+							rcvd_message = new PeerInitiatePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_START:
+							rcvd_message = new PeerStartMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_CHANGE_STATUS:
+							rcvd_message = new PeerChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						}
 
-                                                if (rcvd_message != NULL) {
-                                                        ((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-                                                        printf("[Listening thread]\t Added a %d message to the incoming queue\n", rcvd_message->getMessageType());
-                                                }
+						if (rcvd_message != NULL)
+						{
+							((PlexusProtocol*) plexus)->addToIncomingQueue(
+									rcvd_message);
+							printf(
+									"[Listening thread]\t Added a %d message to the incoming queue\n",
+									rcvd_message->getMessageType());
+						}
 
-                                                delete[] buffer;
-                                        }
-                                }
-                        }
-                }
-        }
+						delete[] buffer;
+					}
+				}
+			}
+		}
+	}
 }
 
-void *forwarding_thread(void* args) {
-        puts("Starting a forwarding thread");
-        char* buffer = NULL;
-        int buffer_length;
-        ABSMessage* message = NULL;
+void *forwarding_thread(void* args)
+{
+	puts("Starting a forwarding thread");
+	char* buffer = NULL;
+	int buffer_length;
+	ABSMessage* message = NULL;
 
-        while (true) {
-                message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
-                message->incrementOverlayHops();
+	while (true)
+	{
+		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+		message->incrementOverlayHops();
 
-                ClientSocket* c_socket = new ClientSocket(message->getDestHost(), message->getDestPort());
-                c_socket->connect_to_server();
+		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n",
+				message->getMessageType(), message->getDestHost().c_str(),
+				message->getDestPort());
 
-                printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n", message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
-                message->message_print_dump();
+		plexus->send_message(message);
 
-                buffer = message->serialize(&buffer_length);
-                c_socket->send_data(buffer, buffer_length);
 
-                delete message;
-                delete[] buffer;
-        }
+		/*ClientSocket* c_socket = new ClientSocket(message->getDestHost(),
+				message->getDestPort());
+		c_socket->connect_to_server();
+
+		message->message_print_dump();
+
+		buffer = message->serialize(&buffer_length);
+		c_socket->send_data(buffer, buffer_length);*/
+
+		delete message;
+	}
 }
 
-void *processing_thread(void* args) {
-        puts("Starting a processing thread");
-        ABSMessage* message = NULL;
-        while (true) {
-                message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
-                printf("[Processing Thread:]\t pulled a %d type message from the incoming queue\n", message->getMessageType());
-                bool forward = plexus->getMessageProcessor()->processMessage(message);
-                if (forward) {
-                        printf("[Processing Thread:]\t pushed a %d type message for forwarding\n", message->getMessageType());
-                        message->getDstOid().printBits();
-                        printf(" host: %s:%d TTL: %d Hops: %d\n", message->getDestHost().c_str(), message->getDestPort(), message->getOverlayTtl(), message->getOverlayHops());
-                        ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
-                }
-        }
+void *processing_thread(void* args)
+{
+	puts("Starting a processing thread");
+	ABSMessage* message = NULL;
+	while (true)
+	{
+		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
+		printf(
+				"[Processing Thread:]\t pulled a %d type message from the incoming queue\n",
+				message->getMessageType());
+
+		bool forward = plexus->getMessageProcessor()->processMessage(message);
+		if (forward)
+		{
+			printf("[Processing Thread:]\t pushed a %d type message for forwarding\n",
+					message->getMessageType());
+
+			message->getDstOid().printBits();
+			printf(" host: %s:%d TTL: %d Hops: %d\n",
+					message->getDestHost().c_str(), message->getDestPort(),
+					message->getOverlayTtl(), message->getOverlayHops());
+			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
+		}
+	}
 }
 
-void *controlling_thread(void* args) {
-        puts("Starting a controlling thread");
+void *controlling_thread(void* args)
+{
+	puts("Starting a controlling thread");
 
-        while (true) {
-                if (this_peer->IsInitRcvd()) {
-                        char buffer[33];
+	while (true)
+	{
+		if (this_peer->IsInitRcvd())
+		{
+			char buffer[33];
 
-                        //publish names
-                        printf("[Controlling Thread:]\tPublishing name in range %d %d\n", this_peer->getPublish_name_range_start(), this_peer->getPublish_name_range_end());
-                        for (int i = this_peer->getPublish_name_range_start(); i < this_peer->getPublish_name_range_end(); i++) {
-                                HostAddress ha("dummyhost", i);
-                                //itoa(i, buffer, 10);
-                                sprintf(buffer, "%d", i);
-                                printf("[Controlling Thread:]\tPublishing name: %d\n", i);
-                                this_peer->getProtocol()->put(string(buffer), ha);
-                                if (i % 3 == 0)
-                                        pthread_yield();
-                        }
-                        //lookup names
-                        printf("[Controlling Thread:]\tLooking up name ...\n");
-                        for (int i = this_peer->getLookup_name_range_start(); i < this_peer->getLookup_name_range_end(); i++) {
-                                HostAddress ha("dummyhost", i);
-                                //itoa(i, buffer, 10);
-                                sprintf(buffer, "%d", i);
-                                printf("[Controlling Thread:]\tLooking up name: %d\n", i);
-                                this_peer->getProtocol()->get(string(buffer));
-                                if (i % 3 == 0)
-                                        pthread_yield();
-                        }
-                        break;
-                }
-                pthread_yield();
-        }
+			//publish names
+			printf("[Controlling Thread:]\tPublishing name in range %d %d\n",
+					this_peer->getPublish_name_range_start(),
+					this_peer->getPublish_name_range_end());
+
+			for (int i = this_peer->getPublish_name_range_start();
+					i < this_peer->getPublish_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%d", i);
+				printf("[Controlling Thread:]\tPublishing name: %d\n", i);
+				this_peer->getProtocol()->put(string(buffer), ha);
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			//lookup names
+			printf("[Controlling Thread:]\tLooking up name ...\n");
+			for (int i = this_peer->getLookup_name_range_start();
+					i < this_peer->getLookup_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%d", i);
+				printf("[Controlling Thread:]\tLooking up name: %d\n", i);
+				this_peer->getProtocol()->get(string(buffer));
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			break;
+		}
+		pthread_yield();
+	}
 }
