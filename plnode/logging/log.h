@@ -141,13 +141,22 @@ Log::Log(const char* seq_file, const char* type, const char* monitor_host, const
 
 	FILE* seq_file_ptr = fopen(seq_file_name.c_str(), "r+");
 
-	fscanf(seq_file_ptr, "%d", &log_sequence_no);
-	log_sequence_no++;
+	if(seq_file_ptr == NULL)
+	{
+		log_sequence_no = 0;
+		seq_file_ptr = fopen(seq_file_name.c_str(), "w");
+		fprintf(seq_file_ptr, "%d\n", log_sequence_no);
+		fclose(seq_file_ptr);
+	}
+	else
+	{
+		fscanf(seq_file_ptr, "%d", &log_sequence_no);
+		log_sequence_no++;
 
-	fseek(seq_file_ptr, 0, SEEK_SET);
-	fprintf(seq_file_ptr, "%d", log_sequence_no);
-
-	fclose(seq_file_ptr);
+		fseek(seq_file_ptr, 0, SEEK_SET);
+		fprintf(seq_file_ptr, "%d", log_sequence_no);
+		fclose(seq_file_ptr);
+	}
 
 	log_type = type;
 
@@ -269,16 +278,16 @@ void Log::archiveCurrentLog()
 	new_name += "_";
 	new_name += i_str;
 
-//	rename the log file
+//	rename the log file, mv <log_file_name> <new_name>
 	command = "mv ";
 	command += log_file_name;
 	command += " ";
 	command += new_name;
-//	puts(command.c_str());
+
 	shell_pipe = popen(command.c_str(), "w");
 	pclose(shell_pipe);
 
-//	if the tar file doesn't exist then create it
+//	if the tar file doesn't exist then create it, tar -cf <archive_name> <new_name>
 	if(current_segment_no <= 1)
 	{
 		command = "tar -cf ";
@@ -286,7 +295,7 @@ void Log::archiveCurrentLog()
 		command += " ";
         command += new_name;
 	}
-//	otherwise add the current log file in the tarball
+//	otherwise add the current log file in the tarball, tar -rf <archive_name> <new_name>
 	else
 	{
 		command = "tar -rf ";
@@ -323,6 +332,7 @@ void Log::ftpUploadLog()
 
 bool Log::sshUploadLog()
 {
+	//cat <log)file_name> | ssh <monitor_user_name>@<monitor_host_name> "cat >> <remote_ftp_directory>/<log_file_name>"
 	string command = "cat ";
 	command += log_file_name;
 	command += " | ";
@@ -348,6 +358,9 @@ bool Log::sshUploadArchive()
 {
 	FILE* shell_pipe = NULL;
 
+	/*sftp <monitor_user_name>@<monitor_host_name>:<remote_ftp_directory>/
+	  then put <archive_name> */
+
 	string command = "sftp ";
 	command += monitor_user_name;
 	command += "@";
@@ -359,21 +372,11 @@ bool Log::sshUploadArchive()
 	shell_pipe = popen(command.c_str(), "w");
 	if(shell_pipe == NULL) return false;
 
-	/*command = "cd ";
-	command += remote_ftp_directory;
-	command += " ; ";
-	fprintf(shell_pipe, command.c_str());
-	fflush(shell_pipe);*/
-
 	command = "put ";
 	command += archive_name;
 
 	fprintf(shell_pipe, command.c_str());
 	fflush(shell_pipe);
-
-	/*command = "bye";
-	command += " ; ";
-	fprintf(shell_pipe, command.c_str());*/
 
 	fclose(shell_pipe);
 

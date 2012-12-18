@@ -139,10 +139,23 @@ int main(int argc, char* argv[]) {
 
                         //puts(name.c_str());
                         //puts(address);
-                        string hostname = strtok(address, ":");
+                        p = strtok(address, ":");
+                        if(p == NULL)
+                        {
+                        	puts("usage: put <name> <hostname:port>");
+                        	continue;
+                        }
+
+                        string hostname = p;
                         //puts(hostname.c_str());
-                        int port = atoi(strtok(NULL, ":"));
-                        //printf("%d\n", port);
+                        p = strtok(NULL, ":");
+                        if(p == NULL)
+						{
+							puts("usage: put <name> <hostname:port>");
+							continue;
+						}
+
+                        int port = atoi(p);
 
                         HostAddress h_address;
                         h_address.SetHostName(hostname);
@@ -168,11 +181,12 @@ int main(int argc, char* argv[]) {
                 else if( strcmp(command, "clear") == 0 ||
                 		 strcmp(command, "cls") == 0)
                 {
-                	for(int line = 0; line < 100; line++)
+                	for(int line = 0; line < 55; line++)
                 	{
                 		putchar('\n');
                 	}
                 }
+                else puts("invalid command");
         }
 
 
