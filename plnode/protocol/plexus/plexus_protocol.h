@@ -19,6 +19,7 @@
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
 #include "../../message/control/peer_initiate_get.h"
+#include "../../message/control/peer_initiate_put.h"
 #include "../../ds/host_address.h"
 #include "../../message/message.h"
 
@@ -169,12 +170,13 @@ public:
 	void get(string name)
 	{
 		int hash_name_to_get = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_get);
+		OverlayID destID(hash_name_to_get);
+
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
-				container_peer->getOverlayID(), OverlayID(id), name);
+				container_peer->getOverlayID(), destID, name);
 
-		if(msgProcessor->processMessage(msg))
+		if (msgProcessor->processMessage(msg))
 			addToOutgoingQueue(msg);
 	}
 
@@ -187,26 +189,26 @@ public:
 		destID.printBits();
 		cout << endl;
 
-
-		PeerInitiateGET *msg = new PeerInitiateGET(container_peer->getHostName(),
+		PeerInitiateGET *msg = new PeerInitiateGET(
+				container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
-        msg->message_print_dump();
+		msg->message_print_dump();
 		send_message(msg);
 	}
 	void put(string name, HostAddress hostAddress)
 	{
 		int hash_name_to_publish = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_publish);
+		OverlayID destID(hash_name_to_publish);
 
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
-				container_peer->getOverlayID(), OverlayID(id), name,
+				container_peer->getOverlayID(), destID, name,
 				hostAddress);
 
-		if(msgProcessor->processMessage(msg))
+		if (msgProcessor->processMessage(msg))
 			addToOutgoingQueue(msg);
 	}
 
@@ -220,13 +222,14 @@ public:
 		destID.printBits();
 		cout << endl;
 
-
-		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
+		PeerInitiatePUT *msg = new PeerInitiatePUT(
+				container_peer->getHostName(),
 				container_peer->getListenPortNumber(),
 				destination.GetHostName(), destination.GetHostPort(),
 				container_peer->getOverlayID(), destID, name, hostAddress);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
-                msg->message_print_dump();
+
+		msg->message_print_dump();
 		send_message(msg);
 	}
 
