@@ -1,7 +1,9 @@
 #ifndef HOST_ADDRESS_H
 #define HOST_ADDRESS_H
 
-#include <cstring>
+#include <string>
+
+using namespace std;
 
 class HostAddress {
 private:

@@ -10,6 +10,8 @@
 
 #include "socket.h"
 #include "error_code.h"
+#include <fcntl.h>
+#include <error.h>
 
 class ClientSocket: public ABSSocket
 {
@@ -36,7 +38,7 @@ public:
 	string getServerHostName(){ return server_host_name; }
 	int getServerPortNumber(){ return server_port_number; }
 
-	int send_data(char* buffer, int n_bytes);
+	int send_data(char* buffer, int n_bytes, timeval* timeout );
 	int receive_data(char** buffer);
 
 	~ClientSocket();
@@ -58,9 +60,14 @@ int ClientSocket::connect_to_server()
 	getaddrinfo(server_host_name.c_str(), str_server_port, &hints, &res);
 
 	socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	ret_code = connect(socket_fd, res->ai_addr, res->ai_addrlen);
-	if(ret_code < 0)
-		ret_code = ERROR_SERVER_CONNECTION_FAIL;
+	fcntl(socket_fd, F_SETFL, O_NONBLOCK);
+
+	if(connect(socket_fd, res->ai_addr, res->ai_addrlen))
+	{
+		if(errno != EINPROGRESS) ret_code = errno;
+		if(ret_code < 0)
+			ret_code = ERROR_SERVER_CONNECTION_FAIL;
+	}
 
 	return ret_code;
 }
@@ -72,10 +79,33 @@ int ClientSocket::receive_data(char** buffer)
 	return n_bytes;
 }
 
-int ClientSocket::send_data(char* buffer, int n_bytes)
+int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout = NULL)
 {
-	int sent_bytes = send(socket_fd, buffer, n_bytes, 0);
-	return sent_bytes;
+	int ret_code;
+	if(timeout == NULL)
+	{
+		ret_code = send(socket_fd, buffer, n_bytes, 0);
+	}
+	else
+	{
+		fd_set write_connection;
+		FD_ZERO(&write_connection);
+		FD_SET(socket_fd, &write_connection);
+		int fd_max = socket_fd;
+
+		if(select(fd_max, NULL, &write_connection, NULL, timeout) != -1)
+		{
+			if(FD_ISSET(socket_fd, &write_connection))
+			{
+				ret_code = send(socket_fd, buffer, n_bytes, 0);
+			}
+			else
+			{
+				ret_code = ERROR_CONNECTION_TIMEOUT;
+			}
+		}
+	}
+	return ret_code;
 }
 
 ClientSocket::~ClientSocket()

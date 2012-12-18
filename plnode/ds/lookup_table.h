@@ -69,8 +69,6 @@ public:
 		return table.end();
 	}
 
-
-
 /*	template <typename KeyType>
 	vector <KeyType> getKeySet()
 	{
@@ -167,5 +165,6 @@ bool LookupTable<KeyType, ValueType>::remove(KeyType key)
 	pthread_rwlock_unlock(&table_lock);
 	return false;
 }
+
 
 #endif /* DICTIONARY_H_ */

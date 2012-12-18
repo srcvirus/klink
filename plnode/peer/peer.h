@@ -36,6 +36,11 @@ class Peer {
         int lookup_name_range_end;
         double alpha;
         int k;
+
+        int timeout_sec;
+        int timeout_micro_sec;
+        int n_retry;
+
         bool init_rcvd;
         ABSProtocol* protocol;
         ServerSocket* server_socket;
@@ -235,6 +240,15 @@ public:
         bool IsInitRcvd() const {
                 return init_rcvd;
         }
+
+        int getTimeoutSec() const { return timeout_sec; }
+        void setTimeoutSec(int t){ timeout_sec = t; }
+
+        int getTimeoutMicroSec() const { return timeout_micro_sec; }
+        void setTimeoutMicroSec(int t){ timeout_micro_sec = t; }
+
+        int getNRetry() const { return n_retry; }
+        void setNRetry(int retry){ n_retry = retry; }
 
 };
 

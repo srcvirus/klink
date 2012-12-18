@@ -26,7 +26,8 @@
 #include "../../peer/peer_status.h"
 #include "../../message/control/peer_change_status_message.h"
 
-class PlexusMessageProcessor : public MessageProcessor {
+class PlexusMessageProcessor: public MessageProcessor
+{
 public:
 
         void setup(LookupTable<OverlayID, HostAddress>* routing_table,
@@ -122,6 +123,7 @@ public:
                 }
                 return false;
         }
+
 };
 
 #endif	/* PLEXUS_MESSAGE_PROCESSOR_H */

@@ -19,6 +19,7 @@
 #define ERROR_FILE_NOT_OPEN				-106
 #define ERROR_NOT_IN_HOSTS_FILE			-107
 #define ERROR_GET_FAILED				-108
+#define ERROR_CONNECTION_TIMEOUT		-109
 
 char ERROR_MESSAGES[][100] = {
 		"SUCCESS",
@@ -30,7 +31,8 @@ char ERROR_MESSAGES[][100] = {
 		"Cannot Open File",
 		"File Not Open",
 		"Not in Hosts File",
-		"Request Not Resolved"
+		"Request Not Resolved",
+		"Connection Timed Out"
 };
 
 void print_error_message(int error_code)
