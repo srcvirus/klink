@@ -20,7 +20,9 @@ class MessageGET_REPLY : public ABSMessage {
 
 public:
 
-    MessageGET_REPLY() {
+    MessageGET_REPLY()
+    {
+    	;
     }
 
     MessageGET_REPLY(string source_host, int source_port, string dest_host, int dest_port
@@ -30,15 +32,62 @@ public:
         host_address = h_address;
     }
 
-    char* serialize(int* serialize_length) {
-        char* buffer = new char[sizeof (MessageGET_REPLY)];
-        memcpy(buffer, (char*) (this), sizeof (MessageGET_REPLY));
-        *serialize_length = sizeof (MessageGET_REPLY);
-        return buffer;
+    size_t getSize()
+    {
+    	int ret = getBaseSize();
+    	ret += sizeof(int) * 3 + sizeof(char) * host_address.GetHostName().size();
+    	return ret;
     }
 
-    ABSMessage* deserialize(char* buffer, int buffer_length) {
-        memcpy(this, buffer, buffer_length);
+    char* serialize(int* serialize_length)
+    {
+    	int parent_length = 0;
+    	char* parent_buffer = ABSMessage::serialize(&parent_length);
+    	*serialize_length = getSize();
+
+        char* buffer = new char[*serialize_length];
+        int offset = 0;
+
+        memcpy(buffer + offset, parent_buffer, parent_length); offset += parent_length;
+        memcpy(buffer + offset, (char*)&resolution_status, sizeof(int)); offset += sizeof(int);
+
+        int destHostLength = host_address.GetHostName().size();
+        memcpy(buffer + offset, (char*)&destHostLength, sizeof(int)); offset += sizeof(int);
+        for(int i = 0; i < destHostLength; i++)
+        {
+        	char ch = host_address.GetHostName()[i];
+        	memcpy(buffer + offset, (char*)&ch, sizeof(char)); offset += sizeof(char);
+        }
+        int port = host_address.GetHostPort();
+        memcpy(buffer + offset, (char*)&port, sizeof(int)); offset += sizeof(int);
+
+        delete[] parent_buffer;
+        return buffer;
+
+    }
+
+    ABSMessage* deserialize(char* buffer, int buffer_length)
+    {
+    	ABSMessage::deserialize(buffer, buffer_length);
+    	int offset = getBaseSize();
+
+    	memcpy(&resolution_status, buffer + offset, sizeof(int)); offset += sizeof(int);
+    	int hostLength = 0;
+    	memcpy(&hostLength, buffer + offset, sizeof(int)); offset += sizeof(int);
+
+    	string host = "";
+    	for(int i = 0; i < hostLength; i++)
+    	{
+    		char ch;
+    		memcpy(&ch, buffer + offset, sizeof(int)); offset += sizeof(char);
+    		host += ch;
+    	}
+
+    	host_address.SetHostName(host);
+    	int port = 0;
+    	memcpy(&port, buffer + offset, sizeof(int)); offset += sizeof(int);
+    	host_address.SetHostPort(port);
+
         return this;
     }
 
