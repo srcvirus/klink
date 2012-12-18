@@ -93,7 +93,7 @@ int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 		FD_SET(socket_fd, &write_connection);
 		int fd_max = socket_fd;
 
-		if(select(fd_max, NULL, &write_connection, NULL, timeout) != -1)
+		if(select(fd_max + 1, NULL, &write_connection, NULL, timeout) != -1)
 		{
 			if(FD_ISSET(socket_fd, &write_connection))
 			{
