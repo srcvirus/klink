@@ -10,7 +10,7 @@ public:
         void insert(OverlayID *key, HostAddress *value) {
                 DLLNode *n;
                 HostAddress ha;
-                if (hm->lookup(*key, &n) || rt->lookup(*key, &ha)) {
+                if (hm->lookup(*key, &n) || rt->lookup(*key, &ha) || (*key) == myOID) {
                         return;
                 }
                 DLLNode *node = new DLLNode(key, value);
