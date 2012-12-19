@@ -50,12 +50,12 @@ int main(int argc, char* argv[])
 	pthread_create(&listener, NULL, listener_thread, NULL);
 	pthread_create(&forwarder, NULL, forwarding_thread, NULL);
 	pthread_create(&processor, NULL, processing_thread, NULL);
-	//pthread_create(&controller, NULL, controlling_thread, NULL);
+	pthread_create(&controller, NULL, controlling_thread, NULL);
 
 	pthread_join(listener, NULL);
 	pthread_join(forwarder, NULL);
 	pthread_join(processor, NULL);
-	//pthread_join(controller, NULL);
+	pthread_join(controller, NULL);
 
 	cleanup();
 }

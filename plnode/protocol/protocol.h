@@ -149,6 +149,37 @@ public:
 		return error_code;
 	}
 
+	int getIPHops(string destination)
+	{
+		string command = "ping -c 1 ";
+		command += destination;
+		FILE* pipe = popen(command.c_str(), "r");
+
+		int line = 0;
+		char buffer[300];
+
+		while(line < 2)
+		{
+			fgets(buffer, sizeof(buffer),  pipe);
+			line++;
+		}
+
+		char* token = strtok(buffer, " ");
+		int n_token = 0;
+		while(n_token < 6)
+		{
+			token = strtok(NULL, " ");
+			token++;
+		}
+
+		char* hop_str = strtok(token,"=");
+		hop_str = strtok(NULL, "=");
+		int ip_hops = atoi(hop_str);
+		if(ip_hops < 64) ip_hops = 64 - ip_hops;
+		else ip_hops = 128 - ip_hops;
+		return ip_hops;
+	}
+
 	virtual ~ABSProtocol()
 	{
 		delete routing_table;
