@@ -12,19 +12,22 @@
 #include "lookup_table.h"
 #include "double_linked_list.h"
 
-class CacheReplacePolicy{
+class CacheReplacePolicy
+{
 protected:
-    DoublyLinkedList *dll;
-    LookupTable<OverlayID, DLLNode*> *hm;
+	DoublyLinkedList *dll;
+	LookupTable<OverlayID, DLLNode*> *hm;
 public:
-    CacheReplacePolicy() {
-    }
-    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm){
-        this->dll = dll;
-        this->hm = hm;
-    }
-    virtual void evict() = 0;
-    virtual void processHit(OverlayID key) = 0;
+	CacheReplacePolicy()
+	{
+	}
+	void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm)
+	{
+		this->dll = dll;
+		this->hm = hm;
+	}
+	virtual void evict() = 0;
+	virtual void processHit(OverlayID key) = 0;
 };
 
 #endif	/* CACHE_REPLACE_POLICY_H */

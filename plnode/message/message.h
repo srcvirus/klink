@@ -45,14 +45,13 @@ protected:
 	unsigned char overlay_ttl;
 	OverlayID dst_oid;
 	OverlayID src_oid;
-    long issue_time_stamp;
+	long issue_time_stamp;
 
 	size_t getBaseSize()
 	{
 		size_t size = sizeof(char) * 3 + sizeof(int) * 5
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(OverlayID) * 2
-				+ sizeof(long);
+				+ sizeof(OverlayID) * 2 + sizeof(long);
 
 		return size;
 	}
@@ -64,26 +63,27 @@ public:
 		overlay_hops = 0;
 		dest_host = "";
 		source_host = "";
-        calculateOverlayTTL(GlobalData::network_size);
+		calculateOverlayTTL(GlobalData::network_size);
 	}
 
-	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host, int dest_port
-			, OverlayID src_oid, OverlayID dst_oid): messageType(messageType), source_host(source_host), source_port(source_port),
-					dest_host(dest_host), dest_port(dest_port), src_oid(src_oid), dst_oid(dst_oid)
+	ABSMessage(unsigned char messageType, string source_host, int source_port,
+			string dest_host, int dest_port, OverlayID src_oid,
+			OverlayID dst_oid) :
+			messageType(messageType), source_host(source_host), source_port(
+					source_port), dest_host(dest_host), dest_port(dest_port), src_oid(
+					src_oid), dst_oid(dst_oid)
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
 		dest_host = "";
 		source_host = "";
-        calculateOverlayTTL(GlobalData::network_size);
+		calculateOverlayTTL(GlobalData::network_size);
 	}
 
 	virtual ~ABSMessage()
 	{
 		;
 	}
-
-
 
 	virtual char* serialize(int* serialize_length)
 	{
@@ -95,33 +95,44 @@ public:
 		int destHostLength = dest_host.size();
 		int sourceHostLength = source_host.size();
 
-		memcpy(buffer + offset, (char*)(&messageType), sizeof(char)); offset += sizeof(char);
-		memcpy(buffer + offset, (char*)(&sequence_no), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&messageType), sizeof(char));
+		offset += sizeof(char);
+		memcpy(buffer + offset, (char*) (&sequence_no), sizeof(int));
+		offset += sizeof(int);
 
-		memcpy(buffer + offset, (char*)(&destHostLength), sizeof(int)); offset += sizeof(int);
-		for(int i = 0; i < destHostLength; i++)
+		memcpy(buffer + offset, (char*) (&destHostLength), sizeof(int));
+		offset += sizeof(int);
+		for (int i = 0; i < destHostLength; i++)
 		{
 			char ch = dest_host[i];
-			memcpy(buffer + offset, (char*)(&ch), sizeof(char));
+			memcpy(buffer + offset, (char*) (&ch), sizeof(char));
 			offset += sizeof(char);
 		}
-		memcpy(buffer + offset, (char*)(&dest_port), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&dest_port), sizeof(int));
+		offset += sizeof(int);
 
-		memcpy(buffer + offset, (char*)(&sourceHostLength), sizeof(int)); offset += sizeof(int);
-		for(int i = 0; i < sourceHostLength; i++)
+		memcpy(buffer + offset, (char*) (&sourceHostLength), sizeof(int));
+		offset += sizeof(int);
+		for (int i = 0; i < sourceHostLength; i++)
 		{
 			char ch = source_host[i];
-			memcpy(buffer + offset, (char*)(&ch), sizeof(char));
+			memcpy(buffer + offset, (char*) (&ch), sizeof(char));
 			offset += sizeof(char);
 		}
-		memcpy(buffer + offset, (char*)(&source_port), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&source_port), sizeof(int));
+		offset += sizeof(int);
 
-		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
-		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
-		memcpy(buffer + offset, (char*)(&issue_time_stamp), sizeof(long)); offset += sizeof(long);
+		memcpy(buffer + offset, (char*) (&overlay_hops), sizeof(char));
+		offset += sizeof(char);
+		memcpy(buffer + offset, (char*) (&overlay_ttl), sizeof(char));
+		offset += sizeof(char);
+		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(long));
+		offset += sizeof(long);
 
-		memcpy(buffer + offset, (char*)(&dst_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
-		memcpy(buffer + offset, (char*)(&src_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*) (&dst_oid), sizeof(OverlayID));
+		offset += sizeof(OverlayID);
+		memcpy(buffer + offset, (char*) (&src_oid), sizeof(OverlayID));
+		offset += sizeof(OverlayID);
 
 		return buffer;
 	}
@@ -129,40 +140,51 @@ public:
 	virtual ABSMessage* deserialize(char* buffer, int buffer_len)
 	{
 		int offset = 0;
-		memcpy(&messageType, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&sequence_no, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&messageType, buffer + offset, sizeof(char));
+		offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&sequence_no, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 
 		int destHostLength = 0;
-		memcpy(&destHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&destHostLength, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 		dest_host = "";
 		//printf("DH Length : %d\n", destHostLength);
-		for(int i = 0; i < destHostLength; i++)
+		for (int i = 0; i < destHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
 			offset += sizeof(char); //printf("offset = %d\n", offset);
 			dest_host += ch;
 		}
-		memcpy(&dest_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&dest_port, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 
 		int sourceHostLength = 0;
-		memcpy(&sourceHostLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&sourceHostLength, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 		source_host = "";
-		for(int i = 0; i < sourceHostLength; i++)
+		for (int i = 0; i < sourceHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
 			offset += sizeof(char); //printf("offset = %d\n", offset);
 			source_host += ch;
 		}
-		memcpy(&source_port, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&source_port, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 
-		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&issue_time_stamp, buffer + offset, sizeof(long)); offset += sizeof(long);
+		memcpy(&overlay_hops, buffer + offset, sizeof(char));
+		offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
+		offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&issue_time_stamp, buffer + offset, sizeof(long));
+		offset += sizeof(long);
 
-		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
-		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID));
+		offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		memcpy(&src_oid, buffer + offset, sizeof(OverlayID));
+		offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 
 		return this;
 	}
@@ -311,7 +333,7 @@ public:
 	{
 		return dst_oid;
 	}
-        
+
 	void calculateOverlayTTL(int networkSize)
 	{
 		overlay_ttl = 10;

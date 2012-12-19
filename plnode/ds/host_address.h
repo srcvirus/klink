@@ -5,33 +5,41 @@
 
 using namespace std;
 
-class HostAddress {
+class HostAddress
+{
 private:
-    string hostName;
-    int hostPort;
+	string hostName;
+	int hostPort;
 public:
 
-    HostAddress(){}
-    
-    HostAddress(string name, int port){
-        hostName = name;
-        hostPort = port;
-    }
-    
-    void SetHostPort(int hostPort) {
-        this->hostPort = hostPort;
-    }
+	HostAddress()
+	{
+	}
 
-    int GetHostPort() const {
-        return hostPort;
-    }
+	HostAddress(string name, int port)
+	{
+		hostName = name;
+		hostPort = port;
+	}
 
-    void SetHostName(string hostName) {
-        this->hostName = hostName;
-    }
+	void SetHostPort(int hostPort)
+	{
+		this->hostPort = hostPort;
+	}
 
-    string GetHostName() const {
-        return hostName;
-    }
+	int GetHostPort() const
+	{
+		return hostPort;
+	}
+
+	void SetHostName(string hostName)
+	{
+		this->hostName = hostName;
+	}
+
+	string GetHostName() const
+	{
+		return hostName;
+	}
 };
 #endif

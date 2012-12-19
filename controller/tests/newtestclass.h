@@ -10,23 +10,24 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-class newtestclass : public CPPUNIT_NS::TestFixture {
-    CPPUNIT_TEST_SUITE(newtestclass);
+class newtestclass: public CPPUNIT_NS::TestFixture
+{
+	CPPUNIT_TEST_SUITE (newtestclass);
 
-    CPPUNIT_TEST(testDecode);
-    CPPUNIT_TEST(testEncode);
+	CPPUNIT_TEST (testDecode);
+	CPPUNIT_TEST (testEncode);
 
-    CPPUNIT_TEST_SUITE_END();
+	CPPUNIT_TEST_SUITE_END();
 
 public:
-    newtestclass();
-    virtual ~newtestclass();
-    void setUp();
-    void tearDown();
+	newtestclass();
+	virtual ~newtestclass();
+	void setUp();
+	void tearDown();
 
 private:
-    void testDecode();
-    void testEncode();
+	void testDecode();
+	void testEncode();
 
 };
 

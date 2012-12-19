@@ -22,7 +22,9 @@ class Configuration
 
 public:
 
-	Configuration(){}
+	Configuration()
+	{
+	}
 
 	Configuration(string config_file_path)
 	{
@@ -35,20 +37,18 @@ public:
 		FILE* config_file_ptr = fopen(config_file_path.c_str(), "r");
 		char line[200];
 
-		while(fgets(line, sizeof(line), config_file_ptr) != NULL)
+		while (fgets(line, sizeof(line), config_file_ptr) != NULL)
 		{
 			char* key = strtok(line, "=");
 			char* value = strtok(line, "=");
 
-			if(strcmp(key, "host_file") == 0 || strcmp(key,"hostfile") == 0)
+			if (strcmp(key, "host_file") == 0 || strcmp(key, "hostfile") == 0)
 			{
 				host_file_path = value;
-			}
-			else if(strcmp(key, "timeout") == 0)
+			} else if (strcmp(key, "timeout") == 0)
 			{
 				timeout = atoi(value);
-			}
-			else if(strcmp(key, "retry") == 0)
+			} else if (strcmp(key, "retry") == 0)
 			{
 				n_retry = atoi(value);
 			}
@@ -76,6 +76,5 @@ public:
 		return this->n_retry;
 	}
 };
-
 
 #endif /* CONFIGURATION_H_ */

@@ -17,50 +17,75 @@
 
 /*
  * unsigned char messageType;
-	unsigned int sequence_no;
-	string dest_host;
-	int dest_port;
-	string source_host;
-	int source_port;
-	unsigned char overlay_hops;
-	unsigned char overlay_ttl;
-	OverlayID oID;
+ unsigned int sequence_no;
+ string dest_host;
+ int dest_port;
+ string source_host;
+ int source_port;
+ unsigned char overlay_hops;
+ unsigned char overlay_ttl;
+ OverlayID oID;
  */
 class PeerInitMessage: public ABSMessage
 {
 	LookupTable<OverlayID, HostAddress> routing_table;
 	int n_peers, k;
 	double alpha;
-        int publish_name_range_start, publish_name_range_end;
-        int lookup_name_range_start, lookup_name_range_end;
+	int publish_name_range_start, publish_name_range_end;
+	int lookup_name_range_start, lookup_name_range_end;
 
 public:
 	PeerInitMessage()
 	{
 		messageType = MSG_PEER_INIT;
 	}
-	void setRoutingTable(LookupTable <OverlayID, HostAddress>& r_table){ routing_table = r_table; }
-	LookupTable<OverlayID, HostAddress>& getRoutingTable(){	return routing_table; }
+	void setRoutingTable(LookupTable<OverlayID, HostAddress>& r_table)
+	{
+		routing_table = r_table;
+	}
+	LookupTable<OverlayID, HostAddress>& getRoutingTable()
+	{
+		return routing_table;
+	}
 
-	void setNPeers(int n){ n_peers = n; }
-	int getNPeers(){ return n_peers; }
+	void setNPeers(int n)
+	{
+		n_peers = n;
+	}
+	int getNPeers()
+	{
+		return n_peers;
+	}
 
-	void setK(int k){ this->k = k; }
-	int getK(){ return k; }
+	void setK(int k)
+	{
+		this->k = k;
+	}
+	int getK()
+	{
+		return k;
+	}
 
-	void setAlpha(double alpha){ this->alpha = alpha; }
-	double getAlpha(){ return alpha; }
+	void setAlpha(double alpha)
+	{
+		this->alpha = alpha;
+	}
+	double getAlpha()
+	{
+		return alpha;
+	}
 
 	size_t getSize()
 	{
 		int ret = getBaseSize();
 		ret += sizeof(int) * 3;
 		ret += sizeof(double);
-                ret += sizeof(int) * 4;
-		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+		ret += sizeof(int) * 4;
+		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+				&routing_table);
 		rtable_iterator.reset_iterator();
 
-		while(rtable_iterator.hasMoreKey())
+		while (rtable_iterator.hasMoreKey())
 		{
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
@@ -75,7 +100,8 @@ public:
 	virtual char* serialize(int* serialize_length)
 	{
 		*serialize_length = getSize();
-		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+				&routing_table);
 
 		int offset = 0;
 		int parent_size = 0;
@@ -83,39 +109,53 @@ public:
 		char* parent_buffer = ABSMessage::serialize(&parent_size);
 		char* buffer = new char[*serialize_length];
 
-		memcpy(buffer + offset, parent_buffer, parent_size); offset += parent_size;
-		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)(&k), sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)(&alpha), sizeof(double)); offset += sizeof(double);
+		memcpy(buffer + offset, parent_buffer, parent_size);
+		offset += parent_size;
+		memcpy(buffer + offset, (char*) (&n_peers), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&k), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&alpha), sizeof(double));
+		offset += sizeof(double);
 
-		memcpy(buffer + offset, (char*)(&publish_name_range_start), sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)(&publish_name_range_end), sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)(&lookup_name_range_start), sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)(&lookup_name_range_end), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&publish_name_range_start),
+				sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&publish_name_range_end), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&lookup_name_range_start),
+				sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&lookup_name_range_end), sizeof(int));
+		offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
-		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&routingTableSize), sizeof(int));
+		offset += sizeof(int);
 
 		rtable_iterator.reset_iterator();
 
-		while(rtable_iterator.hasMoreKey())
+		while (rtable_iterator.hasMoreKey())
 		{
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
 			int hostNameLength = value.GetHostName().size();
 
-			memcpy(buffer + offset, (char*)(&key), sizeof(OverlayID)); offset += sizeof(OverlayID);
-			memcpy(buffer + offset, (char*)(&hostNameLength), sizeof(int)); offset += sizeof(int);
+			memcpy(buffer + offset, (char*) (&key), sizeof(OverlayID));
+			offset += sizeof(OverlayID);
+			memcpy(buffer + offset, (char*) (&hostNameLength), sizeof(int));
+			offset += sizeof(int);
 
-			for(int i = 0; i < hostNameLength; i++)
+			for (int i = 0; i < hostNameLength; i++)
 			{
 				char ch = value.GetHostName()[i];
-				memcpy(buffer + offset, (char*)(&ch), sizeof(char));
+				memcpy(buffer + offset, (char*) (&ch), sizeof(char));
 				offset += sizeof(char);
 			}
 			int hostport = value.GetHostPort();
-			memcpy(buffer + offset, (char*)(&hostport), sizeof(int)); offset += sizeof(int);
+			memcpy(buffer + offset, (char*) (&hostport), sizeof(int));
+			offset += sizeof(int);
 		}
 
 		delete[] parent_buffer;
@@ -131,19 +171,27 @@ public:
 		ABSMessage::deserialize(buffer, buffer_length);
 		offset = getBaseSize();
 
-		memcpy(&n_peers, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&k, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&alpha, buffer + offset, sizeof(double)); offset += sizeof(double);
+		memcpy(&n_peers, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&k, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&alpha, buffer + offset, sizeof(double));
+		offset += sizeof(double);
 
-		memcpy(&publish_name_range_start, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&publish_name_range_end, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&lookup_name_range_start, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&lookup_name_range_end, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&publish_name_range_start, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&publish_name_range_end, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&lookup_name_range_start, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&lookup_name_range_end, buffer + offset, sizeof(int));
+		offset += sizeof(int);
 
 		int routingTableSize;
-		memcpy(&routingTableSize, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+		memcpy(&routingTableSize, buffer + offset, sizeof(int));
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 
-		for(int i = 0; i < routingTableSize; i++)
+		for (int i = 0; i < routingTableSize; i++)
 		{
 			OverlayID key;
 			HostAddress value;
@@ -151,15 +199,19 @@ public:
 			string hostname;
 			int hostport;
 
-			memcpy(&key, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
-			memcpy(&hostNameLength, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
-			for(int i = 0; i < hostNameLength; i++)
+			memcpy(&key, buffer + offset, sizeof(OverlayID));
+			offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+			memcpy(&hostNameLength, buffer + offset, sizeof(int));
+			offset += sizeof(int); //printf("offset = %d\n", offset);
+			for (int i = 0; i < hostNameLength; i++)
 			{
 				char ch;
-				memcpy(&ch, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
+				memcpy(&ch, buffer + offset, sizeof(char));
+				offset += sizeof(char); //printf("offset = %d\n", offset);
 				hostname += ch;
 			}
-			memcpy(&hostport, buffer + offset, sizeof(int)); offset += sizeof(int); //printf("offset = %d\n", offset);
+			memcpy(&hostport, buffer + offset, sizeof(int));
+			offset += sizeof(int); //printf("offset = %d\n", offset);
 			value.SetHostName(hostname);
 			value.SetHostPort(hostport);
 			routing_table.add(key, value);
@@ -168,67 +220,77 @@ public:
 		return this;
 	}
 
-
 	virtual void message_print_dump()
 	{
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 		printf("Init Message\n");
 		ABSMessage::message_print_dump();
-		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(&routing_table);
+		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+				&routing_table);
 		//routing_table.reset_iterator();
 		rtable_iterator.reset_iterator();
 
-		while(rtable_iterator.hasMoreKey())
+		while (rtable_iterator.hasMoreKey())
 		//while(routing_table.hasMoreKey())
 		{
 			OverlayID key = rtable_iterator.getNextKey();
 			//OverlayID key = routing_table.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
-			printf("Overlay ID = %d, Hostname = %s, Host Port = %d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
+			printf("Overlay ID = %d, Hostname = %s, Host Port = %d\n",
+					key.GetOverlay_id(), value.GetHostName().c_str(),
+					value.GetHostPort());
 		}
 		printf("N Peers = %d\n", n_peers);
 		printf("Alpha = %.4lf\n", alpha);
 		printf("K = %d\n", k);
-                printf("Publish Start = %d End = %d\n", publish_name_range_start, publish_name_range_end);
-                printf("Lookup Start = %d End = %d\n", lookup_name_range_start, lookup_name_range_end);
+		printf("Publish Start = %d End = %d\n", publish_name_range_start,
+				publish_name_range_end);
+		printf("Lookup Start = %d End = %d\n", lookup_name_range_start,
+				lookup_name_range_end);
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
 
-        void setLookup_name_range_end(int lookup_name_range_end) {
-                this->lookup_name_range_end = lookup_name_range_end;
-        }
+	void setLookup_name_range_end(int lookup_name_range_end)
+	{
+		this->lookup_name_range_end = lookup_name_range_end;
+	}
 
-        int getLookup_name_range_end() const {
-                return lookup_name_range_end;
-        }
+	int getLookup_name_range_end() const
+	{
+		return lookup_name_range_end;
+	}
 
-        void setLookup_name_range_start(int lookup_name_range_start) {
-                this->lookup_name_range_start = lookup_name_range_start;
-        }
+	void setLookup_name_range_start(int lookup_name_range_start)
+	{
+		this->lookup_name_range_start = lookup_name_range_start;
+	}
 
-        int getLookup_name_range_start() const {
-                return lookup_name_range_start;
-        }
+	int getLookup_name_range_start() const
+	{
+		return lookup_name_range_start;
+	}
 
-        void setPublish_name_range_end(int publish_name_range_end) {
-                this->publish_name_range_end = publish_name_range_end;
-        }
+	void setPublish_name_range_end(int publish_name_range_end)
+	{
+		this->publish_name_range_end = publish_name_range_end;
+	}
 
-        int getPublish_name_range_end() const {
-                return publish_name_range_end;
-        }
+	int getPublish_name_range_end() const
+	{
+		return publish_name_range_end;
+	}
 
-        void setPublish_name_range_start(int publish_name_range_start) {
-                this->publish_name_range_start = publish_name_range_start;
-        }
+	void setPublish_name_range_start(int publish_name_range_start)
+	{
+		this->publish_name_range_start = publish_name_range_start;
+	}
 
-        int getPublish_name_range_start() const {
-                return publish_name_range_start;
-        }
+	int getPublish_name_range_start() const
+	{
+		return publish_name_range_start;
+	}
 
 };
-
-
 
 #endif /* PEER_INIT_MESSAGE_H_ */

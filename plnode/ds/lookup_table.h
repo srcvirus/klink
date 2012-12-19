@@ -15,11 +15,11 @@
 
 using namespace std;
 
-template <class KeyType, class ValueType>
+template<class KeyType, class ValueType>
 class LookupTable
 {
-	map <KeyType, ValueType> table;
-	typename map <KeyType, ValueType>::iterator table_iterator;
+	map<KeyType, ValueType> table;
+	typename map<KeyType, ValueType>::iterator table_iterator;
 	pthread_rwlock_t table_lock;
 
 public:
@@ -59,58 +59,58 @@ public:
 	bool update(KeyType key, ValueType value);
 	bool remove(KeyType key);
 
-	typename map <KeyType, ValueType>::iterator begin()
+	typename map<KeyType, ValueType>::iterator begin()
 	{
 		return table.begin();
 	}
 
-	typename map <KeyType, ValueType>::iterator end()
+	typename map<KeyType, ValueType>::iterator end()
 	{
 		return table.end();
 	}
 
-/*	template <typename KeyType>
-	vector <KeyType> getKeySet()
-	{
-		vector <KeyType> keySet;
+	/*	template <typename KeyType>
+	 vector <KeyType> getKeySet()
+	 {
+	 vector <KeyType> keySet;
 
-		typename map <KeyType, ValueType>::iterator mapIt;
+	 typename map <KeyType, ValueType>::iterator mapIt;
 
-		pthread_rwlock_rdlock(&table_lock);
-		for(mapIt = table.begin(); mapIt != table.end(); mapIt++)
-			keySet.push_back((*mapIt).first);
+	 pthread_rwlock_rdlock(&table_lock);
+	 for(mapIt = table.begin(); mapIt != table.end(); mapIt++)
+	 keySet.push_back((*mapIt).first);
 
-		pthread_rwlock_unlock(&table_lock);
+	 pthread_rwlock_unlock(&table_lock);
 
-		return keySet;
-	}*/
+	 return keySet;
+	 }*/
 
 	/*void reset_iterator()
-	{
-		pthread_rwlock_wrlock(&table_lock);
-		table_iterator = table.begin();
-		pthread_rwlock_unlock(&table_lock);
-	}
+	 {
+	 pthread_rwlock_wrlock(&table_lock);
+	 table_iterator = table.begin();
+	 pthread_rwlock_unlock(&table_lock);
+	 }
 
-	KeyType getNextKey()
-	{
-		KeyType ret = (*table_iterator).first;
-		table_iterator++;
-		return ret;
-	}
-	bool hasMoreKey()
-	{
-		return table_iterator != table.end();
-	}*/
+	 KeyType getNextKey()
+	 {
+	 KeyType ret = (*table_iterator).first;
+	 table_iterator++;
+	 return ret;
+	 }
+	 bool hasMoreKey()
+	 {
+	 return table_iterator != table.end();
+	 }*/
 };
 
-template <typename KeyType, typename ValueType>
+template<typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 {
 	bool exists = false;
 
 	pthread_rwlock_wrlock(&table_lock);
-	if(table.find(key) == table.end())
+	if (table.find(key) == table.end())
 	{
 		exists = true;
 		table.insert(make_pair(key, value));
@@ -119,13 +119,13 @@ bool LookupTable<KeyType, ValueType>::add(KeyType key, ValueType value)
 	return !exists;
 }
 
-template <typename KeyType, typename ValueType>
+template<typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
 {
 	bool success = false;
 
 	pthread_rwlock_rdlock(&table_lock);
-	if(table.find(key) != table.end())
+	if (table.find(key) != table.end())
 	{
 		success = true;
 		*value = (*table.find(key)).second;
@@ -134,16 +134,15 @@ bool LookupTable<KeyType, ValueType>::lookup(KeyType key, ValueType* value)
 	return success;
 }
 
-template <typename KeyType, typename ValueType>
+template<typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
 {
 	bool exists = false;
 	pthread_rwlock_wrlock(&table_lock);
-	if(table.find(key) == table.end())
+	if (table.find(key) == table.end())
 	{
 		table.insert(make_pair(key, value));
-	}
-	else
+	} else
 	{
 		table[key] = value;
 		exists = true;
@@ -152,12 +151,12 @@ bool LookupTable<KeyType, ValueType>::update(KeyType key, ValueType value)
 	return exists;
 }
 
-template <typename KeyType, typename ValueType>
+template<typename KeyType, typename ValueType>
 bool LookupTable<KeyType, ValueType>::remove(KeyType key)
 {
 	bool removed = false;
 	pthread_rwlock_wrlock(&table_lock);
-	if(table.find(key) != table.end())
+	if (table.find(key) != table.end())
 	{
 		table.erase(key);
 		removed = true;
@@ -165,6 +164,5 @@ bool LookupTable<KeyType, ValueType>::remove(KeyType key)
 	pthread_rwlock_unlock(&table_lock);
 	return false;
 }
-
 
 #endif /* DICTIONARY_H_ */

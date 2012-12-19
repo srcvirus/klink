@@ -95,24 +95,28 @@ public:
 		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
 		{
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
-			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length());
+			OverlayID srcID(msg->getSrcOid().GetOverlay_id(),
+					msg->getSrcOid().GetPrefix_length());
 			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
 			cache->add(srcID, ha);
 			Log* g_log = plexus->getGetLog();
 
 			char i_str[300];
 
-			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(), msg->getDestHost().c_str(), msg->getSequenceNo());
+			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(),
+					msg->getDestHost().c_str(), msg->getSequenceNo());
 			string key = i_str;
 
 			long start = msg->getIssueTimeStamp();
 			long end = clock();
 
-			double latency = (double)(end - start) / CLOCKS_PER_SEC;
+			double latency = (double) (end - start) / CLOCKS_PER_SEC;
 
 			string status = "S";
-			if(msg->getStatus() == ERROR_GET_FAILED) status = "F";
-			g_log->write(key.c_str(), "ids", msg->getResolutionHops(), latency, status.c_str());
+			if (msg->getStatus() == ERROR_GET_FAILED)
+				status = "F";
+			g_log->write(key.c_str(), "ids", msg->getResolutionHops(), latency,
+					status.c_str());
 			//cache->print();
 		} //INIT Message
 		else if (message->getMessageType() == MSG_PEER_INIT)

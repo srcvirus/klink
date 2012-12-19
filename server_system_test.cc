@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <pthread.h>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -131,13 +132,33 @@ void *listener_thread(void* args)
 	while (true)
 	{
 		read_connection_fds = connection_pool;
-		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
+				NULL);
 
 		if (n_select < 0)
 		{
 			puts("Select Error");
-			printf("%d\n", errno);
-			exit(1);
+			printf("errno = %d\n", errno);
+
+			s_socket->printActiveConnectionList();
+			printf("fd_max = %d, socket_fd = %d\n", fd_max,
+					s_socket->getSocketFd());
+
+			for (int con = 0; con <= fd_max; con++)
+			{
+				if (FD_ISSET(con, &connection_pool))
+				{
+					int fopts = 0;
+					if (fcntl(con, F_GETFL, &fopts) < 0)
+					{
+						FD_CLR(con, &connection_pool);
+						s_socket->close_connection(con);
+						fd_max = s_socket->getMaxConnectionFd();
+					}
+				}
+			}
+			//exit(1);
+			continue;
 		}
 		for (int i = 0; i <= fd_max; i++)
 		{
@@ -156,6 +177,8 @@ void *listener_thread(void* args)
 					FD_SET(connection_fd, &connection_pool);
 					if (connection_fd > fd_max)
 						fd_max = connection_fd;
+					puts("new connection");
+					s_socket->printActiveConnectionList();
 				} else
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
@@ -165,11 +188,19 @@ void *listener_thread(void* args)
 					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
 					 putchar('\n');*/
 
-					if (buffer_length <= 0)
-					{
-						s_socket->close_connection(i);
-						FD_CLR(i, &connection_pool);
-					} else
+					s_socket->close_connection(i);
+					FD_CLR(i, &connection_pool);
+					fd_max = s_socket->getMaxConnectionFd();
+
+					s_socket->printActiveConnectionList();
+					/*if (buffer_length <= 0)
+					 {
+					 s_socket->close_connection(i);
+					 FD_CLR(i, &connection_pool);
+					 fd_max = s_socket->getMaxConnectionFd();
+					 } */
+
+					if (buffer_length > 0)
 					{
 						char messageType = 0;
 						ABSMessage* rcvd_message = NULL;
@@ -256,11 +287,11 @@ void *forwarding_thread(void* args)
 				message->getDestPort());
 
 		int retry = 0;
-		while(retry < this_peer->getNRetry())
+		while (retry < this_peer->getNRetry())
 		{
 			int error_code = plexus->send_message(message);
 
-			if(error_code == ERROR_CONNECTION_TIMEOUT)
+			if (error_code == ERROR_CONNECTION_TIMEOUT)
 				retry++;
 			else
 				break;
@@ -284,7 +315,8 @@ void *processing_thread(void* args)
 		bool forward = plexus->getMessageProcessor()->processMessage(message);
 		if (forward)
 		{
-			printf("[Processing Thread:]\t pushed a %d type message for forwarding\n",
+			printf(
+					"[Processing Thread:]\t pushed a %d type message for forwarding\n",
 					message->getMessageType());
 
 			message->getDstOid().printBits();
@@ -299,6 +331,7 @@ void *processing_thread(void* args)
 void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
+	usleep(8000000);
 
 	while (true)
 	{

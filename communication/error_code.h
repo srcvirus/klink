@@ -21,19 +21,11 @@
 #define ERROR_GET_FAILED				-108
 #define ERROR_CONNECTION_TIMEOUT		-109
 
-char ERROR_MESSAGES[][100] = {
-		"SUCCESS",
-		"Socket Create Fail",
-		"Socket Bind Fail",
-		"Socket Listener Add Fail",
-		"Cannot Create a Connection",
-		"Cannot Connect to Server",
-		"Cannot Open File",
-		"File Not Open",
-		"Not in Hosts File",
-		"Request Not Resolved",
-		"Connection Timed Out"
-};
+char ERROR_MESSAGES[][100] = { "SUCCESS", "Socket Create Fail",
+		"Socket Bind Fail", "Socket Listener Add Fail",
+		"Cannot Create a Connection", "Cannot Connect to Server",
+		"Cannot Open File", "File Not Open", "Not in Hosts File",
+		"Request Not Resolved", "Connection Timed Out" };
 
 void print_error_message(int error_code)
 {

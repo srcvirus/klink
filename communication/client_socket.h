@@ -26,24 +26,36 @@ public:
 		server_port_number = -1;
 	}
 
-	ClientSocket(const string& server, int port):
-		server_host_name(server),
-		server_port_number(port)
-	{;}
+	ClientSocket(const string& server, int port) :
+			server_host_name(server), server_port_number(port)
+	{
+		;
+	}
 
 	int connect_to_server();
 
-	void setServerHostName(const string& hostname){ server_host_name = hostname; }
-	void setServerPortNumber(int port){ server_port_number = port; }
-	string getServerHostName(){ return server_host_name; }
-	int getServerPortNumber(){ return server_port_number; }
+	void setServerHostName(const string& hostname)
+	{
+		server_host_name = hostname;
+	}
+	void setServerPortNumber(int port)
+	{
+		server_port_number = port;
+	}
+	string getServerHostName()
+	{
+		return server_host_name;
+	}
+	int getServerPortNumber()
+	{
+		return server_port_number;
+	}
 
-	int send_data(char* buffer, int n_bytes, timeval* timeout = NULL );
+	int send_data(char* buffer, int n_bytes, timeval* timeout = NULL);
 	int receive_data(char** buffer);
 
 	~ClientSocket();
 };
-
 
 int ClientSocket::connect_to_server()
 {
@@ -62,10 +74,11 @@ int ClientSocket::connect_to_server()
 	socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	fcntl(socket_fd, F_SETFL, O_NONBLOCK);
 
-	if(connect(socket_fd, res->ai_addr, res->ai_addrlen))
+	if (connect(socket_fd, res->ai_addr, res->ai_addrlen))
 	{
-		if(errno != EINPROGRESS) ret_code = errno;
-		if(ret_code < 0)
+		if (errno != EINPROGRESS)
+			ret_code = errno;
+		if (ret_code < 0)
 			ret_code = ERROR_SERVER_CONNECTION_FAIL;
 	}
 
@@ -82,24 +95,22 @@ int ClientSocket::receive_data(char** buffer)
 int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 {
 	int ret_code;
-	if(timeout == NULL)
+	if (timeout == NULL)
 	{
 		ret_code = send(socket_fd, buffer, n_bytes, 0);
-	}
-	else
+	} else
 	{
 		fd_set write_connection;
 		FD_ZERO(&write_connection);
 		FD_SET(socket_fd, &write_connection);
 		int fd_max = socket_fd;
 
-		if(select(fd_max + 1, NULL, &write_connection, NULL, timeout) != -1)
+		if (select(fd_max + 1, NULL, &write_connection, NULL, timeout) != -1)
 		{
-			if(FD_ISSET(socket_fd, &write_connection))
+			if (FD_ISSET(socket_fd, &write_connection))
 			{
 				ret_code = send(socket_fd, buffer, n_bytes, 0);
-			}
-			else
+			} else
 			{
 				ret_code = ERROR_CONNECTION_TIMEOUT;
 			}
@@ -112,6 +123,5 @@ ClientSocket::~ClientSocket()
 {
 	;
 }
-
 
 #endif /* CLIENT_SOCKET_H_ */

@@ -11,20 +11,24 @@
 #include <pthread.h>
 #include <map>
 
-template <class KeyType, class ValueType>
+template<class KeyType, class ValueType>
 class LookupTableIterator
 {
-	LookupTable <KeyType, ValueType>* table_ptr;
-	typename map <KeyType, ValueType>::iterator table_iterator;
+	LookupTable<KeyType, ValueType>* table_ptr;
+	typename map<KeyType, ValueType>::iterator table_iterator;
 	pthread_rwlock_t iterator_read_lock;
 
 public:
 
-	LookupTableIterator(){ table_ptr = NULL; }
-	LookupTableIterator(LookupTable <KeyType, ValueType>* ptr)
+	LookupTableIterator()
+	{
+		table_ptr = NULL;
+	}
+	LookupTableIterator(LookupTable<KeyType, ValueType>* ptr)
 	{
 		table_ptr = ptr;
 		table_iterator = table_ptr->begin();
+		puts("iterator created");
 	}
 
 	void reset_iterator()

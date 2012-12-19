@@ -37,17 +37,15 @@ public:
 	ABSProtocol()
 	{
 		this->routing_table = NULL;
-		this->index_table = new LookupTable <string, HostAddress>();
+		this->index_table = new LookupTable<string, HostAddress>();
 		this->container_peer = NULL;
 		this->cache = new Cache();
 		this->msgProcessor = NULL;
 	}
 
 	ABSProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
-			LookupTable<string, HostAddress>* index_table,
-			Cache *cache,
-			MessageProcessor* msgProcessor,
-			Peer* container)
+			LookupTable<string, HostAddress>* index_table, Cache *cache,
+			MessageProcessor* msgProcessor, Peer* container)
 	{
 		this->routing_table = routing_table;
 		this->index_table = index_table;
@@ -83,44 +81,48 @@ public:
 		return msgProcessor;
 	}
 
-	void setRoutingTable(LookupTable <OverlayID, HostAddress>* table)
+	void setRoutingTable(LookupTable<OverlayID, HostAddress>* table)
 	{
-		if(routing_table != NULL) delete routing_table;
-		routing_table = new LookupTable <OverlayID, HostAddress>();
+		if (routing_table != NULL)
+			delete routing_table;
+		routing_table = new LookupTable<OverlayID, HostAddress>();
 		*routing_table = *table;
 	}
 
-	LookupTable <OverlayID, HostAddress>* getRoutingTable()
+	LookupTable<OverlayID, HostAddress>* getRoutingTable()
 	{
 		return routing_table;
 	}
 
-	LookupTable <string, HostAddress>* getIndexTable()
+	LookupTable<string, HostAddress>* getIndexTable()
 	{
 		return index_table;
 	}
 
-	void setIndexTable(LookupTable <string, HostAddress>* table)
+	void setIndexTable(LookupTable<string, HostAddress>* table)
 	{
-		if(index_table != NULL) delete index_table;
-		index_table = new LookupTable <string, HostAddress>();
+		if (index_table != NULL)
+			delete index_table;
+		index_table = new LookupTable<string, HostAddress>();
 		*index_table = *table;
 	}
 
 	void printRoutingTable()
 	{
-		LookupTableIterator <OverlayID, HostAddress> rtable_iterator(routing_table);
+		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+				routing_table);
 		rtable_iterator.reset_iterator();
 
 		//routing_table->reset_iterator();
-		while(rtable_iterator.hasMoreKey())
+		while (rtable_iterator.hasMoreKey())
 		//while(routing_table->hasMoreKey())
 		{
 			//OverlayID key = routing_table->getNextKey();
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table->lookup(key, &value);
-			printf("%d %s:%d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
+			printf("%d %s:%d\n", key.GetOverlay_id(),
+					value.GetHostName().c_str(), value.GetHostPort());
 		}
 	}
 
@@ -131,7 +133,7 @@ public:
 		ClientSocket c_socket(message->getDestHost(), message->getDestPort());
 		error_code = c_socket.connect_to_server();
 
-		if(error_code < 0)
+		if (error_code < 0)
 			return error_code;
 
 		char* buffer;
@@ -158,25 +160,27 @@ public:
 		int line = 0;
 		char buffer[300];
 
-		while(line < 2)
+		while (line < 2)
 		{
-			fgets(buffer, sizeof(buffer),  pipe);
+			fgets(buffer, sizeof(buffer), pipe);
 			line++;
 		}
 
 		char* token = strtok(buffer, " ");
 		int n_token = 0;
-		while(n_token < 6)
+		while (n_token < 6)
 		{
 			token = strtok(NULL, " ");
 			token++;
 		}
 
-		char* hop_str = strtok(token,"=");
+		char* hop_str = strtok(token, "=");
 		hop_str = strtok(NULL, "=");
 		int ip_hops = atoi(hop_str);
-		if(ip_hops < 64) ip_hops = 64 - ip_hops;
-		else ip_hops = 128 - ip_hops;
+		if (ip_hops < 64)
+			ip_hops = 64 - ip_hops;
+		else
+			ip_hops = 128 - ip_hops;
 		return ip_hops;
 	}
 

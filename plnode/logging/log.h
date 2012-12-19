@@ -35,40 +35,91 @@ class Log
 	int check_point_row_count;
 	FILE* log_file_ptr;
 
-
 public:
 
 	Log();
-	Log(const char* seq_file, const char* type, const char* monitor_host,  const char* monitor_user, const char* hostname = NULL);
+	Log(const char* seq_file, const char* type, const char* monitor_host,
+			const char* monitor_user, const char* hostname = NULL);
 
-	void setLogType(const string& type){ log_type = type; }
-	string getLogType(){ return log_type; }
+	void setLogType(const string& type)
+	{
+		log_type = type;
+	}
+	string getLogType()
+	{
+		return log_type;
+	}
 
-	void setHostName(const string& hostname){ host_name = hostname; }
-	string getHostName(){ return host_name; }
+	void setHostName(const string& hostname)
+	{
+		host_name = hostname;
+	}
+	string getHostName()
+	{
+		return host_name;
+	}
 
-	void setMonitorHostName(const string& hostname){ monitor_host_name = hostname;}
-	string getMonitorHostName(){ return monitor_host_name; }
+	void setMonitorHostName(const string& hostname)
+	{
+		monitor_host_name = hostname;
+	}
+	string getMonitorHostName()
+	{
+		return monitor_host_name;
+	}
 
-	void setMonitorUserName(const string& user){ monitor_user_name = user; }
-	string getMonitorUserName(){ return monitor_user_name; }
+	void setMonitorUserName(const string& user)
+	{
+		monitor_user_name = user;
+	}
+	string getMonitorUserName()
+	{
+		return monitor_user_name;
+	}
 
 	void setLogFileName(const char* name);
-	string getLogFileName(){ return log_file_name; }
-	
-	string getArchiveName(){ return archive_name; }
+	string getLogFileName()
+	{
+		return log_file_name;
+	}
+
+	string getArchiveName()
+	{
+		return archive_name;
+	}
 	void setArchiveName(const char* name);
 
-	void setSeqFileName(const string& seq){ seq_file_name = seq; }
-	string getSeqFileName(){ return seq_file_name; }
+	void setSeqFileName(const string& seq)
+	{
+		seq_file_name = seq;
+	}
+	string getSeqFileName()
+	{
+		return seq_file_name;
+	}
 
-	void setCheckPointRowCount(int row_count = 100){ check_point_row_count = row_count; }
-	int getCheckPointRowCount(){ return check_point_row_count; }
+	void setCheckPointRowCount(int row_count = 100)
+	{
+		check_point_row_count = row_count;
+	}
+	int getCheckPointRowCount()
+	{
+		return check_point_row_count;
+	}
 
-	void setRemoteFtpDirectory(const char* name){ remote_ftp_directory = name; }
-	string getRemoteFtpDirectory(){ return remote_ftp_directory; }
+	void setRemoteFtpDirectory(const char* name)
+	{
+		remote_ftp_directory = name;
+	}
+	string getRemoteFtpDirectory()
+	{
+		return remote_ftp_directory;
+	}
 
-	int getCurrentRowCount() const { return current_row_count; }
+	int getCurrentRowCount() const
+	{
+		return current_row_count;
+	}
 
 	int open(const char* mode = "w");
 	int write(const char* key, const char* format, ...);
@@ -84,7 +135,8 @@ public:
 
 void Log::setLogFileName(const char* name = NULL)
 {
-	if(name != NULL) log_file_name = name;
+	if (name != NULL)
+		log_file_name = name;
 	else
 	{
 		char i_str[10];
@@ -100,7 +152,8 @@ void Log::setLogFileName(const char* name = NULL)
 
 void Log::setArchiveName(const char* name = NULL)
 {
-	if( name != NULL ) archive_name = name;
+	if (name != NULL)
+		archive_name = name;
 	else
 	{
 		char i_str[10];
@@ -135,20 +188,20 @@ Log::Log()
 	log_file_ptr = NULL;
 }
 
-Log::Log(const char* seq_file, const char* type, const char* monitor_host, const char* monitor_user, const char* hostname)
+Log::Log(const char* seq_file, const char* type, const char* monitor_host,
+		const char* monitor_user, const char* hostname)
 {
 	seq_file_name = seq_file;
 
 	FILE* seq_file_ptr = fopen(seq_file_name.c_str(), "r+");
 
-	if(seq_file_ptr == NULL)
+	if (seq_file_ptr == NULL)
 	{
 		log_sequence_no = 0;
 		seq_file_ptr = fopen(seq_file_name.c_str(), "w");
 		fprintf(seq_file_ptr, "%d\n", log_sequence_no);
 		fclose(seq_file_ptr);
-	}
-	else
+	} else
 	{
 		fscanf(seq_file_ptr, "%d", &log_sequence_no);
 		log_sequence_no++;
@@ -160,7 +213,8 @@ Log::Log(const char* seq_file, const char* type, const char* monitor_host, const
 
 	log_type = type;
 
-	if(hostname != NULL) host_name = hostname;
+	if (hostname != NULL)
+		host_name = hostname;
 	else
 	{
 		char h_name[100];
@@ -181,17 +235,16 @@ Log::Log(const char* seq_file, const char* type, const char* monitor_host, const
 	log_file_ptr = NULL;
 }
 
-
 int Log::open(const char* mode)
 {
 	this->mode = mode;
-	if(log_file_ptr != NULL)
+	if (log_file_ptr != NULL)
 		return 0;
 
 	setLogFileName();
 	log_file_ptr = fopen(log_file_name.c_str(), mode);
 
-	if(log_file_ptr == NULL)
+	if (log_file_ptr == NULL)
 		return ERROR_OPEN_FILE_FAIL;
 
 	current_row_count = 0;
@@ -200,7 +253,7 @@ int Log::open(const char* mode)
 
 int Log::write(const char* key, const char* format, ...)
 {
-	if(log_file_ptr == NULL)
+	if (log_file_ptr == NULL)
 		return ERROR_FILE_NOT_OPEN;
 
 	int argc = strlen(format);
@@ -213,37 +266,37 @@ int Log::write(const char* key, const char* format, ...)
 	va_start(values, format);
 
 	int i;
-	for(i = 0; i < argc; i++)
+	for (i = 0; i < argc; i++)
 	{
 		text += " ";
-		switch(format[i])
+		switch (format[i])
 		{
 		case 'i':
 			arg = new int;
-			*((int*)arg) = va_arg(values, int);
-			sprintf(str, "%d", *((int*)arg));
+			*((int*) arg) = va_arg(values, int);
+			sprintf(str, "%d", *((int*) arg));
 			text += str;
-			delete ((int*)arg);
+			delete ((int*) arg);
 			break;
 		case 'd':
 			arg = new double;
-			*((double*)arg) = va_arg(values, double);
-			sprintf(str, "%lf", *((double*)arg));
+			*((double*) arg) = va_arg(values, double);
+			sprintf(str, "%lf", *((double*) arg));
 			text += str;
-			delete ((double*)arg);
+			delete ((double*) arg);
 			break;
 		case 's':
 			arg = new char*;
-			*((char**)arg) = va_arg(values, char*);
-			sprintf(str, "%s", *((char**)arg));
+			*((char**) arg) = va_arg(values, char*);
+			sprintf(str, "%s", *((char**) arg));
 			text += str;
-			delete ((char**)arg);
+			delete ((char**) arg);
 			break;
 		}
 	}
 	va_end(values);
 
-	int ret = fprintf(log_file_ptr,"%s\n",text.c_str());
+	int ret = fprintf(log_file_ptr, "%s\n", text.c_str());
 //	printf("Bytes written: %d\n", ret);
 //	printf("Line written %s\n", text.c_str());
 //	printf("Log file name %s\n", log_file_name.c_str());
@@ -252,7 +305,7 @@ int Log::write(const char* key, const char* format, ...)
 
 	current_row_count++;
 //	printf("%d %d\n", current_row_count, check_point_row_count);
-	if(current_row_count == check_point_row_count)
+	if (current_row_count == check_point_row_count)
 	{
 		fflush(log_file_ptr);
 		fclose(log_file_ptr);
@@ -288,12 +341,12 @@ void Log::archiveCurrentLog()
 	pclose(shell_pipe);
 
 //	if the tar file doesn't exist then create it, tar -cf <archive_name> <new_name>
-	if(current_segment_no <= 1)
+	if (current_segment_no <= 1)
 	{
 		command = "tar -cf ";
 		command += archive_name;
 		command += " ";
-        command += new_name;
+		command += new_name;
 	}
 //	otherwise add the current log file in the tarball, tar -rf <archive_name> <new_name>
 	else
@@ -348,7 +401,7 @@ bool Log::sshUploadLog()
 	command += "\"";
 
 	FILE* shell_pipe = popen(command.c_str(), "w");
-	if(shell_pipe == NULL)
+	if (shell_pipe == NULL)
 		return false;
 	pclose(shell_pipe);
 	return true;
@@ -359,7 +412,7 @@ bool Log::sshUploadArchive()
 	FILE* shell_pipe = NULL;
 
 	/*sftp <monitor_user_name>@<monitor_host_name>:<remote_ftp_directory>/
-	  then put <archive_name> */
+	 then put <archive_name> */
 
 	string command = "sftp ";
 	command += monitor_user_name;
@@ -370,7 +423,8 @@ bool Log::sshUploadArchive()
 	command += "/";
 
 	shell_pipe = popen(command.c_str(), "w");
-	if(shell_pipe == NULL) return false;
+	if (shell_pipe == NULL)
+		return false;
 
 	command = "put ";
 	command += archive_name;
@@ -402,13 +456,13 @@ void Log::ftpUploadArchive()
 
 void Log::close()
 {
-	if(log_file_ptr != NULL)
+	if (log_file_ptr != NULL)
 	{
 		fclose(log_file_ptr);
 		log_file_ptr = NULL;
 	}
 
-	if(current_row_count > 0)
+	if (current_row_count > 0)
 	{
 		this->sshUploadLog();
 		this->archiveCurrentLog();
@@ -419,13 +473,13 @@ void Log::close()
 
 Log::~Log()
 {
-	if(log_file_ptr != NULL)
+	if (log_file_ptr != NULL)
 	{
 		fclose(log_file_ptr);
 		log_file_ptr = NULL;
 	}
 
-	if(current_row_count > 0)
+	if (current_row_count > 0)
 	{
 		this->sshUploadLog();
 		this->archiveCurrentLog();

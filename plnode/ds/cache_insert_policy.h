@@ -13,29 +13,33 @@
 #include "double_linked_list.h"
 #include "lookup_table.h"
 
-class CacheInsertPolicy {
+class CacheInsertPolicy
+{
 protected:
-        DoublyLinkedList *dll;
-        LookupTable<OverlayID, DLLNode*> *hm;
-        LookupTable<OverlayID, HostAddress>* rt;
-        OverlayID myOID;
-        int *cache_size;
+	DoublyLinkedList *dll;
+	LookupTable<OverlayID, DLLNode*> *hm;
+	LookupTable<OverlayID, HostAddress>* rt;
+	OverlayID myOID;
+	int *cache_size;
 public:
 
-        CacheInsertPolicy() {
+	CacheInsertPolicy()
+	{
 
-        }
+	}
 
-        void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm,
-                LookupTable<OverlayID, HostAddress>* rt, OverlayID myOID, int* cache_size) {
-                this->dll = dll;
-                this->hm = hm;
-                this->rt = rt;
-                this->myOID = myOID;
-                this->cache_size = cache_size;
-        }
+	void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm,
+			LookupTable<OverlayID, HostAddress>* rt, OverlayID myOID,
+			int* cache_size)
+	{
+		this->dll = dll;
+		this->hm = hm;
+		this->rt = rt;
+		this->myOID = myOID;
+		this->cache_size = cache_size;
+	}
 
-        virtual void insert(OverlayID &key, HostAddress &value) = 0;
+	virtual void insert(OverlayID &key, HostAddress &value) = 0;
 };
 
 #endif	/* CACHE_INSERT_POLICY_H */

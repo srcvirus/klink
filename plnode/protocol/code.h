@@ -18,5 +18,4 @@ public:
 	virtual char* decode(const char* bit_string) = 0;
 };
 
-
 #endif /* CODE_H_ */
