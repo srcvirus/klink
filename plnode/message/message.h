@@ -163,6 +163,8 @@ public:
 		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(long)); offset += sizeof(long);
+
+		return this;
 	}
 
 	virtual void message_print_dump()
