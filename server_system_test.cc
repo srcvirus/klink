@@ -136,6 +136,7 @@ void *listener_thread(void* args)
 		if (n_select < 0)
 		{
 			puts("Select Error");
+			printf("%d\n", errno);
 			exit(1);
 		}
 		for (int i = 0; i <= fd_max; i++)
@@ -265,7 +266,7 @@ void *forwarding_thread(void* args)
 				break;
 		}
 
-		//delete message;
+		delete message;
 	}
 }
 
