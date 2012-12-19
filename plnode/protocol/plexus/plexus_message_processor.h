@@ -112,7 +112,7 @@ public:
 
 			string status = "S";
 			if(msg->getStatus() == ERROR_GET_FAILED) status = "F";
-			g_log->write(key.c_str(), "ids", msg->getOverlayHops(), latency, status.c_str());
+			g_log->write(key.c_str(), "ids", msg->getResolutionHops(), latency, status.c_str());
 			//cache->print();
 		} //INIT Message
 		else if (message->getMessageType() == MSG_PEER_INIT)

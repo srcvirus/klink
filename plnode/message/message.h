@@ -118,10 +118,10 @@ public:
 
 		memcpy(buffer + offset, (char*)(&overlay_hops), sizeof(char)); offset += sizeof(char);
 		memcpy(buffer + offset, (char*)(&overlay_ttl), sizeof(char)); offset += sizeof(char);
+		memcpy(buffer + offset, (char*)(&issue_time_stamp), sizeof(long)); offset += sizeof(long);
 
 		memcpy(buffer + offset, (char*)(&dst_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
 		memcpy(buffer + offset, (char*)(&src_oid), sizeof(OverlayID)); offset += sizeof(OverlayID);
-		memcpy(buffer + offset, (char*)(&issue_time_stamp), sizeof(long)); offset += sizeof(long);
 
 		return buffer;
 	}
@@ -159,10 +159,10 @@ public:
 
 		memcpy(&overlay_hops, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char)); offset += sizeof(char); //printf("offset = %d\n", offset);
+		memcpy(&issue_time_stamp, buffer + offset, sizeof(long)); offset += sizeof(long);
 
 		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
 		memcpy(&src_oid, buffer + offset, sizeof(OverlayID)); offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
-		memcpy(&issue_time_stamp, buffer + offset, sizeof(long)); offset += sizeof(long);
 
 		return this;
 	}

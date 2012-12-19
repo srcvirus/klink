@@ -265,7 +265,7 @@ void *forwarding_thread(void* args)
 				break;
 		}
 
-		delete message;
+		//delete message;
 	}
 }
 

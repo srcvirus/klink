@@ -36,7 +36,7 @@ public:
     size_t getSize()
     {
     	int ret = getBaseSize();
-    	ret += sizeof(int) * 3 + sizeof(char) * host_address.GetHostName().size();
+    	ret += sizeof(int) * 4 + sizeof(char) * host_address.GetHostName().size();
     	return ret;
     }
 

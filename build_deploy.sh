@@ -9,7 +9,7 @@ then
 	rm client
 fi
 
-g++ -static server_system_test.cc -lpthread -o agent &> server_output
+g++ -g -static server_system_test.cc -lpthread -o agent &> server_output
 g++ -static client_system_test.cc -lpthread -o client &> client_output
 grep error server_output
 grep error client_output

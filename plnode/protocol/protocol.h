@@ -145,7 +145,7 @@ public:
 		error_code = c_socket.send_data(buffer, buffer_length, &timeout);
 		c_socket.close_socket();
 
-		delete[] buffer;
+//		delete[] buffer;
 		return error_code;
 	}
 
