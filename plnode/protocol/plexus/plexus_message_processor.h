@@ -20,6 +20,8 @@
 #include "../../message/control/peer_initiate_put.h"
 #include "../../message/control/peer_config_msg.h"
 #include "../../message/control/peer_change_status_message.h"
+#include "../../message/control/peer_gen_name_message.h"
+#include "../../message/control/peer_dyn_change_status_message.h"
 
 #include "../protocol.h"
 #include "../plexus/plexus_protocol.h"
@@ -167,7 +169,7 @@ public:
 		}
 		else if (message->getMessageType() == MSG_PEER_START)
 		{
-			container_protocol->getContainerPeer()->setStatus(PEER_RUNNING);
+			container_peer->setStatus(PEER_RUNNING);
 		}
 		else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS)
 		{
@@ -176,6 +178,12 @@ public:
 			container_protocol->getContainerPeer()->setStatus(
 					changeStatusMSG->getPeer_status());
 		}
+                else if (message->getMessageType() == MSG_GENERATE_NAME){
+                        container_peer->SetStart_gen_name(true);
+                }
+                else if(message->getMessageType() == MSG_DYN_CHANGE_STATUS){
+                        
+                }
 		return false;
 	}
 

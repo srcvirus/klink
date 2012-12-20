@@ -43,6 +43,8 @@ class Peer
 	int n_retry;
 
 	bool init_rcvd;
+        bool start_gen_name;
+        
 	ABSProtocol* protocol;
 	ServerSocket* server_socket;
 
@@ -58,6 +60,7 @@ public:
 		host_name = string(host_info->h_name);
 		//host_name = string(strcat(hostname, strcat(".", domain_name)));
 		init_rcvd = false;
+                start_gen_name = false;
 	}
 
 	Peer()
@@ -313,6 +316,14 @@ public:
 	{
 		n_retry = retry;
 	}
+
+        void SetStart_gen_name(bool start_gen_name) {
+                this->start_gen_name = start_gen_name;
+        }
+
+        bool IsStart_gen_name() const {
+                return start_gen_name;
+        }
 
 };
 
