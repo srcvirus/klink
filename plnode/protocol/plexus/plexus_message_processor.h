@@ -8,24 +8,33 @@
 #ifndef PLEXUS_MESSAGE_PROCESSOR_H
 #define	PLEXUS_MESSAGE_PROCESSOR_H
 
+#include "../../message/message_processor.h"
+
 #include "../../message/message.h"
 #include "../../message/p2p/message_get.h"
-#include "../../message/message_processor.h"
+#include "../../message/p2p/message_put.h"
+#include "../../message/p2p/message_get_reply.h"
+
 #include "../../message/control/peer_init_message.h"
 #include "../../message/control/peer_initiate_get.h"
 #include "../../message/control/peer_initiate_put.h"
-#include "../../message/p2p/message_put.h"
-#include "../../message/p2p/message_get_reply.h"
 #include "../../message/control/peer_config_msg.h"
+#include "../../message/control/peer_change_status_message.h"
+
 #include "../protocol.h"
 #include "../plexus/plexus_protocol.h"
+
 #include "../../../common/util.h"
+
+#include "../../ds/cache.h"
 #include "../../ds/cache_insert_endpoint.h"
 #include "../../ds/cache_replace_LRU.h"
-#include "../../ds/cache.h"
+
 #include "../../ds/overlay_id.h"
+
 #include "../../peer/peer_status.h"
-#include "../../message/control/peer_change_status_message.h"
+
+#include "../../logging/log_entry.h"
 
 class PlexusMessageProcessor: public MessageProcessor
 {
@@ -102,7 +111,6 @@ public:
 			Log* g_log = plexus->getGetLog();
 
 			char i_str[300];
-
 			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(),
 					msg->getDestHost().c_str(), msg->getSequenceNo());
 			string key = i_str;
@@ -111,12 +119,12 @@ public:
 			long end = clock();
 
 			double latency = (double) (end - start) / CLOCKS_PER_SEC;
-
 			string status = "S";
 			if (msg->getStatus() == ERROR_GET_FAILED)
 				status = "F";
-			g_log->write(key.c_str(), "ids", msg->getResolutionHops(), latency,
-					status.c_str());
+
+			LogEntry* entry = new LogEntry(LOG_GET, key.c_str(), "ids", msg->getResolutionHops(), latency, status.c_str());
+			plexus->addToLogQueue(entry);
 			//cache->print();
 		} //INIT Message
 		else if (message->getMessageType() == MSG_PEER_INIT)
@@ -139,24 +147,29 @@ public:
 
 			this->setup(container_protocol->getRoutingTable(),
 					container_protocol->getIndexTable());
-		} else if (message->getMessageType() == MSG_PEER_CONFIG)
+		}
+		else if (message->getMessageType() == MSG_PEER_CONFIG)
 		{
 			PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
 			container_peer->setAlpha(pConfMsg->getAlpha());
 			container_peer->setK(pConfMsg->getK());
-		} else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
+		}
+		else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
 		{
 			PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
 			container_protocol->get(pInitGet->getDeviceName());
-		} else if (message->getMessageType() == MSG_PEER_INITIATE_PUT)
+		}
+		else if (message->getMessageType() == MSG_PEER_INITIATE_PUT)
 		{
 			PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
 			container_protocol->put(pInitPut->getDeviceName(),
 					pInitPut->GetHostAddress());
-		} else if (message->getMessageType() == MSG_PEER_START)
+		}
+		else if (message->getMessageType() == MSG_PEER_START)
 		{
 			container_protocol->getContainerPeer()->setStatus(PEER_RUNNING);
-		} else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS)
+		}
+		else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS)
 		{
 			PeerChangeStatusMessage* changeStatusMSG =
 					(PeerChangeStatusMessage*) message;

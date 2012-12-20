@@ -42,20 +42,23 @@ void *listener_thread(void*);
 void *forwarding_thread(void*);
 void *processing_thread(void*);
 void *controlling_thread(void*);
+void *logging_thread(void*);
 
 int main(int argc, char* argv[])
 {
 	system_init();
-	pthread_t listener, processor, forwarder, controller;
+	pthread_t listener, processor, forwarder, controller, logger;
 
 	pthread_create(&listener, NULL, listener_thread, NULL);
 	pthread_create(&forwarder, NULL, forwarding_thread, NULL);
 	pthread_create(&processor, NULL, processing_thread, NULL);
+	pthread_create(&logger, NULL, logging_thread, NULL);
 	pthread_create(&controller, NULL, controlling_thread, NULL);
 
 	pthread_join(listener, NULL);
 	pthread_join(forwarder, NULL);
 	pthread_join(processor, NULL);
+	pthread_join(logger, NULL);
 	pthread_join(controller, NULL);
 
 	cleanup();
@@ -193,12 +196,7 @@ void *listener_thread(void* args)
 					fd_max = s_socket->getMaxConnectionFd();
 
 					s_socket->printActiveConnectionList();
-					/*if (buffer_length <= 0)
-					 {
-					 s_socket->close_connection(i);
-					 FD_CLR(i, &connection_pool);
-					 fd_max = s_socket->getMaxConnectionFd();
-					 } */
+
 
 					if (buffer_length > 0)
 					{
@@ -371,5 +369,22 @@ void *controlling_thread(void* args)
 			break;
 		}
 		pthread_yield();
+	}
+}
+
+void *logging_thread(void*)
+{
+	puts("Starting a logging thread");
+	LogEntry* entry;
+	while(true)
+	{
+		entry = ((PlexusProtocol*)plexus)->getLoggingQueueFront();
+		if(entry == NULL) puts("entry null");
+		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+		Log* log = ((PlexusProtocol*)plexus)->getLog(entry->getType());
+		if(log == NULL) puts("NULL");
+		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
+		printf("[Logging Thread:]\tlog flushed to the disk\n");
+		delete entry;
 	}
 }

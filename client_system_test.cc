@@ -16,7 +16,6 @@
 
 void send_init_message(BuildTree &tree, int name_count)
 {
-
 	int n = tree.getTreeSize();
 	printf("n = %d\n", n);
 	int retCode = 0;
@@ -98,7 +97,7 @@ int main(int argc, char* argv[])
 	//char* server_name = argv[1];
 	//int server_port = atoi(argv[2]);
 
-	int name_count = 294;
+	int name_count = 1000;
 
 	Peer* this_peer = new Peer();
 	this_peer->setTimeoutSec(5);

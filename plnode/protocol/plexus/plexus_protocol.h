@@ -23,25 +23,32 @@
 #include "../../ds/host_address.h"
 #include "../../message/message.h"
 #include "../../logging/log.h"
+#include "../../logging/log_entry.h"
 
 using namespace std;
 
 class ABSProtocol;
 
+#define MAX_LOGS 2
+#define LOG_GET 0
+#define LOG_PUT 1
+
 class PlexusProtocol: public ABSProtocol
 {
 
-	Log *get_log, *put_log;
+	Log *log[MAX_LOGS];
 
 	queue<ABSMessage*> incoming_message_queue;
 	queue<ABSMessage*> outgoing_message_queue;
+	queue<LogEntry*> logging_queue;
 
 	pthread_mutex_t incoming_queue_lock;
 	pthread_mutex_t outgoing_queue_lock;
+	pthread_mutex_t log_queue_lock;
 
 	pthread_cond_t cond_incoming_queue_empty;
 	pthread_cond_t cond_outgoing_queue_empty;
-
+	pthread_cond_t cond_log_queue_empty;
 public:
 
 	PlexusProtocol() :
@@ -56,10 +63,12 @@ public:
 		pthread_cond_init(&cond_incoming_queue_empty, NULL);
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
 
-		get_log = new Log("seq", "get", "scspc394.cs.uwaterloo.ca", "sr2chowd");
-		put_log = new Log("seq", "put", "scspc394.cs.uwaterloo.ca", "sr2chowd");
-		get_log->open("a");
-		put_log->open("a");
+		log[LOG_GET] = new Log("seq", "get", "scspc394.cs.uwaterloo.ca",
+				"sr2chowd");
+		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
+				"sr2chowd");
+		log[LOG_GET]->open("a");
+		log[LOG_GET]->open("a");
 	}
 
 	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
@@ -68,17 +77,21 @@ public:
 			ABSProtocol(routing_table, index_table, cache, msgProcessor,
 					container)
 	{
-		get_log = new Log("seq", "get", "scspc394.cs.uwaterloo.ca", "sr2chowd");
-		put_log = new Log("seq", "put", "scspc394.cs.uwaterloo.ca", "sr2chowd");
-		get_log->open("a");
-		put_log->open("a");
+		log[LOG_GET] = new Log("seq", "get", "scspc394.cs.uwaterloo.ca",
+				"sr2chowd");
+		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
+				"sr2chowd");
+		log[LOG_GET]->open("a");
+		log[LOG_GET]->open("a");
 		this->msgProcessor->setContainerProtocol(this);
 
 		pthread_mutex_init(&incoming_queue_lock, NULL);
 		pthread_mutex_init(&outgoing_queue_lock, NULL);
+		pthread_mutex_init(&log_queue_lock, NULL);
 
 		pthread_cond_init(&cond_incoming_queue_empty, NULL);
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+		pthread_cond_init(&cond_log_queue_empty, NULL);
 	}
 
 	void processMessage(ABSMessage *message)
@@ -158,18 +171,18 @@ public:
 			}
 		}
 		//search in the Cache
-		cache->reset_iterator();
-		while (cache->has_next())
-		{
-			DLLNode *node = cache->get_next();
-			OverlayID id = node->key;
-			currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
-			if (currentMatchLength > maxLengthMatch)
-			{
-				maxLengthMatch = currentMatchLength;
-				cache->lookup(msg->getDstOid(), next_hop);
-			}
-		}
+		/*cache->reset_iterator();
+		 while (cache->has_next())
+		 {
+		 DLLNode *node = cache->get_next();
+		 OverlayID id = node->key;
+		 currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+		 if (currentMatchLength > maxLengthMatch)
+		 {
+		 maxLengthMatch = currentMatchLength;
+		 cache->lookup(msg->getDstOid(), next_hop);
+		 }
+		 }*/
 
 		cout << endl << "max match : = " << maxLengthMatch << endl;
 
@@ -328,22 +341,60 @@ public:
 		return ret;
 	}
 
+	void addToLogQueue(LogEntry* log_entry)
+	{
+		pthread_mutex_lock(&log_queue_lock);
+		logging_queue.push(log_entry);
+		pthread_cond_signal(&cond_log_queue_empty);
+		pthread_mutex_unlock(&log_queue_lock);
+	}
+
+	bool isLogQueueEmpty()
+	{
+		bool status;
+		pthread_mutex_lock(&log_queue_lock);
+		status = logging_queue.empty();
+		pthread_mutex_unlock(&log_queue_lock);
+		return status;
+	}
+
+	LogEntry* getLoggingQueueFront()
+	{
+		pthread_mutex_lock(&log_queue_lock);
+		while(logging_queue.empty())
+		{
+			pthread_cond_wait(&cond_log_queue_empty, &log_queue_lock);
+		}
+		LogEntry* ret = logging_queue.front();
+		logging_queue.pop();
+		pthread_mutex_unlock(&log_queue_lock);
+	}
+
 	Log* getGetLog()
 	{
-		return get_log;
+		return log[LOG_GET];
 	}
 
 	Log* getPutLog()
 	{
-		return put_log;
+		return log[LOG_PUT];
+	}
+
+	Log* getLog(int type)
+	{
+		if(type >= MAX_LOGS) return NULL;
+		return log[type];
 	}
 
 	~PlexusProtocol()
 	{
 		pthread_mutex_destroy(&incoming_queue_lock);
 		pthread_mutex_destroy(&outgoing_queue_lock);
+		pthread_mutex_destroy(&log_queue_lock);
+
 		pthread_cond_destroy(&cond_incoming_queue_empty);
 		pthread_cond_destroy(&cond_outgoing_queue_empty);
+		pthread_cond_destroy(&cond_log_queue_empty);
 	}
 };
 

@@ -11,6 +11,7 @@
 #include "../klink/plnode/message/control/peer_config_msg.h"
 #include "../klink/plnode/message/message.h"
 #include "../klink/plnode/logging/log.h"
+#include "../klink/plnode/logging/log_entry.h"
 #include "../klink/plnode/ds/lookup_table.h"
 //#include "../klink/plnode/protocol/plexus/plexus_protocol.h"
 //#include "../klink/plnode/message/control/peer_init_message.h"
@@ -60,6 +61,18 @@ void log_test()
 	//lg.setRemoteFtpDirectory("logs");
 	lg.setCheckPointRowCount(4);
 	lg.open("a");
+
+	vector <LogEntry> vLog;
+
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+	vLog.push_back(LogEntry("1", "i", 10));
+
 
 	lg.write("1", "i", 10);
 	lg.write("2", "i", 10);

@@ -16,6 +16,9 @@
 
 using namespace std;
 
+#define LOG_GET		0
+#define LOG_PUT		1
+
 class Log
 {
 	string log_type;
@@ -122,7 +125,7 @@ public:
 	}
 
 	int open(const char* mode = "w");
-	int write(const char* key, const char* format, ...);
+	int write(const char* key, const char* value);
 	void ftpUploadLog();
 	void ftpUploadArchive();
 	bool sshUploadLog();
@@ -251,50 +254,16 @@ int Log::open(const char* mode)
 	return 1;
 }
 
-int Log::write(const char* key, const char* format, ...)
+int Log::write(const char* key, const char* value)
 {
+	puts("writing log");
 	if (log_file_ptr == NULL)
 		return ERROR_FILE_NOT_OPEN;
 
-	int argc = strlen(format);
-	char str[20];
-	void* arg = NULL;
-
 	string text = key;
-
-	va_list values;
-	va_start(values, format);
-
-	int i;
-	for (i = 0; i < argc; i++)
-	{
-		text += " ";
-		switch (format[i])
-		{
-		case 'i':
-			arg = new int;
-			*((int*) arg) = va_arg(values, int);
-			sprintf(str, "%d", *((int*) arg));
-			text += str;
-			delete ((int*) arg);
-			break;
-		case 'd':
-			arg = new double;
-			*((double*) arg) = va_arg(values, double);
-			sprintf(str, "%lf", *((double*) arg));
-			text += str;
-			delete ((double*) arg);
-			break;
-		case 's':
-			arg = new char*;
-			*((char**) arg) = va_arg(values, char*);
-			sprintf(str, "%s", *((char**) arg));
-			text += str;
-			delete ((char**) arg);
-			break;
-		}
-	}
-	va_end(values);
+	text += " ";
+	text += value;
+	puts(text.c_str());
 
 	int ret = fprintf(log_file_ptr, "%s\n", text.c_str());
 //	printf("Bytes written: %d\n", ret);
@@ -311,6 +280,7 @@ int Log::write(const char* key, const char* format, ...)
 		fclose(log_file_ptr);
 
 		log_file_ptr = NULL;
+
 		this->sshUploadLog();
 		this->archiveCurrentLog();
 		this->open("w+");
