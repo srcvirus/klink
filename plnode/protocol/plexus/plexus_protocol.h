@@ -169,8 +169,7 @@ public:
 		//        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
 		//cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
 		puts("creating iterator");
-		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
-				routing_table);
+		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
 		rtable_iterator.reset_iterator();
 
 		puts("looking up in routing table");

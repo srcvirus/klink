@@ -37,26 +37,36 @@ class ABSMessage
 protected:
 	unsigned char messageType;
 	unsigned int sequence_no;
+
 	string dest_host;
 	int dest_port;
 	string source_host;
 	int source_port;
+
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
+
 	OverlayID dst_oid;
 	OverlayID src_oid;
+
 	long issue_time_stamp;
+
+	long in_queue_push_time_stamp;
+	long in_queue_pop_time_stamp;
+	long out_queue_push_time_stamp;
+	long out_queue_push_time_stamp;
+	int ping_latency;
 
 	size_t getBaseSize()
 	{
 		size_t size = sizeof(char) * 3 + sizeof(int) * 11
-				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(long);
+				+ sizeof(char) * (dest_host.size() + source_host.size()) + sizeof(long);
 
 		return size;
 	}
 
 public:
+
 	ABSMessage()
 	{
 		sequence_no = sequence_no_generator++;
@@ -66,18 +76,21 @@ public:
 		calculateOverlayTTL(GlobalData::network_size);
 	}
 
-	ABSMessage(unsigned char messageType, string source_host, int source_port,
-			string dest_host, int dest_port, OverlayID src_oid,
-			OverlayID dst_oid) :
-			messageType(messageType), source_host(source_host), source_port(
-					source_port), dest_host(dest_host), dest_port(dest_port), src_oid(
-					src_oid), dst_oid(dst_oid)
+	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host,
+			int dest_port, OverlayID src_oid, OverlayID dst_oid) :
+			messageType(messageType), source_host(source_host), source_port(source_port), dest_host(
+					dest_host), dest_port(dest_port), src_oid(src_oid), dst_oid(dst_oid)
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
+	}
+
+	virtual int getSize()
+	{
+		return getBaseSize();
 	}
 
 	virtual ~ABSMessage()
@@ -129,22 +142,36 @@ public:
 		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(long));
 		offset += sizeof(long);
 
+		/*long in_queue_push_time_stamp;
+			long in_queue_pop_time_stamp;
+			long out_queue_push_time_stamp;
+			long out_queue_push_time_stamp;
+			int ping_latency;*/
+
+		memcpy(buffer + offset, (char*)(&in_queue_pop_time_stamp), sizeof(long)); offset += sizeof(long);
+
 		int o_id, p_len, m_len;
 		o_id = dst_oid.GetOverlay_id();
 		p_len = dst_oid.GetPrefix_length();
 		m_len = dst_oid.MAX_LENGTH;
 
-		memcpy(buffer + offset, (char*)&o_id, sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)&p_len, sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)&m_len, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &o_id, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &p_len, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &m_len, sizeof(int));
+		offset += sizeof(int);
 
 		o_id = src_oid.GetOverlay_id();
 		p_len = src_oid.GetPrefix_length();
 		m_len = src_oid.MAX_LENGTH;
 
-		memcpy(buffer + offset, (char*)&o_id, sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)&p_len, sizeof(int)); offset += sizeof(int);
-		memcpy(buffer + offset, (char*)&m_len, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &o_id, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &p_len, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &m_len, sizeof(int));
+		offset += sizeof(int);
 
 		return buffer;
 	}
@@ -195,17 +222,23 @@ public:
 
 		int o_id, p_len, m_len;
 
-		memcpy(&o_id, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&p_len, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&m_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&o_id, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&p_len, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&m_len, buffer + offset, sizeof(int));
+		offset += sizeof(int);
 
 		dst_oid.SetOverlay_id(o_id);
 		dst_oid.SetPrefix_length(p_len);
 		dst_oid.MAX_LENGTH = m_len;
 
-		memcpy(&o_id, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&p_len, buffer + offset, sizeof(int)); offset += sizeof(int);
-		memcpy(&m_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&o_id, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&p_len, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&m_len, buffer + offset, sizeof(int));
+		offset += sizeof(int);
 
 		src_oid.SetOverlay_id(o_id);
 		src_oid.SetPrefix_length(p_len);
