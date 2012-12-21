@@ -16,6 +16,7 @@
 //#include "../klink/plnode/protocol/plexus/plexus_protocol.h"
 //#include "../klink/plnode/message/control/peer_init_message.h"
 #include "../klink/plnode/ds/lookup_table_iterator.h"
+#include "../klink/plnode/ds/overlay_id.h"
 
 #include <vector>
 #include <pthread.h>
@@ -56,7 +57,7 @@ public:
 
 void log_test()
 {
-	Log lg("seq.txt", "latency", "localhost", "sr2chowd");
+	/*Log lg("seq.txt", "latency", "localhost", "sr2chowd");
 	//lg.setMonitorHostName("localhost");
 	//lg.setRemoteFtpDirectory("logs");
 	lg.setCheckPointRowCount(4);
@@ -88,11 +89,11 @@ void log_test()
 
 	lg.close();
 	lg.sshUploadArchive();
-	//lg.ftpUploadArchive();
+	//lg.ftpUploadArchive();*/
 }
 void lookup_table_test()
 {
-	LookupTable<K, int> table;
+/*	LookupTable<K, int> table;
 	K k;
 
 	k.setX(220);
@@ -116,7 +117,7 @@ void lookup_table_test()
 
 	table.remove(k);
 	vector<K> a = table.getKeySet();
-	printf("%d\n", (int) a.size());
+	printf("%d\n", (int) a.size());*/
 }
 
 /*void plexus_protocol_test()
@@ -159,12 +160,27 @@ void lookup_table_test()
  other->message_print_dump();
 
  }*/
+
+void rm_test()
+{
+	int hash_name_to_publish = 5;
+
+	for(int i = 0; i < 10; i++)
+	{
+		OverlayID destID(hash_name_to_publish);
+
+		cout << "id = " << hash_name_to_publish << ends << " odi = ";
+		destID.printBits();
+		cout << endl;
+	}
+}
 int main()
 {
 	//server_function(NULL);
 	//log_test();
 	//message_test();
-	lookup_table_test();
+	//lookup_table_test();
+	rm_test();
 	return 0;
 }
 

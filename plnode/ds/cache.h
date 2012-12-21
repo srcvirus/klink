@@ -86,7 +86,7 @@ public:
 
 	bool lookup(OverlayID key, HostAddress &hostAddress)
 	{
-		DLLNode *node;
+		DLLNode *node = new DLLNode();
 		if (hm->lookup(key, &node))
 		{
 			crPolicy->processHit(key);

@@ -5,11 +5,14 @@
  *      Author: sr2chowd
  */
 
+#include "communication/error_code.h"
+
 #include "communication/server_socket.h"
 #include "communication/client_socket.h"
-#include "communication/error_code.h"
+
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
+
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
 #include "plnode/protocol/plexus/plexus_message_processor.h"
@@ -18,6 +21,8 @@
 #include "plnode/message/control/peer_start_message.h"
 #include "plnode/message/control/peer_change_status_message.h"
 
+#include "plnode/ds/thread_parameter.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <pthread.h>
@@ -25,6 +30,11 @@
 
 using namespace std;
 
+#define MAX_LISTENER_THREAD 1
+#define MAX_CONTROL_THREAD 1
+#define MAX_PROCESSOR_THREAD 1
+#define MAX_FORWARDING_THREAD 3
+#define MAX_LOGGING_THREAD 1
 //Globals
 Peer* this_peer;
 ABSProtocol* plexus;
@@ -47,16 +57,28 @@ void *logging_thread(void*);
 int main(int argc, char* argv[])
 {
 	system_init();
-	pthread_t listener, processor, forwarder, controller, logger;
+	pthread_t listener, processor, controller, logger;
+	pthread_t forwarder[MAX_FORWARDING_THREAD];
 
 	pthread_create(&listener, NULL, listener_thread, NULL);
-	pthread_create(&forwarder, NULL, forwarding_thread, NULL);
-	pthread_create(&processor, NULL, processing_thread, NULL);
+	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+	{
+		ThreadParameter t_param(i);
+		pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
+	}
+
+	for(int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+	{
+		ThreadParameter* t_param(i);
+		pthread_create(&processor, NULL, processing_thread, &t_param);
+	}
+
 	pthread_create(&logger, NULL, logging_thread, NULL);
 	pthread_create(&controller, NULL, controlling_thread, NULL);
 
 	pthread_join(listener, NULL);
-	pthread_join(forwarder, NULL);
+	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		pthread_join(forwarder[i], NULL);
 	pthread_join(processor, NULL);
 	pthread_join(logger, NULL);
 	pthread_join(controller, NULL);
@@ -270,7 +292,9 @@ void *listener_thread(void* args)
 
 void *forwarding_thread(void* args)
 {
-	puts("Starting a forwarding thread");
+	ThreadParameter t_param = *((ThreadParameter*)args);
+	printf("Starting forwarding thread %d\n", t_param.getThreadId());
+
 	char* buffer = NULL;
 	int buffer_length;
 	ABSMessage* message = NULL;
@@ -280,7 +304,7 @@ void *forwarding_thread(void* args)
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
 
-		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n",
+		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
 				message->getMessageType(), message->getDestHost().c_str(),
 				message->getDestPort());
 
@@ -288,7 +312,6 @@ void *forwarding_thread(void* args)
 		while (retry < this_peer->getNRetry())
 		{
 			int error_code = plexus->send_message(message);
-
 			if (error_code == ERROR_CONNECTION_TIMEOUT)
 				retry++;
 			else
@@ -301,24 +324,26 @@ void *forwarding_thread(void* args)
 
 void *processing_thread(void* args)
 {
-	puts("Starting a processing thread");
+	ThreadParameter t_param = *((ThreadParameter*)args);
+	printf("Starting processing thread %d\n", t_param.getThreadId());
+
 	ABSMessage* message = NULL;
 	while (true)
 	{
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 		printf(
-				"[Processing Thread:]\t pulled a %d type message from the incoming queue\n",
+				"[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",t_param.getThreadId(),
 				message->getMessageType());
 
 		bool forward = plexus->getMessageProcessor()->processMessage(message);
 		if (forward)
 		{
 			printf(
-					"[Processing Thread:]\t pushed a %d type message for forwarding\n",
+					"[Processing Thread %d:]\tpushed a %d type message for forwarding\n", t_param.getThreadId(),
 					message->getMessageType());
 
 			message->getDstOid().printBits();
-			printf(" host: %s:%d TTL: %d Hops: %d\n",
+			printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
 					message->getDestHost().c_str(), message->getDestPort(),
 					message->getOverlayTtl(), message->getOverlayHops());
 			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
@@ -329,8 +354,8 @@ void *processing_thread(void* args)
 void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
-	usleep(8000000);
 
+	sleep(8);
 	while (true)
 	{
 		if (this_peer->IsInitRcvd())
@@ -343,7 +368,7 @@ void *controlling_thread(void* args)
 					this_peer->getPublish_name_range_end());
 
 			for (int i = this_peer->getPublish_name_range_start();
-					i < this_peer->getPublish_name_range_end(); i++)
+					i <= this_peer->getPublish_name_range_end(); i++)
 			{
 				HostAddress ha("dummyhost", i);
 				//itoa(i, buffer, 10);
@@ -355,8 +380,10 @@ void *controlling_thread(void* args)
 			}
 			//lookup names
 			printf("[Controlling Thread:]\tLooking up name ...\n");
+			//usleep(8000000);
+			sleep(60);
 			for (int i = this_peer->getLookup_name_range_start();
-					i < this_peer->getLookup_name_range_end(); i++)
+					i <= this_peer->getLookup_name_range_end(); i++)
 			{
 				HostAddress ha("dummyhost", i);
 				//itoa(i, buffer, 10);
@@ -375,16 +402,17 @@ void *controlling_thread(void* args)
 void *logging_thread(void*)
 {
 	puts("Starting a logging thread");
-	LogEntry* entry;
+	LogEntry *entry;
 	while(true)
 	{
 		entry = ((PlexusProtocol*)plexus)->getLoggingQueueFront();
 		if(entry == NULL) puts("entry null");
-		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+		printf("[Logging Thread:]\tpulled a log entry from the queue, %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 		Log* log = ((PlexusProtocol*)plexus)->getLog(entry->getType());
 		if(log == NULL) puts("NULL");
 		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
 		printf("[Logging Thread:]\tlog flushed to the disk\n");
 		delete entry;
+		printf("Index table size = %d\n", plexus->getIndexTable()->size());
 	}
 }
