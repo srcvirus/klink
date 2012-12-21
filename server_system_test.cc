@@ -5,11 +5,14 @@
  *      Author: sr2chowd
  */
 
+#include "communication/error_code.h"
+
 #include "communication/server_socket.h"
 #include "communication/client_socket.h"
-#include "communication/error_code.h"
+
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
+
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
 #include "plnode/protocol/plexus/plexus_message_processor.h"
@@ -17,6 +20,8 @@
 #include "plnode/message/control/peer_initiate_put.h"
 #include "plnode/message/control/peer_start_message.h"
 #include "plnode/message/control/peer_change_status_message.h"
+
+#include "plnode/ds/thread_parameter.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -57,9 +62,17 @@ int main(int argc, char* argv[])
 
 	pthread_create(&listener, NULL, listener_thread, NULL);
 	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
-		pthread_create(&forwarder[i], NULL, forwarding_thread, NULL);
+	{
+		ThreadParameter t_param(i);
+		pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
+	}
 
-	pthread_create(&processor, NULL, processing_thread, NULL);
+	for(int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+	{
+		ThreadParameter* t_param(i);
+		pthread_create(&processor, NULL, processing_thread, &t_param);
+	}
+
 	pthread_create(&logger, NULL, logging_thread, NULL);
 	pthread_create(&controller, NULL, controlling_thread, NULL);
 
@@ -279,7 +292,9 @@ void *listener_thread(void* args)
 
 void *forwarding_thread(void* args)
 {
-	puts("Starting a forwarding thread");
+	ThreadParameter t_param = *((ThreadParameter*)args);
+	printf("Starting forwarding thread %d\n", t_param.getThreadId());
+
 	char* buffer = NULL;
 	int buffer_length;
 	ABSMessage* message = NULL;
@@ -289,7 +304,7 @@ void *forwarding_thread(void* args)
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
 
-		printf("[Forwarding Thread:]\tForwarding a %d message to %s:%d\n",
+		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
 				message->getMessageType(), message->getDestHost().c_str(),
 				message->getDestPort());
 
@@ -297,7 +312,6 @@ void *forwarding_thread(void* args)
 		while (retry < this_peer->getNRetry())
 		{
 			int error_code = plexus->send_message(message);
-
 			if (error_code == ERROR_CONNECTION_TIMEOUT)
 				retry++;
 			else
@@ -310,24 +324,26 @@ void *forwarding_thread(void* args)
 
 void *processing_thread(void* args)
 {
-	puts("Starting a processing thread");
+	ThreadParameter t_param = *((ThreadParameter*)args);
+	printf("Starting processing thread %d\n", t_param.getThreadId());
+
 	ABSMessage* message = NULL;
 	while (true)
 	{
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 		printf(
-				"[Processing Thread:]\t pulled a %d type message from the incoming queue\n",
+				"[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",t_param.getThreadId(),
 				message->getMessageType());
 
 		bool forward = plexus->getMessageProcessor()->processMessage(message);
 		if (forward)
 		{
 			printf(
-					"[Processing Thread:]\t pushed a %d type message for forwarding\n",
+					"[Processing Thread %d:]\tpushed a %d type message for forwarding\n", t_param.getThreadId(),
 					message->getMessageType());
 
 			message->getDstOid().printBits();
-			printf(" host: %s:%d TTL: %d Hops: %d\n",
+			printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
 					message->getDestHost().c_str(), message->getDestPort(),
 					message->getOverlayTtl(), message->getOverlayHops());
 			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
@@ -338,7 +354,7 @@ void *processing_thread(void* args)
 void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
-	//usleep(8000000);
+
 	sleep(8);
 	while (true)
 	{
