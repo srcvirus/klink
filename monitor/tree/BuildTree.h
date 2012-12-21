@@ -155,7 +155,7 @@ void BuildTree::execute()
 
 		//build routing table
 		int nbrIndex;
-		cout << "OID MAX LENGHT " << OverlayID::MAX_LENGTH << endl;
+		cout << "OID MAX LENGHT " << idArray[0].MAX_LENGTH << endl;
 		for (int i = 0; i < this->treeSize; i++)
 		{
 			rtArray[i] = LookupTable<OverlayID, HostAddress>();
@@ -164,9 +164,9 @@ void BuildTree::execute()
 			for (int j = 0; j < idArray[i].GetPrefix_length(); j++)
 			{
 				OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(
-						OverlayID::MAX_LENGTH - j - 1);
+						idArray[i].MAX_LENGTH - j - 1);
 				replica = replica.ToggleBitAtPosition(
-						OverlayID::MAX_LENGTH - j - 1);
+						idArray[i].MAX_LENGTH - j - 1);
 				nbrIndex = GetIndexOfLongestMatchedPrefix(nbrPattern);
 				if (idArray[nbrIndex] != idArray[i])
 				{
