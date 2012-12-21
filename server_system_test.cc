@@ -231,7 +231,7 @@ void *listener_thread(void* args)
 						case MSG_PLEXUS_GET:
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
-							//rcvd_message->message_print_dump();
+							rcvd_message->message_print_dump();
 							break;
 
 						case MSG_PLEXUS_GET_REPLY:
@@ -249,6 +249,7 @@ void *listener_thread(void* args)
 						case MSG_PEER_INITIATE_GET:
 							rcvd_message = new PeerInitiateGET();
 							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
 							break;
 						case MSG_PEER_INITIATE_PUT:
 							rcvd_message = new PeerInitiatePUT();

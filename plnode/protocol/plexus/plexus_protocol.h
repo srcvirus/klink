@@ -55,7 +55,7 @@ public:
 			ABSProtocol()
 	{
 		//this->routing_table = new LookupTable<OverlayID, HostAddress > ();
-		//this->index_table = new LookupTable<string, OverlayID > ();
+
 		//this->msgProcessor = new PlexusMessageProcessor();
 		pthread_mutex_init(&incoming_queue_lock, NULL);
 		pthread_mutex_init(&outgoing_queue_lock, NULL);
@@ -75,6 +75,7 @@ public:
 					container)
 	{
 		this->msgProcessor->setContainerProtocol(this);
+
 
 		pthread_mutex_init(&incoming_queue_lock, NULL);
 		pthread_mutex_init(&outgoing_queue_lock, NULL);
@@ -130,9 +131,8 @@ public:
 
 	bool setNextHop(ABSMessage* msg)
 	{
-		puts("Setting next hop");
-		int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength =
-				0;
+		printf("Setting next hop, Message type = %d\n", msg->getMessageType());
+		int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
 		HostAddress next_hop;
 
 		switch (msg->getMessageType())
@@ -141,8 +141,8 @@ public:
 		case MSG_PEER_CONFIG:
 		case MSG_PEER_CHANGE_STATUS:
 		case MSG_PEER_START:
-                case MSG_GENERATE_NAME:
-                case MSG_DYN_CHANGE_STATUS:
+        case MSG_GENERATE_NAME:
+        case MSG_DYN_CHANGE_STATUS:
 		case MSG_PLEXUS_GET_REPLY:
 		case MSG_PEER_INITIATE_GET:
 		case MSG_PEER_INITIATE_PUT:
@@ -154,10 +154,11 @@ public:
 			return false;
 
 		//Peer *container_peer = getContainerPeer();
-		currentNodeMathLength =
-				container_peer->getOverlayID().GetMatchedPrefixLength(
-						msg->getDstOid());
+		currentNodeMathLength =	container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
 		printf("Current match length = %d\n", currentNodeMathLength);
+		printf("Message oid = %d\n", msg->getDstOid());
+		msg->getDstOid().printBits(); putchar('\n');
+
 		//cout << endl << "current node match : ";
 		//container_peer->getOverlayID().printBits();
 		//cout << " <> ";
@@ -237,9 +238,14 @@ public:
 		int hash_name_to_get = atoi(name.c_str());
 		OverlayID destID(hash_name_to_get);
 
+		printf("h_name = %d, oid = %d\n", hash_name_to_get, destID.GetOverlay_id());
+
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
 				container_peer->getOverlayID(), destID, name);
+
+		printf("Constructed Get Message");
+		msg->message_print_dump();
 
 		if (msgProcessor->processMessage(msg))
 		{

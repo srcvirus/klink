@@ -77,7 +77,7 @@ int* ReedMuller::__decode(int* codeword) {
 unsigned int ReedMuller::array2int(int* array, int size) {
         unsigned int value = 0;
         for (int i = 0; i < size; i++) {
-                value |= (array[i] & 0x00000001) << i; // i -> (size - i - 1)
+                value |= (array[i] & 0x00000001) << (size - i - 1); // i -> (size - i - 1)
         }
         return value;
 

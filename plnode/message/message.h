@@ -49,9 +49,9 @@ protected:
 
 	size_t getBaseSize()
 	{
-		size_t size = sizeof(char) * 3 + sizeof(int) * 5
+		size_t size = sizeof(char) * 3 + sizeof(int) * 11
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(OverlayID) * 2 + sizeof(long);
+				+ sizeof(long);
 
 		return size;
 	}
@@ -129,10 +129,22 @@ public:
 		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(long));
 		offset += sizeof(long);
 
-		memcpy(buffer + offset, (char*) (&dst_oid), sizeof(OverlayID));
-		offset += sizeof(OverlayID);
-		memcpy(buffer + offset, (char*) (&src_oid), sizeof(OverlayID));
-		offset += sizeof(OverlayID);
+		int o_id, p_len, m_len;
+		o_id = dst_oid.GetOverlay_id();
+		p_len = dst_oid.GetPrefix_length();
+		m_len = dst_oid.MAX_LENGTH;
+
+		memcpy(buffer + offset, (char*)&o_id, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)&p_len, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)&m_len, sizeof(int)); offset += sizeof(int);
+
+		o_id = src_oid.GetOverlay_id();
+		p_len = src_oid.GetPrefix_length();
+		m_len = src_oid.MAX_LENGTH;
+
+		memcpy(buffer + offset, (char*)&o_id, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)&p_len, sizeof(int)); offset += sizeof(int);
+		memcpy(buffer + offset, (char*)&m_len, sizeof(int)); offset += sizeof(int);
 
 		return buffer;
 	}
@@ -181,10 +193,23 @@ public:
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(long));
 		offset += sizeof(long);
 
-		memcpy(&dst_oid, buffer + offset, sizeof(OverlayID));
-		offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
-		memcpy(&src_oid, buffer + offset, sizeof(OverlayID));
-		offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+		int o_id, p_len, m_len;
+
+		memcpy(&o_id, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&p_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&m_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+
+		dst_oid.SetOverlay_id(o_id);
+		dst_oid.SetPrefix_length(p_len);
+		dst_oid.MAX_LENGTH = m_len;
+
+		memcpy(&o_id, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&p_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+		memcpy(&m_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+
+		src_oid.SetOverlay_id(o_id);
+		src_oid.SetPrefix_length(p_len);
+		src_oid.MAX_LENGTH = m_len;
 
 		return this;
 	}
