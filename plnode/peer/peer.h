@@ -45,6 +45,7 @@ class Peer
 
 	bool init_rcvd;
 	bool start_gen_name;
+        int dyn_status;
 
 	ABSProtocol* protocol;
 	ServerSocket* server_socket;
@@ -389,6 +390,14 @@ public:
 	{
 		log_server_user = logServerUser;
 	}
+
+        void SetDyn_status(int dyn_status) {
+                this->dyn_status = dyn_status;
+        }
+
+        int GetDyn_status() const {
+                return dyn_status;
+        }
 };
 
 #endif /* PEER_H_ */

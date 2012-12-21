@@ -262,6 +262,14 @@ void *listener_thread(void* args)
 							rcvd_message = new PeerChangeStatusMessage();
 							rcvd_message->deserialize(buffer, buffer_length);
 							break;
+						case MSG_GENERATE_NAME:
+							rcvd_message = new PeerGenNameMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_DYN_CHANGE_STATUS:
+							rcvd_message = new PeerDynChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
 						}
 
 						if (rcvd_message != NULL)

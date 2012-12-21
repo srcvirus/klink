@@ -57,12 +57,12 @@ public:
 		return this;
 	}
 
-	void setDyn_status(int peer_status)
+	void setDynStatus(int peer_status)
 	{
 		this->dyn_status = dyn_status;
 	}
 
-	int getDyn_status() const
+	int getDynStatus() const
 	{
 		return dyn_status;
 	}
