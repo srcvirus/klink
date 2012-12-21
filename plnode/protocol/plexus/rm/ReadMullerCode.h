@@ -19,7 +19,7 @@ using namespace std;
 //std::size_t size(T(&)[N]){return N;}
 
 class ReedMuller {
-        int r, m;
+        int r, m, k, n;
 public:
         reedmuller rm;
         ReedMuller();
@@ -63,7 +63,7 @@ int* ReedMuller::__decode(int* codeword) {
 
         cout << "codeword: ";
         char ch;
-        for (int i = rm->n - 1; i >= 0; i--) {
+        for (int i = 0; i < rm->n; i++) {
                 ch = codeword[i] + '0';
                 cout << ch;
         }
@@ -86,7 +86,9 @@ unsigned int ReedMuller::array2int(int* array, int size) {
 int* ReedMuller::int2array(unsigned int value, int size) {
         int *array = new int[size];
         for (int i = 0; i < size; i++) {
-                array[i] = (((value & (1 << i)) >> i) & 0x00000001);
+                //array[i] = (((value & (1 << i)) >> i) & 0x00000001);
+                int shift = size - i - 1;
+                array[i] = (((value & (1 << shift)) >> shift) & 0x00000001);
         }
         return array;
 }
