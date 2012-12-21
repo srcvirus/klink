@@ -188,8 +188,8 @@ public:
 		}
 		else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS)
 		{
-                        //PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*)message;
-                        //container_peer->SetDyn_status(dcsMsg->getDynStatus());
+                        PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*)message;
+                        container_peer->SetDyn_status(dcsMsg->getDynStatus());
 		}
 		return false;
 	}
