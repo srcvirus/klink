@@ -181,7 +181,7 @@ public:
 			//while (routing_table->hasMoreKey()) {
 			//   OverlayID oid = routing_table->getNextKey();
 			OverlayID oid = rtable_iterator.getNextKey();
-			printf("next key = %d\ My id = ", oid.GetOverlay_id());
+			printf("next key = %d My id = ", oid.GetOverlay_id());
 			msg->getDstOid().printBits();
 			putchar('\n');
 
