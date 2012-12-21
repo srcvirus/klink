@@ -59,16 +59,18 @@ public:
 		//this->msgProcessor = new PlexusMessageProcessor();
 		pthread_mutex_init(&incoming_queue_lock, NULL);
 		pthread_mutex_init(&outgoing_queue_lock, NULL);
+		pthread_mutex_init(&log_queue_lock, NULL);
 
 		pthread_cond_init(&cond_incoming_queue_empty, NULL);
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+		pthread_cond_init(&cond_log_queue_empty, NULL);
 
 		log[LOG_GET] = new Log("seq", "get", "scspc394.cs.uwaterloo.ca",
 				"sr2chowd");
 		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
 				"sr2chowd");
 		log[LOG_GET]->open("a");
-		log[LOG_GET]->open("a");
+		log[LOG_PUT]->open("a");
 	}
 
 	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
@@ -82,7 +84,7 @@ public:
 		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
 				"sr2chowd");
 		log[LOG_GET]->open("a");
-		log[LOG_GET]->open("a");
+		log[LOG_PUT]->open("a");
 		this->msgProcessor->setContainerProtocol(this);
 
 		pthread_mutex_init(&incoming_queue_lock, NULL);
@@ -150,39 +152,47 @@ public:
 		rtable_iterator.reset_iterator();
 
 		puts("looking up in routing table");
+		OverlayID maxMatchOid;
 		//routing_table->reset_iterator();
 		while (rtable_iterator.hasMoreKey())
 		{
 			//while (routing_table->hasMoreKey()) {
 			//   OverlayID oid = routing_table->getNextKey();
 			OverlayID oid = rtable_iterator.getNextKey();
-			printf("next key = %d\n", oid.GetOverlay_id());
+			printf("next key = %d\ My id = ", oid.GetOverlay_id());
+			msg->getDstOid().printBits();
+			putchar('\n');
+
 			//cout << endl << "current match ";
 			//oid.printBits();
 			currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
 			//cout << " ==== " << currentMatchLength << endl;
 			printf(">current match length = %d\n", currentMatchLength);
+
 			if (currentMatchLength > maxLengthMatch)
 			{
 				maxLengthMatch = currentMatchLength;
-				routing_table->lookup(oid, &next_hop);
-				printf("next host %s, next port %d\n",
-						next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+				maxMatchOid = oid;
+
+				/*printf("next host %s, next port %d\n",
+						next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
 			}
 		}
+		routing_table->lookup(maxMatchOid, &next_hop);
 		//search in the Cache
 		/*cache->reset_iterator();
-		 while (cache->has_next())
-		 {
-		 DLLNode *node = cache->get_next();
-		 OverlayID id = node->key;
-		 currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
-		 if (currentMatchLength > maxLengthMatch)
-		 {
-		 maxLengthMatch = currentMatchLength;
-		 cache->lookup(msg->getDstOid(), next_hop);
-		 }
-		 }*/
+		while (cache->has_next())
+		{
+			DLLNode *node = cache->get_next();
+			OverlayID id = node->key;
+			currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+			if (currentMatchLength > maxLengthMatch)
+			{
+				maxLengthMatch = currentMatchLength;
+				cache->lookup(msg->getDstOid(), next_hop);
+				printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+			}
+		}*/
 
 		cout << endl << "max match : = " << maxLengthMatch << endl;
 
@@ -361,13 +371,14 @@ public:
 	LogEntry* getLoggingQueueFront()
 	{
 		pthread_mutex_lock(&log_queue_lock);
-		while(logging_queue.empty())
+		while (logging_queue.empty())
 		{
 			pthread_cond_wait(&cond_log_queue_empty, &log_queue_lock);
 		}
 		LogEntry* ret = logging_queue.front();
 		logging_queue.pop();
 		pthread_mutex_unlock(&log_queue_lock);
+		return ret;
 	}
 
 	Log* getGetLog()
@@ -382,7 +393,8 @@ public:
 
 	Log* getLog(int type)
 	{
-		if(type >= MAX_LOGS) return NULL;
+		if (type >= MAX_LOGS)
+			return NULL;
 		return log[type];
 	}
 

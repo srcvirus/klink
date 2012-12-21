@@ -25,6 +25,11 @@
 
 using namespace std;
 
+#define MAX_LISTENER_THREAD 1
+#define MAX_CONTROL_THREAD 1
+#define MAX_PROCESSOR_THREAD 1
+#define MAX_FORWARDING_THREAD 3
+#define MAX_LOGGING_THREAD 1
 //Globals
 Peer* this_peer;
 ABSProtocol* plexus;
@@ -47,16 +52,20 @@ void *logging_thread(void*);
 int main(int argc, char* argv[])
 {
 	system_init();
-	pthread_t listener, processor, forwarder, controller, logger;
+	pthread_t listener, processor, controller, logger;
+	pthread_t forwarder[MAX_FORWARDING_THREAD];
 
 	pthread_create(&listener, NULL, listener_thread, NULL);
-	pthread_create(&forwarder, NULL, forwarding_thread, NULL);
+	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		pthread_create(&forwarder[i], NULL, forwarding_thread, NULL);
+
 	pthread_create(&processor, NULL, processing_thread, NULL);
 	pthread_create(&logger, NULL, logging_thread, NULL);
 	pthread_create(&controller, NULL, controlling_thread, NULL);
 
 	pthread_join(listener, NULL);
-	pthread_join(forwarder, NULL);
+	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		pthread_join(forwarder[i], NULL);
 	pthread_join(processor, NULL);
 	pthread_join(logger, NULL);
 	pthread_join(controller, NULL);
@@ -329,8 +338,8 @@ void *processing_thread(void* args)
 void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
-	usleep(8000000);
-
+	//usleep(8000000);
+	sleep(8);
 	while (true)
 	{
 		if (this_peer->IsInitRcvd())
@@ -343,7 +352,7 @@ void *controlling_thread(void* args)
 					this_peer->getPublish_name_range_end());
 
 			for (int i = this_peer->getPublish_name_range_start();
-					i < this_peer->getPublish_name_range_end(); i++)
+					i <= this_peer->getPublish_name_range_end(); i++)
 			{
 				HostAddress ha("dummyhost", i);
 				//itoa(i, buffer, 10);
@@ -355,8 +364,10 @@ void *controlling_thread(void* args)
 			}
 			//lookup names
 			printf("[Controlling Thread:]\tLooking up name ...\n");
+			//usleep(8000000);
+			sleep(60);
 			for (int i = this_peer->getLookup_name_range_start();
-					i < this_peer->getLookup_name_range_end(); i++)
+					i <= this_peer->getLookup_name_range_end(); i++)
 			{
 				HostAddress ha("dummyhost", i);
 				//itoa(i, buffer, 10);
@@ -375,16 +386,17 @@ void *controlling_thread(void* args)
 void *logging_thread(void*)
 {
 	puts("Starting a logging thread");
-	LogEntry* entry;
+	LogEntry *entry;
 	while(true)
 	{
 		entry = ((PlexusProtocol*)plexus)->getLoggingQueueFront();
 		if(entry == NULL) puts("entry null");
-		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+		printf("[Logging Thread:]\tpulled a log entry from the queue, %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 		Log* log = ((PlexusProtocol*)plexus)->getLog(entry->getType());
 		if(log == NULL) puts("NULL");
 		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
 		printf("[Logging Thread:]\tlog flushed to the disk\n");
 		delete entry;
+		printf("Index table size = %d\n", plexus->getIndexTable()->size());
 	}
 }

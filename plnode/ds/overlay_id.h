@@ -31,6 +31,7 @@ public:
 
 	OverlayID(unsigned int overlay_id, int prefix_lenght)
 	{
+		MAX_LENGTH = GlobalData::rm->rm->k;
 		this->overlay_id = overlay_id;
 		this->prefix_length = prefix_lenght;
 	}
@@ -43,7 +44,7 @@ public:
 
 	OverlayID(int pattern)
 	{
-
+		MAX_LENGTH = GlobalData::rm->rm->k;
 		this->overlay_id = GlobalData::rm->decode(pattern);
 		this->prefix_length = GlobalData::rm->rm->k;
 	}

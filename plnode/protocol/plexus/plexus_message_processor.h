@@ -82,7 +82,8 @@ public:
 						container_peer->getListenPortNumber(),
 						msg->getSourceHost(), msg->getSourcePort(),
 						container_peer->getOverlayID(), msg->getDstOid(),
-						SUCCESS, hostAddress);
+						SUCCESS, hostAddress, msg->GetDeviceName());
+
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
 				reply->setResolutionHops(msg->getOverlayHops());
 				plexus->addToOutgoingQueue(reply);
@@ -95,7 +96,7 @@ public:
 						container_peer->getListenPortNumber(),
 						msg->getSourceHost(), msg->getSourcePort(),
 						container_peer->getOverlayID(), msg->getDstOid(),
-						ERROR_GET_FAILED, hostAddress);
+						ERROR_GET_FAILED, hostAddress, msg->GetDeviceName());
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
 				reply->setResolutionHops(msg->getOverlayHops());
 				plexus->addToOutgoingQueue(reply);
@@ -123,7 +124,9 @@ public:
 			if (msg->getStatus() == ERROR_GET_FAILED)
 				status = "F";
 
-			LogEntry* entry = new LogEntry(LOG_GET, key.c_str(), "ids", msg->getResolutionHops(), latency, status.c_str());
+			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idssi", msg->getResolutionHops(), latency, status.c_str(), msg->getDeviceName().c_str(),
+					msg->getSrcOid().GetOverlay_id());
+			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
 			//cache->print();
 		} //INIT Message
