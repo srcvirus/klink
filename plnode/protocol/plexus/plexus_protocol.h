@@ -253,7 +253,7 @@ public:
 		int hash_name_to_get = atoi(name.c_str());
 		OverlayID destID(hash_name_to_get);
 
-		cout << "id = " << hash_name_to_get << endl << " odi = ";
+		cout << "id = " << hash_name_to_get << " oid = ";
 		destID.printBits();
 		cout << endl;
 
@@ -289,7 +289,7 @@ public:
 		int hash_name_to_publish = atoi(name.c_str());
 		OverlayID destID(hash_name_to_publish);
 
-		cout << "id = " << hash_name_to_publish << endl << " odi = ";
+		cout << "id = " << hash_name_to_publish << " oid = ";
 		destID.printBits();
 		cout << endl;
 
