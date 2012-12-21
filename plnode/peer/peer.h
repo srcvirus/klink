@@ -12,6 +12,7 @@
 #include "../protocol/protocol.h"
 #include "../ds/overlay_id.h"
 #include "../ds/ip_address.h"
+#include "../ds/configuration.h"
 #include "../../communication/server_socket.h"
 
 class ABSProtocol;
@@ -43,11 +44,15 @@ class Peer
 	int n_retry;
 
 	bool init_rcvd;
-        bool start_gen_name;
-        
+	bool start_gen_name;
+
 	ABSProtocol* protocol;
 	ServerSocket* server_socket;
 
+	string log_server_name;
+	string log_server_user;
+
+	Configuration* configuration;
 public:
 
 	void INIT()
@@ -60,7 +65,7 @@ public:
 		host_name = string(host_info->h_name);
 		//host_name = string(strcat(hostname, strcat(".", domain_name)));
 		init_rcvd = false;
-                start_gen_name = false;
+		start_gen_name = false;
 	}
 
 	Peer()
@@ -76,38 +81,71 @@ public:
 		server_socket = new ServerSocket(listen_port_number);
 	}
 
-	Peer(const char* hosts_file)
+	Peer(const char* configuration_file)
 	{
 		INIT();
+		configuration = new Configuration(configuration_file);
+
+		alpha = configuration->getAlpha();
+		k = configuration->getK();
+		n_retry = configuration->getNRetry();
+		timeout_sec = (int) configuration->getTimeout();
+		timeout_micro_sec = (int) ((configuration->getTimeout()
+				- (double) timeout_sec) * 1000000);
+		log_server_name = configuration->getLogServerHostName();
+		log_server_user = configuration->getLogServerUserName();
+
+		initListenSocket(configuration->getNodesFilePath().c_str());
+	}
+
+	void initListenSocket(const char* hosts_file)
+	{
 		listen_port_number = -1;
+
 		FILE* hosts_ptr = fopen(hosts_file, "r");
+		if(hosts_ptr == NULL)
+		{
+			printf("bad hosts file %s\n", hosts_file);
+			listen_port_number = -1;
+			server_socket = NULL;
+			return;
+		}
+
 		char host_name[200];
 		int port = -1;
 		int n_hosts;
+		bool found = false;
+
 		fscanf(hosts_ptr, "%d", &n_hosts);
+		printf("N hosts = %d\n", n_hosts);
 
 		for (int i = 0; i < n_hosts; i++)
 		{
 			fscanf(hosts_ptr, "%s %d", host_name, &port);
 			if (strncmp(this->getHostName().c_str(), host_name,
-					strlen(this->getHostName().c_str())) == 0)
+					strlen(this->getHostName().c_str())) == 0
+					|| strcmp(host_name, "localhost") == 0)
 			{
 				listen_port_number = port;
-				break;
+				server_socket = new ServerSocket(listen_port_number);
+				if (server_socket->init_connection() < 0)
+				{
+					delete server_socket;
+					listen_port_number = -1;
+					server_socket = NULL;
+				}
+				else
+					break;
 			}
 		}
 		fclose(hosts_ptr);
-
-		if (listen_port_number != -1)
-		{
-			server_socket = new ServerSocket(listen_port_number);
-		}
 	}
-
 	~Peer()
 	{
 		delete protocol;
 		delete server_socket;
+		if (configuration != NULL)
+			delete configuration;
 	}
 
 	double getAlpha()
@@ -317,14 +355,40 @@ public:
 		n_retry = retry;
 	}
 
-        void SetStart_gen_name(bool start_gen_name) {
-                this->start_gen_name = start_gen_name;
-        }
+	void SetStart_gen_name(bool start_gen_name)
+	{
+		this->start_gen_name = start_gen_name;
+	}
 
-        bool IsStart_gen_name() const {
-                return start_gen_name;
-        }
+	bool IsStart_gen_name() const
+	{
+		return start_gen_name;
+	}
 
+	Configuration* getConfiguration() const
+	{
+		return configuration;
+	}
+
+	string getLogServerName() const
+	{
+		return log_server_name;
+	}
+
+	void setLogServerName(const string& logServerName)
+	{
+		log_server_name = logServerName;
+	}
+
+	string getLogServerUser() const
+	{
+		return log_server_user;
+	}
+
+	void setLogServerUser(const string& logServerUser)
+	{
+		log_server_user = logServerUser;
+	}
 };
 
 #endif /* PEER_H_ */

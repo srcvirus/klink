@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
 	for(int i = 0; i < MAX_PROCESSOR_THREAD; i++)
 	{
-		ThreadParameter* t_param(i);
+		ThreadParameter t_param(i);
 		pthread_create(&processor, NULL, processing_thread, &t_param);
 	}
 
@@ -92,26 +92,23 @@ void system_init()
 	puts("Initializing the System");
 
 	/* creating the peer container */
-	this_peer = new Peer(GlobalData::host_file_name.c_str());
-	puts("hostname = ");
-	puts(this_peer->getHostName().c_str());
+	this_peer = new Peer(GlobalData::config_file_name.c_str());
+	printf("hostname = %s\n", this_peer->getHostName().c_str());
+
 	if (this_peer->getListenPortNumber() == -1)
 	{
 		puts("Port Number Not Found");
 		exit(1);
 	}
-	/* creating the plexus protocol object */
-	plexus = new PlexusProtocol();
 
 	/* creating the message processor for plexus */
 	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
 
+	/* creating the plexus protocol object */
+	plexus = new PlexusProtocol(this_peer, msg_processor);
+
 	/* setting the message processor's protocol */
 	msg_processor->setContainerProtocol(plexus);
-
-	/* setting the container and message processor for plexus */
-	plexus->setMessageProcess(msg_processor);
-	plexus->setContainerPeer(this_peer);
 
 	/* setting the protocol of the peer */
 	this_peer->setProtocol(plexus);
@@ -122,22 +119,16 @@ void system_init()
 
 	/* creating the server socket for accepting connection from other peers */
 	s_socket = this_peer->getServerSocket();
-	error_code = s_socket->init_connection();
-
-	FD_SET(s_socket->getSocketFd(), &connection_pool);
-
-	if (error_code < 0)
+	if(s_socket == NULL)
 	{
-		print_error_message(error_code);
+		printf("Socket create error");
 		exit(1);
 	}
 
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
+
 	fd_max = s_socket->getSocketFd();
 	s_socket->print_socket_info();
-
-	this_peer->setNRetry(2);
-	this_peer->setTimeoutSec(5);
-	this_peer->setTimeoutMicroSec(500);
 }
 
 void cleanup()

@@ -54,6 +54,15 @@ public:
 		msgProcessor->setup(routing_table, index_table, cache);
 	}
 
+	ABSProtocol(Peer* container, MessageProcessor* msgProcessor)
+	{
+		routing_table = NULL;
+		index_table = NULL;
+		this->msgProcessor = msgProcessor;
+		cache = new Cache();
+		this->container_peer = container;
+	}
+
 	void setContainerPeer(Peer* peer)
 	{
 		container_peer = peer;

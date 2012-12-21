@@ -8,6 +8,8 @@
 #ifndef CONFIGURATION_H_
 #define CONFIGURATION_H_
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <cstring>
 #include <map>
@@ -28,7 +30,7 @@ class Configuration
 	double alpha;
 	int name_count;
 
-	int timeout;
+	double timeout;
 	int n_retry;
 
 	map <string, string> config_map;
@@ -49,6 +51,12 @@ class Configuration
 		}
 
 		return true;
+	}
+
+	void stripNewline(char* str)
+	{
+		int ptr = (int)strlen(str) - 1;
+		if(str[ptr] == '\n' || str[ptr] == '\r') str[ptr] = '\0';
 	}
 
 public:
@@ -73,10 +81,10 @@ public:
 
 		while (fgets(line, sizeof(line), config_file_ptr) != NULL)
 		{
-			if(line[0] == '#') continue;
+			if(line[0] == '#' || strlen(line) == 0 || !isalnum(line[0])) continue;
 
-			char* key = strtok(line, "=");
-			char* value = strtok(line, "=");
+			char* key = strtok(line, "="); stripNewline(key);
+			char* value = strtok(NULL, "="); stripNewline(value);
 			config_map.insert(make_pair(key, value));
 
 			if (strcmp(key, "node_file") == 0 || strcmp(key, "nodes_file") == 0)
@@ -110,7 +118,7 @@ public:
 			}
 			else if (strcmp(key, "timeout") == 0)
 			{
-				timeout = atoi(value);
+				timeout = atof(value);
 			}
 			else if (strcmp(key, "retry") == 0)
 			{
@@ -130,7 +138,7 @@ public:
 		this->config_file_path = config_file_path;
 	}
 
-	int getTimeout() const
+	double getTimeout() const
 	{
 		return this->timeout;
 	}
@@ -213,10 +221,12 @@ public:
 	void print_configuration()
 	{
 		map <string, string>::iterator config_itr;
+		puts("--------------------Configuration Parameters--------------------");
 		for(config_itr = config_map.begin(); config_itr != config_map.end(); config_itr++)
 		{
-			printf("%s = %s\n", config_itr->first, config_itr->second);
+			printf("%s = %s\n", config_itr->first.c_str(), config_itr->second.c_str());
 		}
+		puts("----------------------------------------------------------------");
 	}
 };
 

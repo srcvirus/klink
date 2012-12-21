@@ -9,6 +9,8 @@
 #define ERROR_CODE_H_
 #define DEBUG
 
+#include <stdio.h>
+
 #define SUCCESS							0
 #define ERROR_SOCKET_CREATE_FAIL		-100
 #define ERROR_SOCKET_BIND_FAIL			-101

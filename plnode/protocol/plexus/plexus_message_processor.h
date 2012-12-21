@@ -47,16 +47,14 @@ public:
 	{
 		MessageProcessor::setup(routing_table, index_table,
 				new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
-						getContainerProtocol()->getRoutingTable(),
-						getContainerProtocol()->getContainerPeer()->getOverlayID(),
-						100));
+						container_protocol->getRoutingTable(),
+						container_protocol->getContainerPeer()->getOverlayID(),
+						container_protocol->getContainerPeer()->getK()));
 	}
 
 	bool processMessage(ABSMessage* message)
 	{
 		message->decrementOverlayTtl();
-		//message->incrementOverlayHops();
-
 		PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
 		Peer* container_peer = container_protocol->getContainerPeer();
 
@@ -90,7 +88,8 @@ public:
 				reply->setResolutionHops(msg->getOverlayHops());
 				plexus->addToOutgoingQueue(reply);
 				//send message
-			} else
+			}
+			else
 			{
 				puts("GET Failed");
 				MessageGET_REPLY *reply = new MessageGET_REPLY(
@@ -126,7 +125,9 @@ public:
 			if (msg->getStatus() == ERROR_GET_FAILED)
 				status = "F";
 
-			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idssi", msg->getResolutionHops(), latency, status.c_str(), msg->getDeviceName().c_str(),
+			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idssi",
+					msg->getResolutionHops(), latency, status.c_str(),
+					msg->getDeviceName().c_str(),
 					msg->getSrcOid().GetOverlay_id());
 			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
@@ -181,12 +182,14 @@ public:
 			container_protocol->getContainerPeer()->setStatus(
 					changeStatusMSG->getPeer_status());
 		}
-                else if (message->getMessageType() == MSG_GENERATE_NAME){
-                        container_peer->SetStart_gen_name(true);
-                }
-                else if(message->getMessageType() == MSG_DYN_CHANGE_STATUS){
-                        
-                }
+		else if (message->getMessageType() == MSG_GENERATE_NAME)
+		{
+			container_peer->SetStart_gen_name(true);
+		}
+		else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS)
+		{
+
+		}
 		return false;
 	}
 

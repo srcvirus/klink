@@ -65,12 +65,7 @@ public:
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
 		pthread_cond_init(&cond_log_queue_empty, NULL);
 
-		log[LOG_GET] = new Log("seq", "get", "scspc394.cs.uwaterloo.ca",
-				"sr2chowd");
-		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
-				"sr2chowd");
-		log[LOG_GET]->open("a");
-		log[LOG_PUT]->open("a");
+		this->msgProcessor->setContainerProtocol(this);
 	}
 
 	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
@@ -79,12 +74,6 @@ public:
 			ABSProtocol(routing_table, index_table, cache, msgProcessor,
 					container)
 	{
-		log[LOG_GET] = new Log("seq", "get", "scspc394.cs.uwaterloo.ca",
-				"sr2chowd");
-		log[LOG_PUT] = new Log("seq", "put", "scspc394.cs.uwaterloo.ca",
-				"sr2chowd");
-		log[LOG_GET]->open("a");
-		log[LOG_PUT]->open("a");
 		this->msgProcessor->setContainerProtocol(this);
 
 		pthread_mutex_init(&incoming_queue_lock, NULL);
@@ -94,6 +83,36 @@ public:
 		pthread_cond_init(&cond_incoming_queue_empty, NULL);
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
 		pthread_cond_init(&cond_log_queue_empty, NULL);
+
+		initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+	}
+
+	PlexusProtocol(Peer* container, MessageProcessor* msgProcessor):
+		ABSProtocol(container, msgProcessor)
+	{
+		this->msgProcessor->setContainerProtocol(this);
+
+		pthread_mutex_init(&incoming_queue_lock, NULL);
+		pthread_mutex_init(&outgoing_queue_lock, NULL);
+		pthread_mutex_init(&log_queue_lock, NULL);
+
+		pthread_cond_init(&cond_incoming_queue_empty, NULL);
+		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+		pthread_cond_init(&cond_log_queue_empty, NULL);
+
+		initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+	}
+
+
+	void initLogs(const char* log_server_name, const char* log_server_user)
+	{
+		log[LOG_GET] = new Log("seq", "get", log_server_name,
+				log_server_user);
+		log[LOG_PUT] = new Log("seq", "put", log_server_name,
+				log_server_user);
+
+		log[LOG_GET]->open("a");
+		log[LOG_PUT]->open("a");
 	}
 
 	void processMessage(ABSMessage *message)
