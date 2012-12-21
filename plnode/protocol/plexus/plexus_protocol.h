@@ -49,6 +49,7 @@ class PlexusProtocol : public ABSProtocol {
         pthread_cond_t cond_log_queue_empty;
 public:
 
+<<<<<<< HEAD
         PlexusProtocol() :
         ABSProtocol() {
                 //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
@@ -398,6 +399,7 @@ public:
                 pthread_cond_destroy(&cond_outgoing_queue_empty);
                 pthread_cond_destroy(&cond_log_queue_empty);
         }
+
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */

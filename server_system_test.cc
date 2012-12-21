@@ -301,6 +301,8 @@ void *forwarding_thread(void* args)
 
 	while (true)
 	{
+		if (!this_peer->IsInitRcvd()) continue;
+
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
 
@@ -330,6 +332,8 @@ void *processing_thread(void* args)
 	ABSMessage* message = NULL;
 	while (true)
 	{
+		if (!this_peer->IsInitRcvd()) continue;
+
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 		printf(
 				"[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",t_param.getThreadId(),
@@ -405,13 +409,15 @@ void *logging_thread(void*)
 	LogEntry *entry;
 	while(true)
 	{
+		if (!this_peer->IsInitRcvd()) continue;
+
 		entry = ((PlexusProtocol*)plexus)->getLoggingQueueFront();
-		if(entry == NULL) puts("entry null");
-		printf("[Logging Thread:]\tpulled a log entry from the queue, %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
+		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+
 		Log* log = ((PlexusProtocol*)plexus)->getLog(entry->getType());
-		if(log == NULL) puts("NULL");
 		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
 		printf("[Logging Thread:]\tlog flushed to the disk\n");
+
 		delete entry;
 		printf("Index table size = %d\n", plexus->getIndexTable()->size());
 	}
