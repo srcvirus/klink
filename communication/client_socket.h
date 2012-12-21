@@ -98,6 +98,7 @@ int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 	if (timeout == NULL)
 	{
 		ret_code = send(socket_fd, buffer, n_bytes, 0);
+                if(ret_code < 0) ret_code = ERROR_SERVER_CONNECTION_FAIL;
 	} else
 	{
 		fd_set write_connection;
@@ -110,6 +111,7 @@ int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 			if (FD_ISSET(socket_fd, &write_connection))
 			{
 				ret_code = send(socket_fd, buffer, n_bytes, 0);
+                                if(ret_code < 0) ret_code = ERROR_SERVER_CONNECTION_FAIL;
 			} else
 			{
 				ret_code = ERROR_CONNECTION_TIMEOUT;
