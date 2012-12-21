@@ -82,9 +82,11 @@ void send_init_message(BuildTree &tree, int name_count)
 		timeval timeout;
 		timeout.tv_sec = 5;
 		puts("sending data");
+
 		retCode = c_socket->send_data(buffer, buffer_length, &timeout);
 		if (retCode < 0)
 			print_error_message(retCode);
+		printf("ret_code = %d\n", retCode);
 		puts("data sent");
 		//else printf("Sent %d Bytes", retCode);
 		c_socket->close_socket();
