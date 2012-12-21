@@ -57,7 +57,7 @@ public:
 	ABSProtocol(Peer* container, MessageProcessor* msgProcessor)
 	{
 		routing_table = NULL;
-		index_table = NULL;
+		index_table = new LookupTable<string, HostAddress>();
 		this->msgProcessor = msgProcessor;
 		cache = new Cache();
 		this->container_peer = container;

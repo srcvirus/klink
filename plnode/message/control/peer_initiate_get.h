@@ -91,6 +91,14 @@ public:
 
 		return this;
 	}
+
+	virtual void message_print_dump()
+	{
+		puts(">>>>>>>>Peer Init Get<<<<<<<<<");
+		ABSMessage::message_print_dump();
+		puts(device_name.c_str());
+		puts(">>>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
+	}
 };
 
 #endif

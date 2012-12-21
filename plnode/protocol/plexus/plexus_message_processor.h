@@ -67,6 +67,7 @@ public:
 		if (message->getMessageType() == MSG_PLEXUS_PUT)
 		{
 			MessagePUT* putMsg = (MessagePUT*) message;
+			puts("Adding to index table");
 			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 			puts("PUT Successful");
 		} //GET
@@ -136,7 +137,10 @@ public:
 		else if (message->getMessageType() == MSG_PEER_INIT)
 		{
 			PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
+
 			container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
+			container_protocol->setIndexTable(new LookupTable<string, HostAddress>());
+
 			container_peer->setNPeers(pInitMsg->getNPeers());
 			GlobalData::network_size = pInitMsg->getNPeers();
 			container_peer->setOverlayID(pInitMsg->getDstOid());
@@ -163,6 +167,7 @@ public:
 		else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
 		{
 			PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
+			printf("Processing peer init get msg, oid = %d\n", pInitGet->getDstOid().GetOverlay_id());
 			container_protocol->get(pInitGet->getDeviceName());
 		}
 		else if (message->getMessageType() == MSG_PEER_INITIATE_PUT)
