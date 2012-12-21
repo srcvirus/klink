@@ -65,7 +65,7 @@ public:
 		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
 		pthread_cond_init(&cond_log_queue_empty, NULL);
 
-		this->msgProcessor->setContainerProtocol(this);
+		//this->msgProcessor->setContainerProtocol(this);
 	}
 
 	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
