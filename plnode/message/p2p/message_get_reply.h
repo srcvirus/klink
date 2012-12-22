@@ -68,7 +68,7 @@ public:
 		memcpy(buffer + offset, (char*) &destHostLength, sizeof(int));
 		offset += sizeof(int);
 
-		const char* haddr_str = host_address.GetHostName();
+		const char* haddr_str = host_address.GetHostName().c_str();
 
 		for (int i = 0; i < destHostLength; i++)
 		{
