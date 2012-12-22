@@ -54,7 +54,8 @@ public:
 
 	bool processMessage(ABSMessage* message)
 	{
-		if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
+		if (message->getMessageType() == MSG_PLEXUS_GET
+				|| message->getMessageType() == MSG_PLEXUS_PUT)
 			message->setProcessingStartT(clock());
 
 		message->decrementOverlayTtl();
@@ -65,7 +66,8 @@ public:
 
 		if (forward)
 		{
-			if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
+			if (message->getMessageType() == MSG_PLEXUS_GET
+					|| message->getMessageType() == MSG_PLEXUS_PUT)
 				message->setProcessingEndT(clock());
 			return true;
 		}
@@ -90,11 +92,9 @@ public:
 				msg->updateStatistics();
 
 				puts("Got it :)");
-				MessageGET_REPLY *reply = new MessageGET_REPLY(
-						container_peer->getHostName(),
-						container_peer->getListenPortNumber(),
-						msg->getSourceHost(), msg->getSourcePort(),
-						container_peer->getOverlayID(), msg->getDstOid(),
+				MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
+						container_peer->getListenPortNumber(), msg->getSourceHost(),
+						msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
 						SUCCESS, hostAddress, msg->GetDeviceName());
 
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
@@ -112,11 +112,9 @@ public:
 				msg->updateStatistics();
 
 				puts("GET Failed");
-				MessageGET_REPLY *reply = new MessageGET_REPLY(
-						container_peer->getHostName(),
-						container_peer->getListenPortNumber(),
-						msg->getSourceHost(), msg->getSourcePort(),
-						container_peer->getOverlayID(), msg->getDstOid(),
+				MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
+						container_peer->getListenPortNumber(), msg->getSourceHost(),
+						msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
 						ERROR_GET_FAILED, hostAddress, msg->GetDeviceName());
 
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
@@ -131,40 +129,37 @@ public:
 		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
 		{
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
-			OverlayID srcID(msg->getSrcOid().GetOverlay_id(),
-					msg->getSrcOid().GetPrefix_length());
+			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length());
 
 			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
 			cache->add(srcID, ha);
 			Log* g_log = plexus->getGetLog();
 
 			char i_str[300];
-			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(), msg->getDestHost().c_str(), msg->getSequenceNo());
+			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(), msg->getDestHost().c_str(),
+					msg->getSequenceNo());
 			string key = i_str;
 
 			clock_t start_t = msg->getIssueTimeStamp();
 			clock_t end_t = clock();
 
-			double total_t = (double) (end_t - start_t) / (double)CLOCKS_PER_SEC;
+			double total_t = (double) (end_t - start_t) / (double) CLOCKS_PER_SEC;
 
-			double queue_delay_t = (double)(msg->getInQueuePopTimeStamp() - msg->getInQueuePushTimeStamp());
-			queue_delay_t += (double)(msg->getOutQueuePopTimeStamp() - msg->getOutQueuePushTimeStamp());
-			queue_delay_t /= (double)CLOCKS_PER_SEC;
-
+			double queue_delay = msg->getQueueDelay();
+			double processing_delay = msg->getProcessingDelay();
 			double ping_delay = msg->getPingLatency();
 
-			double non_network_latency_t = queue_delay_t + ping_delay;
-
+			double non_network_latency_t = queue_delay + processing_delay + ping_delay;
 			double latency = total_t - non_network_latency_t;
 
 			string status = "S";
 			if (msg->getStatus() == ERROR_GET_FAILED)
 				status = "F";
 
-			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idssi",
-					msg->getResolutionHops(), latency, queue_delay_t, non_network_latency_t, status.c_str(),
-					msg->getDeviceName().c_str(),
-					msg->getSrcOid().GetOverlay_id());
+			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idddddssi",
+					msg->getResolutionHops(),
+					latency, queue_delay, processing_delay, ping_delay, total_t,
+					status.c_str(), msg->getDeviceName().c_str(), msg->getSrcOid().GetOverlay_id());
 			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
 			//cache->print();
@@ -181,17 +176,12 @@ public:
 			container_peer->setOverlayID(pInitMsg->getDstOid());
 
 			container_peer->SetInitRcvd(true);
-			container_peer->setPublish_name_range_start(
-					pInitMsg->getPublish_name_range_start());
-			container_peer->setPublish_name_range_end(
-					pInitMsg->getPublish_name_range_end());
-			container_peer->setLookup_name_range_start(
-					pInitMsg->getLookup_name_range_start());
-			container_peer->setLookup_name_range_end(
-					pInitMsg->getLookup_name_range_end());
+			container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
+			container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
+			container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
+			container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
 
-			this->setup(container_protocol->getRoutingTable(),
-					container_protocol->getIndexTable());
+			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 		}
 		else if (message->getMessageType() == MSG_PEER_CONFIG)
 		{
@@ -202,14 +192,14 @@ public:
 		else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
 		{
 			PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
-			printf("Processing peer init get msg, oid = %d\n", pInitGet->getDstOid().GetOverlay_id());
+			printf("Processing peer init get msg, oid = %d\n",
+					pInitGet->getDstOid().GetOverlay_id());
 			container_protocol->get(pInitGet->getDeviceName());
 		}
 		else if (message->getMessageType() == MSG_PEER_INITIATE_PUT)
 		{
 			PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
-			container_protocol->put(pInitPut->getDeviceName(),
-					pInitPut->GetHostAddress());
+			container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
 		}
 		else if (message->getMessageType() == MSG_PEER_START)
 		{
@@ -217,10 +207,8 @@ public:
 		}
 		else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS)
 		{
-			PeerChangeStatusMessage* changeStatusMSG =
-					(PeerChangeStatusMessage*) message;
-			container_protocol->getContainerPeer()->setStatus(
-					changeStatusMSG->getPeer_status());
+			PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
+			container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
 		}
 		else if (message->getMessageType() == MSG_GENERATE_NAME)
 		{
@@ -228,8 +216,8 @@ public:
 		}
 		else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS)
 		{
-                        PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*)message;
-                        container_peer->SetDyn_status(dcsMsg->getDynStatus());
+			PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*) message;
+			container_peer->SetDyn_status(dcsMsg->getDynStatus());
 		}
 
 		return false;

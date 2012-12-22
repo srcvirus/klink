@@ -44,7 +44,7 @@ public:
 
 		for (int i = 0; i < argc; i++)
 		{
-			if(i != 0) value_str += " ";
+			if(i != 0) value_str += "\t";
 			switch (format[i])
 			{
 			case 'i':
