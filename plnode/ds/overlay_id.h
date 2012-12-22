@@ -26,13 +26,13 @@ public:
 
 	OverlayID()
 	{
-                ReedMuller *rm = new ReedMuller(2, 4);
+                //ReedMuller *rm = new ReedMuller(2, 4);
                 MAX_LENGTH = GlobalData::rm->rm->k;
 	}
 
 	OverlayID(unsigned int overlay_id, int prefix_lenght)
 	{
-                ReedMuller *rm = new ReedMuller(2, 4);
+                //ReedMuller *rm = new ReedMuller(2, 4);
 		MAX_LENGTH = GlobalData::rm->rm->k;
 		this->overlay_id = overlay_id;
 		this->prefix_length = prefix_lenght;
@@ -46,7 +46,7 @@ public:
 
 	OverlayID(int pattern)
 	{
-                ReedMuller *rm = new ReedMuller(2, 4);
+                //mkReedMuller *rm = new ReedMuller(2, 4);
 		MAX_LENGTH = GlobalData::rm->rm->k;
 		this->overlay_id = GlobalData::rm->decode(pattern);
 		this->prefix_length = GlobalData::rm->rm->k;

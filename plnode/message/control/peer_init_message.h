@@ -109,7 +109,6 @@ public:
 
 		char* parent_buffer = ABSMessage::serialize(&parent_size);
 		char* buffer = new char[*serialize_length];
-
 		memcpy(buffer + offset, parent_buffer, parent_size);
 		offset += parent_size;
 		delete[] parent_buffer;
@@ -137,7 +136,6 @@ public:
 		rtable_iterator.reset_iterator();
 		OverlayID key;
 		HostAddress value;
-
 		while(rtable_iterator.hasMoreKey())
 		{
 			key = rtable_iterator.getNextKey();
@@ -165,7 +163,6 @@ public:
 			memcpy(buffer + offset, (char*) (&hostport), sizeof(int));
 			offset += sizeof(int);
 		}
-
 		return buffer;
 	}
 

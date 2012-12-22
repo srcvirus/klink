@@ -1,5 +1,5 @@
 node_file=ihostlist
-log_server_name=cn102.cs.uwaterloo.ca
+log_server_name=cn101.cs.uwaterloo.ca
 log_server_user=pweb
 k=100
 alpha=0.9

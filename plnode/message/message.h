@@ -65,7 +65,8 @@ protected:
 		size_t size = sizeof(char) * 3
 				+ sizeof(int) * 11
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(double) * 3;
+				+ sizeof(double) * 3
+                                + sizeof(clock_t);
 
 		return size;
 	}

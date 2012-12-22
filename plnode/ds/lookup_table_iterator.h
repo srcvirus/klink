@@ -24,7 +24,8 @@ public:
 	{
 		table_ptr = NULL;
 	}
-	LookupTableIterator(LookupTable<KeyType, ValueType>* ptr)
+	
+        LookupTableIterator(LookupTable<KeyType, ValueType>* ptr)
 	{
 		table_ptr = ptr;
 		table_iterator = table_ptr->begin();
