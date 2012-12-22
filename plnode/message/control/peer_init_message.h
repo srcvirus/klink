@@ -77,7 +77,7 @@ public:
 
 	size_t getSize()
 	{
-		int ret = getBaseSize();
+		size_t ret = getBaseSize();
 		ret += sizeof(int) * 3;
 		ret += sizeof(double);
 		ret += sizeof(int) * 4;

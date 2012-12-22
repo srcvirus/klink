@@ -71,25 +71,7 @@ public:
 	PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
 			LookupTable<string, HostAddress>* index_table, Cache *cache,
 			MessageProcessor* msgProcessor, Peer* container) :
-			ABSProtocol(routing_table, index_table, cache, msgProcessor,
-					container)
-	{
-		this->msgProcessor->setContainerProtocol(this);
-
-
-		pthread_mutex_init(&incoming_queue_lock, NULL);
-		pthread_mutex_init(&outgoing_queue_lock, NULL);
-		pthread_mutex_init(&log_queue_lock, NULL);
-
-		pthread_cond_init(&cond_incoming_queue_empty, NULL);
-		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
-		pthread_cond_init(&cond_log_queue_empty, NULL);
-
-		initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
-	}
-
-	PlexusProtocol(Peer* container, MessageProcessor* msgProcessor):
-		ABSProtocol(container, msgProcessor)
+			ABSProtocol(routing_table, index_table, cache, msgProcessor, container)
 	{
 		this->msgProcessor->setContainerProtocol(this);
 
@@ -104,13 +86,26 @@ public:
 		initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
 	}
 
+	PlexusProtocol(Peer* container, MessageProcessor* msgProcessor) :
+			ABSProtocol(container, msgProcessor)
+	{
+		this->msgProcessor->setContainerProtocol(this);
+
+		pthread_mutex_init(&incoming_queue_lock, NULL);
+		pthread_mutex_init(&outgoing_queue_lock, NULL);
+		pthread_mutex_init(&log_queue_lock, NULL);
+
+		pthread_cond_init(&cond_incoming_queue_empty, NULL);
+		pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+		pthread_cond_init(&cond_log_queue_empty, NULL);
+
+		initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+	}
 
 	void initLogs(const char* log_server_name, const char* log_server_user)
 	{
-		log[LOG_GET] = new Log("seq", "get", log_server_name,
-				log_server_user);
-		log[LOG_PUT] = new Log("seq", "put", log_server_name,
-				log_server_user);
+		log[LOG_GET] = new Log("seq", "get", log_server_name, log_server_user);
+		log[LOG_PUT] = new Log("seq", "put", log_server_name, log_server_user);
 
 		log[LOG_GET]->open("a");
 		log[LOG_PUT]->open("a");
@@ -141,8 +136,8 @@ public:
 		case MSG_PEER_CONFIG:
 		case MSG_PEER_CHANGE_STATUS:
 		case MSG_PEER_START:
-        case MSG_GENERATE_NAME:
-        case MSG_DYN_CHANGE_STATUS:
+		case MSG_GENERATE_NAME:
+		case MSG_DYN_CHANGE_STATUS:
 		case MSG_PLEXUS_GET_REPLY:
 		case MSG_PEER_INITIATE_GET:
 		case MSG_PEER_INITIATE_PUT:
@@ -154,10 +149,12 @@ public:
 			return false;
 
 		//Peer *container_peer = getContainerPeer();
-		currentNodeMathLength =	container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
+		currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(
+				msg->getDstOid());
 		printf("Current match length = %d\n", currentNodeMathLength);
 		printf("Message oid = %d\n", msg->getDstOid());
-		msg->getDstOid().printBits(); putchar('\n');
+		msg->getDstOid().printBits();
+		putchar('\n');
 
 		//cout << endl << "current node match : ";
 		//container_peer->getOverlayID().printBits();
@@ -196,24 +193,24 @@ public:
 				maxMatchOid = oid;
 
 				/*printf("next host %s, next port %d\n",
-						next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
+				 next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
 			}
 		}
 		routing_table->lookup(maxMatchOid, &next_hop);
 		//search in the Cache
 		/*cache->reset_iterator();
-		while (cache->has_next())
-		{
-			DLLNode *node = cache->get_next();
-			OverlayID id = node->key;
-			currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
-			if (currentMatchLength > maxLengthMatch)
-			{
-				maxLengthMatch = currentMatchLength;
-				cache->lookup(msg->getDstOid(), next_hop);
-				printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
-			}
-		}*/
+		 while (cache->has_next())
+		 {
+		 DLLNode *node = cache->get_next();
+		 OverlayID id = node->key;
+		 currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+		 if (currentMatchLength > maxLengthMatch)
+		 {
+		 maxLengthMatch = currentMatchLength;
+		 cache->lookup(msg->getDstOid(), next_hop);
+		 printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+		 }
+		 }*/
 
 		cout << endl << "max match : = " << maxLengthMatch << endl;
 
@@ -223,7 +220,8 @@ public:
 			//msg->setDestHost("localhost");
 			//msg->setDestPort(container_peer->getListenPortNumber());
 			return false;
-		} else
+		}
+		else
 		{
 			puts("returning true");
 			msg->setDestHost(next_hop.GetHostName().c_str());
@@ -240,8 +238,8 @@ public:
 		printf("h_name = %d, oid = %d\n", hash_name_to_get, destID.GetOverlay_id());
 
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
-				container_peer->getListenPortNumber(), "", -1,
-				container_peer->getOverlayID(), destID, name);
+				container_peer->getListenPortNumber(), "", -1, container_peer->getOverlayID(),
+				destID, name);
 
 		printf("Constructed Get Message");
 		msg->message_print_dump();
@@ -262,11 +260,9 @@ public:
 		destID.printBits();
 		cout << endl;
 
-		PeerInitiateGET *msg = new PeerInitiateGET(
-				container_peer->getHostName(),
-				container_peer->getListenPortNumber(),
-				destination.GetHostName(), destination.GetHostPort(),
-				container_peer->getOverlayID(), destID, name);
+		PeerInitiateGET *msg = new PeerInitiateGET(container_peer->getHostName(),
+				container_peer->getListenPortNumber(), destination.GetHostName(),
+				destination.GetHostPort(), container_peer->getOverlayID(), destID, name);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 		msg->message_print_dump();
 		send_message(msg);
@@ -278,8 +274,8 @@ public:
 		OverlayID destID(hash_name_to_publish);
 
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
-				container_peer->getListenPortNumber(), "", -1,
-				container_peer->getOverlayID(), destID, name, hostAddress);
+				container_peer->getListenPortNumber(), "", -1, container_peer->getOverlayID(),
+				destID, name, hostAddress);
 
 		if (msgProcessor->processMessage(msg))
 		{
@@ -288,8 +284,7 @@ public:
 		}
 	}
 
-	void put_from_client(string name, HostAddress hostAddress,
-			HostAddress destination)
+	void put_from_client(string name, HostAddress hostAddress, HostAddress destination)
 	{
 		int hash_name_to_publish = atoi(name.c_str());
 		OverlayID destID(hash_name_to_publish);
@@ -298,11 +293,10 @@ public:
 		destID.printBits();
 		cout << endl;
 
-		PeerInitiatePUT *msg = new PeerInitiatePUT(
-				container_peer->getHostName(),
-				container_peer->getListenPortNumber(),
-				destination.GetHostName(), destination.GetHostPort(),
-				container_peer->getOverlayID(), destID, name, hostAddress);
+		PeerInitiatePUT *msg = new PeerInitiatePUT(container_peer->getHostName(),
+				container_peer->getListenPortNumber(), destination.GetHostName(),
+				destination.GetHostPort(), container_peer->getOverlayID(), destID, name,
+				hostAddress);
 		msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
 
 		msg->message_print_dump();

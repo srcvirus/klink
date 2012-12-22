@@ -22,9 +22,9 @@ public:
 	{
 	}
 
-	int getSize()
+	size_t getSize()
 	{
-		int ret = getBaseSize();
+		size_t ret = getBaseSize();
 		return ret;
 	}
 

@@ -38,9 +38,9 @@ public:
 		return device_name;
 	}
 
-	int getSize()
+	size_t getSize()
 	{
-		int ret = getBaseSize() + sizeof(int)
+		size_t ret = getBaseSize() + sizeof(int)
 				+ sizeof(char) * device_name.size();
 		return ret;
 	}

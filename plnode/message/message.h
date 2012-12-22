@@ -49,18 +49,18 @@ protected:
 	OverlayID dst_oid;
 	OverlayID src_oid;
 
-	long issue_time_stamp;
-
-	long in_queue_push_time_stamp;
-	long in_queue_pop_time_stamp;
-	long out_queue_push_time_stamp;
-	long out_queue_push_time_stamp;
-	int ping_latency;
+	clock_t issue_time_stamp;
+	clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
+	clock_t out_queue_push_time_stamp, out_queue_pop_time_stamp;
+	double ping_latency;
 
 	size_t getBaseSize()
 	{
-		size_t size = sizeof(char) * 3 + sizeof(int) * 11
-				+ sizeof(char) * (dest_host.size() + source_host.size()) + sizeof(long);
+		size_t size = sizeof(char) * 3
+				+ sizeof(int) * 11
+				+ sizeof(char) * (dest_host.size() + source_host.size())
+				+ sizeof(clock_t) * 5
+				+ sizeof(double);
 
 		return size;
 	}
@@ -88,7 +88,7 @@ public:
 		calculateOverlayTTL(GlobalData::network_size);
 	}
 
-	virtual int getSize()
+	virtual size_t getSize()
 	{
 		return getBaseSize();
 	}
@@ -139,16 +139,16 @@ public:
 		offset += sizeof(char);
 		memcpy(buffer + offset, (char*) (&overlay_ttl), sizeof(char));
 		offset += sizeof(char);
-		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(long));
-		offset += sizeof(long);
 
-		/*long in_queue_push_time_stamp;
-			long in_queue_pop_time_stamp;
-			long out_queue_push_time_stamp;
-			long out_queue_push_time_stamp;
-			int ping_latency;*/
+		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(clock_t));
+		offset += sizeof(clock_t);
 
-		memcpy(buffer + offset, (char*)(&in_queue_pop_time_stamp), sizeof(long)); offset += sizeof(long);
+
+		memcpy(buffer + offset, (char*)(&in_queue_push_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(buffer + offset, (char*)(&in_queue_pop_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(buffer + offset, (char*)(&out_queue_push_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(buffer + offset, (char*)(&out_queue_pop_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(buffer + offset, (char*)(&ping_latency), sizeof(double)); offset += sizeof(double);
 
 		int o_id, p_len, m_len;
 		o_id = dst_oid.GetOverlay_id();
@@ -220,6 +220,12 @@ public:
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(long));
 		offset += sizeof(long);
 
+		memcpy(&in_queue_push_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(&in_queue_pop_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(&out_queue_push_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(&out_queue_pop_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double);
+
 		int o_id, p_len, m_len;
 
 		memcpy(&o_id, buffer + offset, sizeof(int));
@@ -262,7 +268,7 @@ public:
 		printf("Issue time stamp = %ld\n", issue_time_stamp);
 	}
 
-	long getIssueTimeStamp() const
+	clock_t getIssueTimeStamp() const
 	{
 		return issue_time_stamp;
 	}
@@ -272,7 +278,7 @@ public:
 		issue_time_stamp = clock();
 	}
 
-	void setIssueTimeStamp(long timestamp)
+	void setIssueTimeStamp(clock_t timestamp)
 	{
 		issue_time_stamp = timestamp;
 	}
@@ -396,6 +402,56 @@ public:
 	{
 		overlay_ttl = 10;
 		//overlay_ttl = ceil(log2(n)) + 2;//(int) floor(log10(n) / log(2.0)) + 2;
+	}
+
+	clock_t getInQueuePopTimeStamp() const
+	{
+		return in_queue_pop_time_stamp;
+	}
+
+	void setInQueuePopTimeStamp(clock_t inQueuePopTimeStamp)
+	{
+		in_queue_pop_time_stamp = inQueuePopTimeStamp;
+	}
+
+	clock_t getInQueuePushTimeStamp() const
+	{
+		return in_queue_push_time_stamp;
+	}
+
+	void setInQueuePushTimeStamp(clock_t inQueuePushTimeStamp)
+	{
+		in_queue_push_time_stamp = inQueuePushTimeStamp;
+	}
+
+	clock_t getOutQueuePopTimeStamp() const
+	{
+		return out_queue_pop_time_stamp;
+	}
+
+	void setOutQueuePopTimeStamp(clock_t outQueuePopTimeStamp)
+	{
+		out_queue_pop_time_stamp = outQueuePopTimeStamp;
+	}
+
+	clock_t getOutQueuePushTimeStamp() const
+	{
+		return out_queue_push_time_stamp;
+	}
+
+	void setOutQueuePushTimeStamp(clock_t outQueuePushTimeStamp)
+	{
+		out_queue_push_time_stamp = outQueuePushTimeStamp;
+	}
+
+	double getPingLatency() const
+	{
+		return ping_latency;
+	}
+
+	void setPingLatency(double pingLatency)
+	{
+		ping_latency = pingLatency;
 	}
 };
 

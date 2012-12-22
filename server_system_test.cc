@@ -61,13 +61,13 @@ int main(int argc, char* argv[])
 	pthread_t forwarder[MAX_FORWARDING_THREAD];
 
 	pthread_create(&listener, NULL, listener_thread, NULL);
-	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
 	{
 		ThreadParameter t_param(i);
 		pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
 	}
 
-	for(int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+	for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
 	{
 		ThreadParameter t_param(i);
 		pthread_create(&processor, NULL, processing_thread, &t_param);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	pthread_create(&controller, NULL, controlling_thread, NULL);
 
 	pthread_join(listener, NULL);
-	for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
 		pthread_join(forwarder[i], NULL);
 	pthread_join(processor, NULL);
 	pthread_join(logger, NULL);
@@ -119,7 +119,7 @@ void system_init()
 
 	/* creating the server socket for accepting connection from other peers */
 	s_socket = this_peer->getServerSocket();
-	if(s_socket == NULL)
+	if (s_socket == NULL)
 	{
 		printf("Socket create error");
 		exit(1);
@@ -148,8 +148,7 @@ void *listener_thread(void* args)
 	while (true)
 	{
 		read_connection_fds = connection_pool;
-		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
-				NULL);
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
 		if (n_select < 0)
 		{
@@ -157,8 +156,7 @@ void *listener_thread(void* args)
 			printf("errno = %d\n", errno);
 
 			s_socket->printActiveConnectionList();
-			printf("fd_max = %d, socket_fd = %d\n", fd_max,
-					s_socket->getSocketFd());
+			printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
 
 			for (int con = 0; con <= fd_max; con++)
 			{
@@ -195,11 +193,11 @@ void *listener_thread(void* args)
 						fd_max = connection_fd;
 					puts("new connection");
 					s_socket->printActiveConnectionList();
-				} else
+				}
+				else
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
-					printf("[Listening thread]\t Received %d Bytes\n",
-							buffer_length);
+					printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
 
 					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
 					 putchar('\n');*/
@@ -210,15 +208,13 @@ void *listener_thread(void* args)
 
 					s_socket->printActiveConnectionList();
 
-
 					if (buffer_length > 0)
 					{
 						char messageType = 0;
 						ABSMessage* rcvd_message = NULL;
 
 						memcpy(&messageType, buffer, sizeof(char));
-						printf("[Listening thread]\t Message Type: %d\n",
-								messageType);
+						printf("[Listening thread]\t Message Type: %d\n", messageType);
 
 						switch (messageType)
 						{
@@ -275,8 +271,8 @@ void *listener_thread(void* args)
 
 						if (rcvd_message != NULL)
 						{
-							((PlexusProtocol*) plexus)->addToIncomingQueue(
-									rcvd_message);
+							rcvd_message->setInQueuePushTimeStamp(clock());
+							((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
 							printf(
 									"[Listening thread]\t Added a %d message to the incoming queue\n",
 									rcvd_message->getMessageType());
@@ -292,7 +288,7 @@ void *listener_thread(void* args)
 
 void *forwarding_thread(void* args)
 {
-	ThreadParameter t_param = *((ThreadParameter*)args);
+	ThreadParameter t_param = *((ThreadParameter*) args);
 	printf("Starting forwarding thread %d\n", t_param.getThreadId());
 
 	char* buffer = NULL;
@@ -301,14 +297,14 @@ void *forwarding_thread(void* args)
 
 	while (true)
 	{
-		if (!this_peer->IsInitRcvd()) continue;
+		if (!this_peer->IsInitRcvd())
+			continue;
 
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
 
 		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
-				message->getMessageType(), message->getDestHost().c_str(),
-				message->getDestPort());
+				message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
 
 		int retry = 0;
 		while (retry < this_peer->getNRetry())
@@ -326,25 +322,26 @@ void *forwarding_thread(void* args)
 
 void *processing_thread(void* args)
 {
-	ThreadParameter t_param = *((ThreadParameter*)args);
+	ThreadParameter t_param = *((ThreadParameter*) args);
 	printf("Starting processing thread %d\n", t_param.getThreadId());
 
 	ABSMessage* message = NULL;
 	while (true)
 	{
-		if (!this_peer->IsInitRcvd()) continue;
+		if (!this_peer->IsInitRcvd())
+			continue;
 
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
-		printf(
-				"[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",t_param.getThreadId(),
-				message->getMessageType());
+		message->setInQueuePopTimeStamp(clock());
+
+		printf("[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",
+				t_param.getThreadId(), message->getMessageType());
 
 		bool forward = plexus->getMessageProcessor()->processMessage(message);
 		if (forward)
 		{
-			printf(
-					"[Processing Thread %d:]\tpushed a %d type message for forwarding\n", t_param.getThreadId(),
-					message->getMessageType());
+			printf("[Processing Thread %d:]\tpushed a %d type message for forwarding\n",
+					t_param.getThreadId(), message->getMessageType());
 
 			message->getDstOid().printBits();
 			printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
@@ -407,14 +404,15 @@ void *logging_thread(void*)
 {
 	puts("Starting a logging thread");
 	LogEntry *entry;
-	while(true)
+	while (true)
 	{
-		if (!this_peer->IsInitRcvd()) continue;
+		if (!this_peer->IsInitRcvd())
+			continue;
 
-		entry = ((PlexusProtocol*)plexus)->getLoggingQueueFront();
+		entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
 		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
 
-		Log* log = ((PlexusProtocol*)plexus)->getLog(entry->getType());
+		Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
 		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
 		printf("[Logging Thread:]\tlog flushed to the disk\n");
 

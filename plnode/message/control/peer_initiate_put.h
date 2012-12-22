@@ -54,9 +54,9 @@ public:
 		return hostAddress;
 	}
 
-	int getSize()
+	size_t getSize()
 	{
-		int ret = getBaseSize();
+		size_t ret = getBaseSize();
 		ret += sizeof(int) + sizeof(char) * device_name.size();
 		ret += sizeof(int) + sizeof(char) * hostAddress.GetHostName().size();
 		ret += sizeof(int);

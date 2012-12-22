@@ -32,6 +32,14 @@ public:
 		;
 	}
 
+	size_t getSize()
+	{
+		size_t ret = getBaseSize();
+		ret += sizeof(int) + sizeof(char) * deviceName.size();
+		ret += sizeof(int) * 2 + sizeof(char) * hostAddress.GetHostName().size();
+		return ret;
+	}
+
 	char* serialize(int* serialize_length)
 	{
 		*serialize_length = sizeof(char) + sizeof(int) * 8
