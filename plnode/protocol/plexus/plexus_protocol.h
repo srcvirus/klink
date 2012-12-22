@@ -49,7 +49,6 @@ class PlexusProtocol : public ABSProtocol {
         pthread_cond_t cond_log_queue_empty;
 public:
 
-<<<<<<< HEAD
         PlexusProtocol() :
         ABSProtocol() {
                 //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
