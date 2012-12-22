@@ -67,6 +67,7 @@ public:
 		int destHostLength = host_address.GetHostName().size();
 		memcpy(buffer + offset, (char*) &destHostLength, sizeof(int));
 		offset += sizeof(int);
+
 		for (int i = 0; i < destHostLength; i++)
 		{
 			char ch = host_address.GetHostName()[i];

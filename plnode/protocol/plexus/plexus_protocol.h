@@ -145,7 +145,7 @@ public:
                 //Peer *container_peer = getContainerPeer();
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
-                printf("Message oid = %d\n", msg->getDstOid());
+                printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
                 msg->getDstOid().printBits();
                 putchar('\n');
 
@@ -244,7 +244,7 @@ public:
                 //Peer *container_peer = getContainerPeer();
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
-                printf("Message oid = %d\n", msg->getDstOid());
+                printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
                 msg->getDstOid().printBits();
                 putchar('\n');
 

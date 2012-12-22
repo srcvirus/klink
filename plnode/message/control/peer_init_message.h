@@ -140,8 +140,8 @@ public:
 
 		while(rtable_iterator.hasMoreKey())
 		{
-			OverlayID key = rtable_iterator.getNextKey();
-			HostAddress value;
+			key = rtable_iterator.getNextKey();
+
 			routing_table.lookup(key, &value);
 			int hostNameLength = value.GetHostName().size();
 
@@ -153,11 +153,11 @@ public:
 
 			memcpy(buffer + offset, (char*) (&hostNameLength), sizeof(int));
 			offset += sizeof(int);
+			const char* str = value.GetHostName().c_str();
 
 			for (int i = 0; i < hostNameLength; i++)
 			{
-				char ch = value.GetHostName()[i];
-				memcpy(buffer + offset, (char*)(&ch), sizeof(char));
+				memcpy(buffer + offset, (char*)(str + i), sizeof(char));
 				offset += sizeof(char);
 			}
 
