@@ -169,7 +169,6 @@ public:
 		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(clock_t));
 		offset += sizeof(clock_t);
 
-
 		memcpy(buffer + offset, (char*)&queue_delay, sizeof(double)); offset += sizeof(double);
 		memcpy(buffer + offset, (char*)&processing_delay, sizeof(double)); offset += sizeof(double);
 		memcpy(buffer + offset, (char*)&ping_latency, sizeof(double)); offset += sizeof(double);
@@ -241,8 +240,9 @@ public:
 		offset += sizeof(char); //printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
 		offset += sizeof(char); //printf("offset = %d\n", offset);
-		memcpy(&issue_time_stamp, buffer + offset, sizeof(long));
-		offset += sizeof(long);
+
+		memcpy(&issue_time_stamp, buffer + offset, sizeof(clock_t));
+		offset += sizeof(clock_t);
 
 		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
 		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
