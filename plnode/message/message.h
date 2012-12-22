@@ -126,6 +126,8 @@ public:
 
 	virtual char* serialize(int* serialize_length)
 	{
+		puts("parent serialization");
+
 		char* buffer;
 		*serialize_length = getBaseSize();
 		buffer = new char[*serialize_length];
@@ -196,6 +198,7 @@ public:
 		memcpy(buffer + offset, (char*) &m_len, sizeof(int));
 		offset += sizeof(int);
 
+		puts("parent serialization complete");
 		return buffer;
 	}
 

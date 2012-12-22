@@ -45,7 +45,7 @@ public:
 
 	bool hasMoreKey()
 	{
-		return table_iterator != table_ptr->end();
+		return table_iterator != (table_ptr->end());
 	}
 };
 

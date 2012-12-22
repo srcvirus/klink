@@ -39,10 +39,12 @@ public:
 	{
 		messageType = MSG_PEER_INIT;
 	}
+
 	void setRoutingTable(LookupTable<OverlayID, HostAddress>& r_table)
 	{
 		routing_table = r_table;
 	}
+
 	LookupTable<OverlayID, HostAddress>& getRoutingTable()
 	{
 		return routing_table;
@@ -81,17 +83,16 @@ public:
 		ret += sizeof(int) * 3;
 		ret += sizeof(double);
 		ret += sizeof(int) * 4;
-		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+		LookupTableIterator<OverlayID, HostAddress> r_iterator(
 				&routing_table);
-		rtable_iterator.reset_iterator();
+		r_iterator.reset_iterator();
 
-		while (rtable_iterator.hasMoreKey())
+		while (r_iterator.hasMoreKey())
 		{
-			OverlayID key = rtable_iterator.getNextKey();
+			OverlayID key = r_iterator.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
-			//printf("<< %d %s %d >>\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
-			ret += sizeof(OverlayID) + sizeof(int) * 2;
+			ret += sizeof(int) * 5;
 			ret += sizeof(char) * value.GetHostName().size();
 		}
 		return ret;
@@ -111,54 +112,59 @@ public:
 
 		memcpy(buffer + offset, parent_buffer, parent_size);
 		offset += parent_size;
-		memcpy(buffer + offset, (char*) (&n_peers), sizeof(int));
+		delete[] parent_buffer;
+
+		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int));
 		offset += sizeof(int);
-		memcpy(buffer + offset, (char*) (&k), sizeof(int));
+		memcpy(buffer + offset, (char*)(&k), sizeof(int));
 		offset += sizeof(int);
-		memcpy(buffer + offset, (char*) (&alpha), sizeof(double));
+		memcpy(buffer + offset, (char*)(&alpha), sizeof(double));
 		offset += sizeof(double);
 
-		memcpy(buffer + offset, (char*) (&publish_name_range_start),
-				sizeof(int));
+		memcpy(buffer + offset, (char*)(&publish_name_range_start),sizeof(int));
 		offset += sizeof(int);
-		memcpy(buffer + offset, (char*) (&publish_name_range_end), sizeof(int));
+		memcpy(buffer + offset, (char*)(&publish_name_range_end), sizeof(int));
 		offset += sizeof(int);
-		memcpy(buffer + offset, (char*) (&lookup_name_range_start),
-				sizeof(int));
+		memcpy(buffer + offset, (char*)(&lookup_name_range_start), sizeof(int));
 		offset += sizeof(int);
-		memcpy(buffer + offset, (char*) (&lookup_name_range_end), sizeof(int));
+		memcpy(buffer + offset, (char*)(&lookup_name_range_end), sizeof(int));
 		offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
-		memcpy(buffer + offset, (char*) (&routingTableSize), sizeof(int));
+		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int));
 		offset += sizeof(int);
 
 		rtable_iterator.reset_iterator();
+		OverlayID key;
+		HostAddress value;
 
-		while (rtable_iterator.hasMoreKey())
+		while(rtable_iterator.hasMoreKey())
 		{
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table.lookup(key, &value);
 			int hostNameLength = value.GetHostName().size();
 
-			memcpy(buffer + offset, (char*) (&key), sizeof(OverlayID));
-			offset += sizeof(OverlayID);
+			int o_id = key.GetOverlay_id(), p_len = key.GetPrefix_length(), m_len = key.MAX_LENGTH;
+
+			memcpy(buffer + offset, (char*)&o_id, sizeof(int)); offset += sizeof(int);
+			memcpy(buffer + offset, (char*)&p_len, sizeof(int)); offset += sizeof(int);
+			memcpy(buffer + offset, (char*)&m_len, sizeof(int)); offset += sizeof(int);
+
 			memcpy(buffer + offset, (char*) (&hostNameLength), sizeof(int));
 			offset += sizeof(int);
 
 			for (int i = 0; i < hostNameLength; i++)
 			{
 				char ch = value.GetHostName()[i];
-				memcpy(buffer + offset, (char*) (&ch), sizeof(char));
+				memcpy(buffer + offset, (char*)(&ch), sizeof(char));
 				offset += sizeof(char);
 			}
+
 			int hostport = value.GetHostPort();
 			memcpy(buffer + offset, (char*) (&hostport), sizeof(int));
 			offset += sizeof(int);
 		}
-
-		delete[] parent_buffer;
 
 		return buffer;
 	}
@@ -199,8 +205,15 @@ public:
 			string hostname;
 			int hostport;
 
-			memcpy(&key, buffer + offset, sizeof(OverlayID));
-			offset += sizeof(OverlayID); //printf("offset = %d\n", offset);
+			int o_id, p_len, m_len;
+			memcpy(&o_id, buffer + offset, sizeof(int)); offset += sizeof(int);
+			memcpy(&p_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+			memcpy(&m_len, buffer + offset, sizeof(int)); offset += sizeof(int);
+
+			key.SetOverlay_id(o_id);
+			key.SetPrefix_length(p_len);
+			key.MAX_LENGTH = m_len;
+
 			memcpy(&hostNameLength, buffer + offset, sizeof(int));
 			offset += sizeof(int); //printf("offset = %d\n", offset);
 			for (int i = 0; i < hostNameLength; i++)
