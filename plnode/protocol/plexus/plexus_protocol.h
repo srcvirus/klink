@@ -295,6 +295,7 @@ public:
 
         void addToIncomingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&incoming_queue_lock);
+                message->setInQueuePushTimeStamp(clock());
                 incoming_message_queue.push(message);
                 pthread_cond_signal(&cond_incoming_queue_empty);
                 pthread_mutex_unlock(&incoming_queue_lock);
@@ -315,6 +316,7 @@ public:
                         pthread_cond_wait(&cond_incoming_queue_empty, &incoming_queue_lock);
 
                 ABSMessage* ret = incoming_message_queue.front();
+                ret->setInQueuePopTimeStamp(clock());
                 incoming_message_queue.pop();
                 pthread_mutex_unlock(&incoming_queue_lock);
                 return ret;
@@ -322,6 +324,7 @@ public:
 
         void addToOutgoingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&outgoing_queue_lock);
+                message->setOutQueuePushTimeStamp(clock());
                 outgoing_message_queue.push(message);
                 pthread_cond_signal(&cond_outgoing_queue_empty);
                 pthread_mutex_unlock(&outgoing_queue_lock);
@@ -344,6 +347,7 @@ public:
                 }
 
                 ABSMessage* ret = outgoing_message_queue.front();
+                ret->setOutQueuePopTimeStamp(clock());
                 //printf("Got a messge from the outgoing queue");
                 outgoing_message_queue.pop();
                 pthread_mutex_unlock(&outgoing_queue_lock);

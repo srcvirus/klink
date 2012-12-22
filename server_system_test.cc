@@ -271,10 +271,8 @@ void *listener_thread(void* args)
 
 						if (rcvd_message != NULL)
 						{
-							rcvd_message->setInQueuePushTimeStamp(clock());
 							((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-							printf(
-									"[Listening thread]\t Added a %d message to the incoming queue\n",
+							printf("[Listening thread]\t Added a %d message to the incoming queue\n",
 									rcvd_message->getMessageType());
 						}
 
@@ -301,7 +299,13 @@ void *forwarding_thread(void* args)
 			continue;
 
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+
 		message->incrementOverlayHops();
+		clock_t ping_start_t = clock();
+		int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
+		clock_t ping_end_t = clock();
+		double ping_latency = (double) (ping_end_t - ping_start_t) / (double) CLOCKS_PER_SEC;
+		message->setPingLatency(ping_latency);
 
 		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
 				message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
@@ -332,7 +336,6 @@ void *processing_thread(void* args)
 			continue;
 
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
-		message->setInQueuePopTimeStamp(clock());
 
 		printf("[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",
 				t_param.getThreadId(), message->getMessageType());
@@ -347,6 +350,7 @@ void *processing_thread(void* args)
 			printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
 					message->getDestHost().c_str(), message->getDestPort(),
 					message->getOverlayTtl(), message->getOverlayHops());
+
 			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
 		}
 	}
@@ -356,7 +360,7 @@ void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
 
-	sleep(120);
+	sleep(10);
 	while (true)
 	{
 		if (this_peer->IsInitRcvd())

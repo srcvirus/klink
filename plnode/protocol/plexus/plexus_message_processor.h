@@ -109,25 +109,36 @@ public:
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
 			OverlayID srcID(msg->getSrcOid().GetOverlay_id(),
 					msg->getSrcOid().GetPrefix_length());
+
 			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
 			cache->add(srcID, ha);
 			Log* g_log = plexus->getGetLog();
 
 			char i_str[300];
-			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(),
-					msg->getDestHost().c_str(), msg->getSequenceNo());
+			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(), msg->getDestHost().c_str(), msg->getSequenceNo());
 			string key = i_str;
 
-			long start = msg->getIssueTimeStamp();
-			long end = clock();
+			clock_t start_t = msg->getIssueTimeStamp();
+			clock_t end_t = clock();
 
-			double latency = (double) (end - start) / CLOCKS_PER_SEC;
+			double total_t = (double) (end_t - start_t) / (double)CLOCKS_PER_SEC;
+
+			double queue_delay_t = (double)(msg->getInQueuePopTimeStamp() - msg->getInQueuePushTimeStamp());
+			queue_delay_t += (double)(msg->getOutQueuePopTimeStamp() - msg->getOutQueuePushTimeStamp());
+			queue_delay_t /= (double)CLOCKS_PER_SEC;
+
+			double ping_delay = msg->getPingLatency();
+
+			double non_network_latency_t = queue_delay_t + ping_delay;
+
+			double latency = total_t - non_network_latency_t;
+
 			string status = "S";
 			if (msg->getStatus() == ERROR_GET_FAILED)
 				status = "F";
 
 			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idssi",
-					msg->getResolutionHops(), latency, status.c_str(),
+					msg->getResolutionHops(), latency, queue_delay_t, non_network_latency_t, status.c_str(),
 					msg->getDeviceName().c_str(),
 					msg->getSrcOid().GetOverlay_id());
 			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());

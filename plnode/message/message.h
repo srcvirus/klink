@@ -52,7 +52,10 @@ protected:
 	clock_t issue_time_stamp;
 	clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
 	clock_t out_queue_push_time_stamp, out_queue_pop_time_stamp;
+
 	double ping_latency;
+	double queue_delay;
+	double processing_delay;
 
 	size_t getBaseSize()
 	{
@@ -96,6 +99,14 @@ public:
 	virtual ~ABSMessage()
 	{
 		;
+	}
+
+	void updateStatistics()
+	{
+		this->queue_delay += (double)(in_queue_pop_time_stamp - in_queue_push_time_stamp)
+								+ (double) (out_queue_pop_time_stamp - out_queue_push_time_stamp);
+
+		this->processing_delay += (double)(out_queue_push_time_stamp - in_queue_pop_time_stamp);
 	}
 
 	virtual char* serialize(int* serialize_length)
