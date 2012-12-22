@@ -52,21 +52,6 @@ public:
 		this->prefix_length = GlobalData::rm->rm->k;
 	}
 
-	OverlayID(const OverlayID& oid)
-	{
-		this->MAX_LENGTH = oid.MAX_LENGTH;
-		this->overlay_id = oid.overlay_id;
-		this->prefix_length = oid.prefix_length;
-		GlobalData::rm = new ReedMuller(2, 4);
-	}
-
-	OverlayID& operator=(const OverlayID& oid)
-	{
-		this->MAX_LENGTH = oid.MAX_LENGTH;
-		this->overlay_id = oid.overlay_id;
-		this->prefix_length = oid.prefix_length;
-		GlobalData::rm = new ReedMuller(2, 4);
-	}
 	void SetPrefix_length(int prefix_length)
 	{
 		this->prefix_length = prefix_length;

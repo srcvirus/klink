@@ -115,6 +115,9 @@ int main(int argc, char* argv[])
 	tree.execute();
 	tree.print();
 
+	int ip_hops = plexus->getIPHops("cn102.cs.uwaterloo.ca");
+	printf("ip hops = %d\n", ip_hops);
+
 	send_init_message(tree, name_count);
 	//PlexusProtocol* plexus = new PlexusProtocol();
 	char input[1000];

@@ -250,7 +250,6 @@ void *listener_thread(void* args) {
                                                 }
 
                                                 if (rcvd_message != NULL) {
-                                                        rcvd_message->setInQueuePushTimeStamp(clock());
                                                         ((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
                                                         printf(
                                                                 "[Listening thread]\t Added a %d message to the incoming queue\n",
@@ -274,8 +273,6 @@ void *forwarding_thread(void* args) {
         ABSMessage* message = NULL;
 
         while (true) {
-                if (!this_peer->IsInitRcvd())
-                        continue;
 
                 message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
                 message->incrementOverlayHops();

@@ -47,27 +47,29 @@ public:
 
 	virtual char* serialize(int* serialize_length)
 	{
+		puts("serializing peer init get");
 		*serialize_length = getSize();
 		int parent_length;
 		char* parent_buffer = ABSMessage::serialize(&parent_length);
+		printf("parent_length = %d\n", parent_length);
 		char* buffer = new char[*serialize_length];
 
 		int offset = 0;
-		memcpy(buffer + offset, parent_buffer, parent_length);
+		memcpy(buffer + offset, (char*)parent_buffer, parent_length);
 		offset += parent_length;
+
 		int deviceNameLength = device_name.size();
 
 		memcpy(buffer + offset, (char*) &deviceNameLength, sizeof(int));
 		offset += sizeof(int);
+		const char* str = device_name.c_str();
 
-		for (int i = 0; i < device_name.size(); i++)
+		for (int i = 0; i < deviceNameLength; i++)
 		{
-			char ch = device_name[i];
-			memcpy(buffer + offset, (char*) &ch, sizeof(char));
+			memcpy(buffer + offset, (char*) (str + i), sizeof(char));
 			offset += sizeof(char);
 		}
 
-		delete[] parent_buffer;
 		return buffer;
 	}
 

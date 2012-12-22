@@ -68,22 +68,25 @@ public:
 		memcpy(buffer + offset, (char*) &destHostLength, sizeof(int));
 		offset += sizeof(int);
 
+		const char* haddr_str = host_address.GetHostName().c_str();
+
 		for (int i = 0; i < destHostLength; i++)
 		{
-			char ch = host_address.GetHostName()[i];
-			memcpy(buffer + offset, (char*) &ch, sizeof(char));
+			memcpy(buffer + offset, (char*)(haddr_str + i), sizeof(char));
 			offset += sizeof(char);
 		}
+
 		int port = host_address.GetHostPort();
 		memcpy(buffer + offset, (char*) &port, sizeof(int));
 		offset += sizeof(int);
 
 		int deviceNameLength = device_name.size();
 		memcpy(buffer + offset, (char*)&deviceNameLength, sizeof(int)); offset += sizeof(int);
+
+		const char* d_name_str = device_name.c_str();
 		for(int i = 0; i < deviceNameLength; i++)
 		{
-			char ch = device_name[i];
-			memcpy(buffer + offset, (char*)&ch, sizeof(char)); offset += sizeof(char);
+			memcpy(buffer + offset, (char*)(d_name_str + i), sizeof(char)); offset += sizeof(char);
 		}
 
 		delete[] parent_buffer;
