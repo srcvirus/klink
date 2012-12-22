@@ -29,6 +29,7 @@ using namespace std;
 #define	MSG_PLEXUS_PUT					41
 #define MSG_PLEXUS_GET					42
 #define MSG_PLEXUS_GET_REPLY			43
+#define MSG_PLEXUS_PUT_REPLY			44
 
 class ABSMessage
 {
