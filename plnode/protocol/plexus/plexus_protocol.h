@@ -119,6 +119,105 @@ public:
 
         void process_join() {
         }
+        
+        bool setNextHop2(ABSMessage* msg) {
+                printf("Setting next hop, Message type = %d\n", msg->getMessageType());
+                int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
+                HostAddress next_hop;
+
+                switch (msg->getMessageType()) {
+                        case MSG_PEER_INIT:
+                        case MSG_PEER_CONFIG:
+                        case MSG_PEER_CHANGE_STATUS:
+                        case MSG_PEER_START:
+                        case MSG_GENERATE_NAME:
+                        case MSG_DYN_CHANGE_STATUS:
+                        case MSG_PLEXUS_GET_REPLY:
+                        case MSG_PEER_INITIATE_GET:
+                        case MSG_PEER_INITIATE_PUT:
+                                return false;
+                                break;
+                }
+
+                if (msg->getOverlayTtl() == 0)
+                        return false;
+
+                //Peer *container_peer = getContainerPeer();
+                currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
+                printf("Current match length = %d\n", currentNodeMathLength);
+                printf("Message oid = %d\n", msg->getDstOid());
+                msg->getDstOid().printBits();
+                putchar('\n');
+
+                //cout << endl << "current node match : ";
+                //container_peer->getOverlayID().printBits();
+                //cout << " <> ";
+                //msg->getOID().printBits();
+                //cout << " = " << currentNodeMathLength << endl;
+
+                //search in the RT
+                //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
+                //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
+                puts("creating iterator");
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
+                        routing_table);
+                rtable_iterator.reset_iterator();
+
+                puts("looking up in routing table");
+                OverlayID maxMatchOid;
+                //routing_table->reset_iterator();
+                while (rtable_iterator.hasMoreKey()) {
+                        //while (routing_table->hasMoreKey()) {
+                        //   OverlayID oid = routing_table->getNextKey();
+                        OverlayID oid = rtable_iterator.getNextKey();
+                        printf("next key = %d My id = ", oid.GetOverlay_id());
+                        msg->getDstOid().printBits();
+                        putchar('\n');
+
+                        //cout << endl << "current match ";
+                        //oid.printBits();
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+                        //cout << " ==== " << currentMatchLength << endl;
+                        printf(">current match length = %d\n", currentMatchLength);
+
+                        if (currentMatchLength > maxLengthMatch) {
+                                maxLengthMatch = currentMatchLength;
+                                maxMatchOid = oid;
+
+                                /*printf("next host %s, next port %d\n",
+                                                next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
+                        }
+                }
+                routing_table->lookup(maxMatchOid, &next_hop);
+                //search in the Cache
+                /*cache->reset_iterator();
+                while (cache->has_next())
+                {
+                        DLLNode *node = cache->get_next();
+                        OverlayID id = node->key;
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+                        if (currentMatchLength > maxLengthMatch)
+                        {
+                                maxLengthMatch = currentMatchLength;
+                                cache->lookup(msg->getDstOid(), next_hop);
+                                printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                        }
+                }*/
+
+                cout << endl << "max match : = " << maxLengthMatch << endl;
+
+                if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+                        puts("returning false");
+                        //msg->setDestHost("localhost");
+                        //msg->setDestPort(container_peer->getListenPortNumber());
+                        return false;
+                } else {
+                        puts("returning true");
+                        msg->setDestHost(next_hop.GetHostName().c_str());
+                        msg->setDestPort(next_hop.GetHostPort());
+                        return true;
+                }
+        }
 
         bool setNextHop(ABSMessage* msg) {
                 printf("Setting next hop, Message type = %d\n", msg->getMessageType());
