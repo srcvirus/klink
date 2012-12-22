@@ -1,47 +1,9 @@
-# Lines starting with a hash ('#') are comments and have no effect
-# configurations are of the form "key=value" (quotes are for clarity)
-# there shuold not be any space before and after the '=' character
-
-# node_file or nodes_file is the path of the file that contains the list
-# of nodes along with their port numbers for this experiment in
-# <host_name> <port> format
-
-node_file=temp_hosts
-
-# monitors_file_path or monitors_file_path is the path of file that contains
-# the host name and list of all the monitors in the <host_name> <port> format
-
-# log_server_name or log_server_host_name or log_server parameter specifies
-# the name of the server where the nodes will send all of their logs 
-# using sftp
-
-log_server_name=scspc394.cs.uwaterloo.ca
-
-# log_server_user or log_server_user_name parameter specifies the name of
-# the user at the log server
-
-log_server_user=sr2chowd
-
-# k or K is the size of the link cache
-
-K=100
-
-# alpha is the exponent parameter of Zipf distribution, which is used to
-# generate the lookup requests
-
+node_file=ihostlist
+log_server_name=cn102.cs.uwaterloo.ca
+log_server_user=pweb
+k=100
 alpha=0.9
-
-# name_count parameter specifies the total number of names to publish
-# and lookup
-
+timeout=5.5
 name_count=1000
-
-# timeout parameter sets the socket timeout (seconds)
-
-timeout=5
-
-# retry parameter sets the number of attempts to resend a message when
-# timeout occurs
-
 retry=2
 
