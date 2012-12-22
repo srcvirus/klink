@@ -170,19 +170,19 @@ public:
 		int line = 0;
 		char buffer[300];
 
-		while (line < 2)
-		{
-			fgets(buffer, sizeof(buffer), pipe);
-			line++;
-		}
+		while (line < 2 && fgets(buffer, sizeof(buffer), pipe) != NULL) line++;
+
+		if( line < 2 ) return 0;
 
 		char* token = strtok(buffer, " ");
 		int n_token = 0;
-		while (n_token < 6)
+		while (n_token < 6 && token != NULL)
 		{
 			token = strtok(NULL, " ");
 			n_token++;
 		}
+
+		if(token == NULL) return 0;
 
 		char* hop_str = strtok(token, "=");
 		hop_str = strtok(NULL, "=");

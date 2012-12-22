@@ -111,7 +111,7 @@ public:
 		char* buffer = new char[*serialize_length];
 		memcpy(buffer + offset, parent_buffer, parent_size);
 		offset += parent_size;
-		delete[] parent_buffer;
+		//delete[] parent_buffer;
 
 		memcpy(buffer + offset, (char*)(&n_peers), sizeof(int));
 		offset += sizeof(int);
@@ -213,13 +213,15 @@ public:
 
 			memcpy(&hostNameLength, buffer + offset, sizeof(int));
 			offset += sizeof(int); //printf("offset = %d\n", offset);
+			char ch;
+
 			for (int i = 0; i < hostNameLength; i++)
 			{
-				char ch;
 				memcpy(&ch, buffer + offset, sizeof(char));
-				offset += sizeof(char); //printf("offset = %d\n", offset);
 				hostname += ch;
+				offset += sizeof(char); //printf("offset = %d\n", offset);
 			}
+
 			memcpy(&hostport, buffer + offset, sizeof(int));
 			offset += sizeof(int); //printf("offset = %d\n", offset);
 			value.SetHostName(hostname);

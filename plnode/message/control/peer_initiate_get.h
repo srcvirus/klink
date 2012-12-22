@@ -47,11 +47,11 @@ public:
 
 	virtual char* serialize(int* serialize_length)
 	{
-		puts("serializing peer init get");
+
 		*serialize_length = getSize();
 		int parent_length;
 		char* parent_buffer = ABSMessage::serialize(&parent_length);
-		printf("parent_length = %d\n", parent_length);
+
 		char* buffer = new char[*serialize_length];
 
 		int offset = 0;
@@ -69,7 +69,7 @@ public:
 			memcpy(buffer + offset, (char*) (str + i), sizeof(char));
 			offset += sizeof(char);
 		}
-
+		//delete[] parent_buffer;
 		return buffer;
 	}
 

@@ -54,339 +54,374 @@ void *processing_thread(void*);
 void *controlling_thread(void*);
 void *logging_thread(void*);
 
-int main(int argc, char* argv[]) {
-        system_init();
-        pthread_t listener, processor, controller, logger;
-        pthread_t forwarder[MAX_FORWARDING_THREAD];
+int main(int argc, char* argv[])
+{
+	system_init();
+	pthread_t listener, processor, controller, logger;
+	pthread_t forwarder[MAX_FORWARDING_THREAD];
 
-        pthread_create(&listener, NULL, listener_thread, NULL);
-        for (int i = 0; i < MAX_FORWARDING_THREAD; i++) {
-                ThreadParameter t_param(i);
-                pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
-        }
+	pthread_create(&listener, NULL, listener_thread, NULL);
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
+	{
+		ThreadParameter t_param(i);
+		pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
+	}
 
-        for (int i = 0; i < MAX_PROCESSOR_THREAD; i++) {
-                ThreadParameter t_param(i);
-                pthread_create(&processor, NULL, processing_thread, &t_param);
-        }
+	for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+	{
+		ThreadParameter t_param(i);
+		pthread_create(&processor, NULL, processing_thread, &t_param);
+	}
 
-        pthread_create(&logger, NULL, logging_thread, NULL);
-        pthread_create(&controller, NULL, controlling_thread, NULL);
+	pthread_create(&logger, NULL, logging_thread, NULL);
+	pthread_create(&controller, NULL, controlling_thread, NULL);
 
-        pthread_join(listener, NULL);
-        for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
-                pthread_join(forwarder[i], NULL);
-        pthread_join(processor, NULL);
-        pthread_join(logger, NULL);
-        pthread_join(controller, NULL);
+	pthread_join(listener, NULL);
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		pthread_join(forwarder[i], NULL);
+	pthread_join(processor, NULL);
+	pthread_join(logger, NULL);
+	pthread_join(controller, NULL);
 
-        cleanup();
+	cleanup();
 }
 
-void system_init() {
-        int error_code;
-        puts("Initializing the System");
+void system_init()
+{
+	int error_code;
+	puts("Initializing the System");
 
-        /* creating the peer container */
-        this_peer = new Peer(GlobalData::config_file_name.c_str());
-        printf("hostname = %s\n", this_peer->getHostName().c_str());
+	/* creating the peer container */
+	this_peer = new Peer(GlobalData::config_file_name.c_str());
+	printf("hostname = %s\n", this_peer->getHostName().c_str());
 
-        if (this_peer->getListenPortNumber() == -1) {
-                puts("Port Number Not Found");
-                exit(1);
-        }
+	if (this_peer->getListenPortNumber() == -1)
+	{
+		puts("Port Number Not Found");
+		exit(1);
+	}
 
-        /* creating the message processor for plexus */
-        PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+	/* creating the message processor for plexus */
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
 
-        /* creating the plexus protocol object */
-        plexus = new PlexusProtocol(this_peer, msg_processor);
+	/* creating the plexus protocol object */
+	plexus = new PlexusProtocol(this_peer, msg_processor);
 
-        /* setting the message processor's protocol */
-        msg_processor->setContainerProtocol(plexus);
+	/* setting the message processor's protocol */
+	msg_processor->setContainerProtocol(plexus);
 
-        /* setting the protocol of the peer */
-        this_peer->setProtocol(plexus);
+	/* setting the protocol of the peer */
+	this_peer->setProtocol(plexus);
 
-        /* initializing the connection sets */
-        FD_ZERO(&connection_pool);
-        FD_ZERO(&read_connection_fds);
+	/* initializing the connection sets */
+	FD_ZERO(&connection_pool);
+	FD_ZERO(&read_connection_fds);
 
-        /* creating the server socket for accepting connection from other peers */
-        s_socket = this_peer->getServerSocket();
-        if (s_socket == NULL) {
-                printf("Socket create error");
-                exit(1);
-        }
+	/* creating the server socket for accepting connection from other peers */
+	s_socket = this_peer->getServerSocket();
+	if (s_socket == NULL)
+	{
+		printf("Socket create error");
+		exit(1);
+	}
 
-        FD_SET(s_socket->getSocketFd(), &connection_pool);
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
-        fd_max = s_socket->getSocketFd();
-        s_socket->print_socket_info();
+	fd_max = s_socket->getSocketFd();
+	s_socket->print_socket_info();
 }
 
-void cleanup() {
-        delete this_peer;
-        this_peer = NULL;
-        plexus = NULL;
+void cleanup()
+{
+	delete this_peer;
+	this_peer = NULL;
+	plexus = NULL;
 }
 
+void *listener_thread(void* args)
+{
+	puts("Starting Listener Thread");
 
-void *listener_thread(void* args) {
-        puts("Starting Listener Thread");
+	int buffer_length;
+	char* buffer;
 
-        int buffer_length;
-        char* buffer;
+	while (true)
+	{
+		read_connection_fds = connection_pool;
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
-        while (true) {
-                read_connection_fds = connection_pool;
-                int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
+		if (n_select < 0)
+		{
+			puts("Select Error");
+			printf("errno = %d\n", errno);
 
-                if (n_select < 0) {
-                        puts("Select Error");
-                        printf("errno = %d\n", errno);
+			s_socket->printActiveConnectionList();
+			printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
 
-                        s_socket->printActiveConnectionList();
-                        printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
+			for (int con = 0; con <= fd_max; con++)
+			{
+				if (FD_ISSET(con, &connection_pool))
+				{
+					int fopts = 0;
+					if (fcntl(con, F_GETFL, &fopts) < 0)
+					{
+						FD_CLR(con, &connection_pool);
+						s_socket->close_connection(con);
+						fd_max = s_socket->getMaxConnectionFd();
+					}
+				}
+			}
+			//exit(1);
+			continue;
+		}
+		for (int i = 0; i <= fd_max; i++)
+		{
+			if (FD_ISSET(i, &read_connection_fds))
+			{
+				if (i == s_socket->getSocketFd())
+				{
+					int connection_fd = s_socket->accept_connection();
 
-                        for (int con = 0; con <= fd_max; con++) {
-                                if (FD_ISSET(con, &connection_pool)) {
-                                        int fopts = 0;
-                                        if (fcntl(con, F_GETFL, &fopts) < 0) {
-                                                FD_CLR(con, &connection_pool);
-                                                s_socket->close_connection(con);
-                                                fd_max = s_socket->getMaxConnectionFd();
-                                        }
-                                }
-                        }
-                        //exit(1);
-                        continue;
-                }
-                for (int i = 0; i <= fd_max; i++) {
-                        if (FD_ISSET(i, &read_connection_fds)) {
-                                if (i == s_socket->getSocketFd()) {
-                                        int connection_fd = s_socket->accept_connection();
+					if (connection_fd < 0)
+					{
+						print_error_message(connection_fd);
+						exit(1);
+					}
 
-                                        if (connection_fd < 0) {
-                                                print_error_message(connection_fd);
-                                                exit(1);
-                                        }
+					FD_SET(connection_fd, &connection_pool);
+					if (connection_fd > fd_max)
+						fd_max = connection_fd;
+					puts("new connection");
+					s_socket->printActiveConnectionList();
+				}
+				else
+				{
+					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
 
-                                        FD_SET(connection_fd, &connection_pool);
-                                        if (connection_fd > fd_max)
-                                                fd_max = connection_fd;
-                                        puts("new connection");
-                                        s_socket->printActiveConnectionList();
-                                } else {
-                                        buffer_length = s_socket->receive_data(i, &buffer);
-                                        printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					 putchar('\n');*/
 
-                                        /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                                         putchar('\n');*/
+					s_socket->close_connection(i);
+					FD_CLR(i, &connection_pool);
+					fd_max = s_socket->getMaxConnectionFd();
 
-                                        s_socket->close_connection(i);
-                                        FD_CLR(i, &connection_pool);
-                                        fd_max = s_socket->getMaxConnectionFd();
+					s_socket->printActiveConnectionList();
 
-                                        s_socket->printActiveConnectionList();
+					if (buffer_length > 0)
+					{
+						char messageType = 0;
+						ABSMessage* rcvd_message = NULL;
 
-                                        if (buffer_length > 0) {
-                                                char messageType = 0;
-                                                ABSMessage* rcvd_message = NULL;
+						memcpy(&messageType, buffer, sizeof(char));
+						printf("[Listening thread]\t Message Type: %d\n", messageType);
 
-                                                memcpy(&messageType, buffer, sizeof (char));
-                                                printf("[Listening thread]\t Message Type: %d\n", messageType);
+						switch (messageType)
+						{
+						case MSG_PEER_INIT:
+							rcvd_message = new PeerInitMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
 
-                                                switch (messageType) {
-                                                        case MSG_PEER_INIT:
-                                                                rcvd_message = new PeerInitMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_GET:
+							rcvd_message = new MessageGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_GET:
-                                                                rcvd_message = new MessageGET();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_GET_REPLY:
+							rcvd_message = new MessageGET_REPLY();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_GET_REPLY:
-                                                                rcvd_message = new MessageGET_REPLY();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                //rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PLEXUS_PUT:
+							rcvd_message = new MessagePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                                                        case MSG_PLEXUS_PUT:
-                                                                rcvd_message = new MessagePUT();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                //rcvd_message->message_print_dump();
-                                                                break;
+						case MSG_PEER_INITIATE_GET:
+							rcvd_message = new PeerInitiateGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
+						case MSG_PEER_INITIATE_PUT:
+							rcvd_message = new PeerInitiatePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_START:
+							rcvd_message = new PeerStartMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_CHANGE_STATUS:
+							rcvd_message = new PeerChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_GENERATE_NAME:
+							rcvd_message = new PeerGenNameMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_DYN_CHANGE_STATUS:
+							rcvd_message = new PeerDynChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						}
 
-                                                        case MSG_PEER_INITIATE_GET:
-                                                                rcvd_message = new PeerInitiateGET();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                rcvd_message->message_print_dump();
-                                                                break;
-                                                        case MSG_PEER_INITIATE_PUT:
-                                                                rcvd_message = new PeerInitiatePUT();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_PEER_START:
-                                                                rcvd_message = new PeerStartMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_PEER_CHANGE_STATUS:
-                                                                rcvd_message = new PeerChangeStatusMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_GENERATE_NAME:
-                                                                rcvd_message = new PeerGenNameMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                        case MSG_DYN_CHANGE_STATUS:
-                                                                rcvd_message = new PeerDynChangeStatusMessage();
-                                                                rcvd_message->deserialize(buffer, buffer_length);
-                                                                break;
-                                                }
+						if (rcvd_message != NULL)
+						{
+							((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
+							printf(
+									"[Listening thread]\t Added a %d message to the incoming queue\n",
+									rcvd_message->getMessageType());
+						}
 
-                                                if (rcvd_message != NULL) {
-                                                        ((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-                                                        printf(
-                                                                "[Listening thread]\t Added a %d message to the incoming queue\n",
-                                                                rcvd_message->getMessageType());
-                                                }
-
-                                                delete[] buffer;
-                                        }
-                                }
-                        }
-                }
-        }
+						delete[] buffer;
+					}
+				}
+			}
+		}
+	}
 }
 
-void *forwarding_thread(void* args) {
-        ThreadParameter t_param = *((ThreadParameter*) args);
-        printf("Starting forwarding thread %d\n", t_param.getThreadId());
+void *forwarding_thread(void* args)
+{
+	ThreadParameter t_param = *((ThreadParameter*) args);
+	printf("Starting forwarding thread %d\n", t_param.getThreadId());
 
-        char* buffer = NULL;
-        int buffer_length;
-        ABSMessage* message = NULL;
+	char* buffer = NULL;
+	int buffer_length;
+	ABSMessage* message = NULL;
 
-        while (true) {
+	while (true)
+	{
 
-                message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
-                message->incrementOverlayHops();
+		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+		message->incrementOverlayHops();
 
-                if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
-                {
-                	message->setPingStartT(clock());
-                	int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
-                	message->setPingEndT(clock());
-                	message->updateStatistics();
-                }
+		if (message->getMessageType() == MSG_PLEXUS_GET
+				|| message->getMessageType() == MSG_PLEXUS_PUT)
+		{
+			message->setPingStartT(clock());
+			int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
+			message->setPingEndT(clock());
+			message->updateStatistics();
+		}
 
-                printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
-                        message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
+		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
+				message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
 
-                int retry = 0;
-                while (retry < this_peer->getNRetry()) {
-                        int error_code = plexus->send_message(message);
-                        if (error_code == ERROR_CONNECTION_TIMEOUT)
-                                retry++;
-                        else
-                                break;
-                }
+		int retry = 0;
+		while (retry < this_peer->getNRetry())
+		{
+			int error_code = plexus->send_message(message);
+			if (error_code == ERROR_CONNECTION_TIMEOUT)
+				retry++;
+			else
+				break;
+		}
 
-                delete message;
-        }
+		delete message;
+	}
 }
 
-void *processing_thread(void* args) {
-        ThreadParameter t_param = *((ThreadParameter*) args);
-        printf("Starting processing thread %d\n", t_param.getThreadId());
+void *processing_thread(void* args)
+{
+	ThreadParameter t_param = *((ThreadParameter*) args);
+	printf("Starting processing thread %d\n", t_param.getThreadId());
 
-        ABSMessage* message = NULL;
-        while (true) {
+	ABSMessage* message = NULL;
+	while (true)
+	{
 //                if (!this_peer->IsInitRcvd())
 //                        continue;
 
-                message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
+		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
-                printf("[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",
-                        t_param.getThreadId(), message->getMessageType());
+		printf("[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",
+				t_param.getThreadId(), message->getMessageType());
 
-                bool forward = plexus->getMessageProcessor()->processMessage(message);
-                if (forward) {
-                        printf("[Processing Thread %d:]\tpushed a %d type message for forwarding\n",
-                                t_param.getThreadId(), message->getMessageType());
+		bool forward = plexus->getMessageProcessor()->processMessage(message);
+		if (forward)
+		{
+			printf("[Processing Thread %d:]\tpushed a %d type message for forwarding\n",
+					t_param.getThreadId(), message->getMessageType());
 
-                        message->getDstOid().printBits();
-                        printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
-                                message->getDestHost().c_str(), message->getDestPort(),
-                                message->getOverlayTtl(), message->getOverlayHops());
-                        ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
-                }
-        }
+			message->getDstOid().printBits();
+			printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
+					message->getDestHost().c_str(), message->getDestPort(),
+					message->getOverlayTtl(), message->getOverlayHops());
+			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
+		}
+	}
 }
 
-void *controlling_thread(void* args) {
-        puts("Starting a controlling thread");
+void *controlling_thread(void* args)
+{
+	puts("Starting a controlling thread");
 
-        sleep(20);
-        while (true) {
-                if (this_peer->IsInitRcvd()) {
-                        char buffer[33];
+	sleep(20);
+	while (true)
+	{
+		if (this_peer->IsInitRcvd())
+		{
+			char buffer[33];
 
-                        //publish names
-                        printf("[Controlling Thread:]\tPublishing name in range %d %d\n",
-                                this_peer->getPublish_name_range_start(),
-                                this_peer->getPublish_name_range_end());
+			//publish names
+			printf("[Controlling Thread:]\tPublishing name in range %d %d\n",
+					this_peer->getPublish_name_range_start(),
+					this_peer->getPublish_name_range_end());
 
-                        for (int i = this_peer->getPublish_name_range_start();
-                                i <= this_peer->getPublish_name_range_end(); i++) {
-                                HostAddress ha("dummyhost", i);
-                                //itoa(i, buffer, 10);
-                                sprintf(buffer, "%d", i);
-                                printf("[Controlling Thread:]\tPublishing name: %d\n", i);
-                                this_peer->getProtocol()->put(string(buffer), ha);
-                                if (i % 3 == 0)
-                                        pthread_yield();
-                        }
-                        //lookup names
-                        printf("[Controlling Thread:]\tLooking up name ...\n");
-                        //usleep(8000000);
-                        sleep(60);
-                        for (int i = this_peer->getLookup_name_range_start();
-                                i <= this_peer->getLookup_name_range_end(); i++) {
-                                HostAddress ha("dummyhost", i);
-                                //itoa(i, buffer, 10);
-                                sprintf(buffer, "%d", i);
-                                printf("[Controlling Thread:]\tLooking up name: %d\n", i);
-                                this_peer->getProtocol()->get(string(buffer));
-                                if (i % 3 == 0)
-                                        pthread_yield();
-                        }
-                        break;
-                }
-                pthread_yield();
-        }
+			for (int i = this_peer->getPublish_name_range_start();
+					i <= this_peer->getPublish_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%d", i);
+				printf("[Controlling Thread:]\tPublishing name: %d\n", i);
+				this_peer->getProtocol()->put(string(buffer), ha);
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			//lookup names
+			printf("[Controlling Thread:]\tLooking up name ...\n");
+			//usleep(8000000);
+			sleep(60);
+			for (int i = this_peer->getLookup_name_range_start();
+					i <= this_peer->getLookup_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%d", i);
+				printf("[Controlling Thread:]\tLooking up name: %d\n", i);
+				this_peer->getProtocol()->get(string(buffer));
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			break;
+		}
+		pthread_yield();
+	}
 }
 
-void *logging_thread(void*) {
-        puts("Starting a logging thread");
-        LogEntry *entry;
-        while (true) {
-                if (!this_peer->IsInitRcvd())
-                        continue;
+void *logging_thread(void*)
+{
+	puts("Starting a logging thread");
+	LogEntry *entry;
+	while (true)
+	{
+		if (!this_peer->IsInitRcvd())
+			continue;
 
-                entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
-                printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+		entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
+		printf("[Logging Thread:]\tpulled a log entry from the queue\n");
 
-                Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
-                log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
-                printf("[Logging Thread:]\tlog flushed to the disk\n");
+		Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
+		log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
+		printf("[Logging Thread:]\tlog flushed to the disk\n");
 
-                delete entry;
-                printf("Index table size = %d\n", plexus->getIndexTable()->size());
-        }
+		delete entry;
+		printf("Index table size = %d\n", plexus->getIndexTable()->size());
+	}
 }

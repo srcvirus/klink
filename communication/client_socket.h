@@ -69,7 +69,10 @@ int ClientSocket::connect_to_server()
 	char str_server_port[10];
 	sprintf(str_server_port, "%d", server_port_number);
 
-	getaddrinfo(server_host_name.c_str(), str_server_port, &hints, &res);
+	char s_host_name[300];
+	strcpy(s_host_name, server_host_name.c_str());
+
+	getaddrinfo(s_host_name, str_server_port, &hints, &res);
 
 	socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	fcntl(socket_fd, F_SETFL, O_NONBLOCK);

@@ -89,7 +89,7 @@ public:
 			memcpy(buffer + offset, (char*)(d_name_str + i), sizeof(char)); offset += sizeof(char);
 		}
 
-		delete[] parent_buffer;
+		//delete[] parent_buffer;
 		return buffer;
 
 	}

@@ -51,6 +51,7 @@ protected:
 	OverlayID src_oid;
 
 	clock_t issue_time_stamp;
+
 	clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
 	clock_t out_queue_push_time_stamp, out_queue_pop_time_stamp;
 	clock_t processing_start_t, processing_end_t;
@@ -66,7 +67,7 @@ protected:
 				+ sizeof(int) * 11
 				+ sizeof(char) * (dest_host.size() + source_host.size())
 				+ sizeof(double) * 3
-                                + sizeof(clock_t);
+                + sizeof(clock_t);
 
 		return size;
 	}

@@ -75,9 +75,10 @@ void send_init_message(BuildTree &tree, int name_count)
 		buffer = pInit->serialize(&buffer_length);
 		printf("Serialized Length = %d bytes\n", buffer_length);
 
-		/*PeerInitMessage* a = new PeerInitMessage();
+		PeerInitMessage* a = new PeerInitMessage();
 		 a->deserialize(buffer, buffer_length);
-		 a->message_print_dump();*/
+		 puts("deserialized message");
+		 a->message_print_dump();
 		//puts("Sending Init Packet");
 		timeval timeout;
 		timeout.tv_sec = 5;
