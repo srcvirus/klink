@@ -58,7 +58,8 @@ public:
 
 	void INIT()
 	{
-		char hostname[100], domain_name[100];
+		char hostname[100];
+                hostname[0] = '\0';
 		gethostname(hostname, 100);
 		//getdomainname(domain_name, 100);
 		struct hostent* host_info;
