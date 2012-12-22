@@ -164,6 +164,7 @@ public:
 	{
 		string command = "ping -c 1 ";
 		command += destination;
+
 		FILE* pipe = popen(command.c_str(), "r");
 
 		int line = 0;
@@ -180,16 +181,17 @@ public:
 		while (n_token < 6)
 		{
 			token = strtok(NULL, " ");
-			token++;
+			n_token++;
 		}
 
 		char* hop_str = strtok(token, "=");
 		hop_str = strtok(NULL, "=");
 		int ip_hops = atoi(hop_str);
-		if (ip_hops < 64)
-			ip_hops = 64 - ip_hops;
-		else
-			ip_hops = 128 - ip_hops;
+		int two_pow = 2;
+
+		while(ip_hops < two_pow) two_pow <<= 1;
+		ip_hops = two_pow - ip_hops;
+
 		return ip_hops;
 	}
 

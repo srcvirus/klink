@@ -400,7 +400,7 @@ public:
                 	message->setInQueuePushTimeStamp(clock());
 
                 incoming_message_queue.push(message);
-                pthread_cond_signal(&cond_incoming_queue_empty);
+                pthread_cond_broadcast(&cond_incoming_queue_empty);
                 pthread_mutex_unlock(&incoming_queue_lock);
         }
 
@@ -431,7 +431,7 @@ public:
                 if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
                 	message->setOutQueuePushTimeStamp(clock());
                 outgoing_message_queue.push(message);
-                pthread_cond_signal(&cond_outgoing_queue_empty);
+                pthread_cond_broadcast(&cond_outgoing_queue_empty);
                 pthread_mutex_unlock(&outgoing_queue_lock);
         }
 

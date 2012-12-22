@@ -93,9 +93,8 @@ public:
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
-		dest_host = "";
-		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
+
 		ping_latency = queue_delay = processing_delay = 0;
 		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
 		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
