@@ -16,6 +16,8 @@ public:
 
 	virtual void encode(const char* bit_string) = 0;
 	virtual char* decode(const char* bit_string) = 0;
+        virtual int getK() = 0;
+        virtual int getN() = 0;
 };
 
 #endif /* CODE_H_ */

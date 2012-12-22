@@ -356,7 +356,7 @@ void *controlling_thread(void* args)
 {
 	puts("Starting a controlling thread");
 
-	sleep(8);
+	sleep(120);
 	while (true)
 	{
 		if (this_peer->IsInitRcvd())
@@ -382,7 +382,7 @@ void *controlling_thread(void* args)
 			//lookup names
 			printf("[Controlling Thread:]\tLooking up name ...\n");
 			//usleep(8000000);
-			sleep(60);
+			sleep(120);
 			for (int i = this_peer->getLookup_name_range_start();
 					i <= this_peer->getLookup_name_range_end(); i++)
 			{
