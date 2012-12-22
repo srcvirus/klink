@@ -52,18 +52,19 @@ protected:
 	clock_t issue_time_stamp;
 	clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
 	clock_t out_queue_push_time_stamp, out_queue_pop_time_stamp;
+	clock_t processing_start_t, processing_end_t;
+	clock_t ping_start_t, ping_end_t;
 
-	double ping_latency;
 	double queue_delay;
 	double processing_delay;
+	double ping_latency;
 
 	size_t getBaseSize()
 	{
 		size_t size = sizeof(char) * 3
 				+ sizeof(int) * 11
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(clock_t) * 5
-				+ sizeof(double);
+				+ sizeof(double) * 3;
 
 		return size;
 	}
@@ -77,6 +78,11 @@ public:
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
+		ping_latency = queue_delay = processing_delay = 0;
+		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
+		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
+		processing_start_t = processing_end_t = 0;
+		ping_start_t = ping_end_t = 0;
 	}
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host,
@@ -89,6 +95,11 @@ public:
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
+		ping_latency = queue_delay = processing_delay = 0;
+		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
+		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
+		processing_start_t = processing_end_t = 0;
+		ping_start_t = ping_end_t = 0;
 	}
 
 	virtual size_t getSize()
@@ -103,10 +114,13 @@ public:
 
 	void updateStatistics()
 	{
-		this->queue_delay += (double)(in_queue_pop_time_stamp - in_queue_push_time_stamp)
-								+ (double) (out_queue_pop_time_stamp - out_queue_push_time_stamp);
+		double q_delay = (double)(in_queue_pop_time_stamp - in_queue_push_time_stamp);
+		q_delay += (double) (out_queue_pop_time_stamp - out_queue_push_time_stamp);
+		q_delay /= (double)CLOCKS_PER_SEC;
 
-		this->processing_delay += (double)(out_queue_push_time_stamp - in_queue_pop_time_stamp);
+		this->queue_delay += q_delay;
+		this->processing_delay += ((double)(processing_end_t - processing_end_t) / (double)CLOCKS_PER_SEC);
+		this->ping_latency += ((double)(ping_end_t - ping_start_t) / (double)CLOCKS_PER_SEC);
 	}
 
 	virtual char* serialize(int* serialize_length)
@@ -155,11 +169,9 @@ public:
 		offset += sizeof(clock_t);
 
 
-		memcpy(buffer + offset, (char*)(&in_queue_push_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(buffer + offset, (char*)(&in_queue_pop_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(buffer + offset, (char*)(&out_queue_push_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(buffer + offset, (char*)(&out_queue_pop_time_stamp), sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(buffer + offset, (char*)(&ping_latency), sizeof(double)); offset += sizeof(double);
+		memcpy(buffer + offset, (char*)&queue_delay, sizeof(double)); offset += sizeof(double);
+		memcpy(buffer + offset, (char*)&processing_delay, sizeof(double)); offset += sizeof(double);
+		memcpy(buffer + offset, (char*)&ping_latency, sizeof(double)); offset += sizeof(double);
 
 		int o_id, p_len, m_len;
 		o_id = dst_oid.GetOverlay_id();
@@ -231,10 +243,8 @@ public:
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(long));
 		offset += sizeof(long);
 
-		memcpy(&in_queue_push_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(&in_queue_pop_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(&out_queue_push_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
-		memcpy(&out_queue_pop_time_stamp, buffer + offset, sizeof(clock_t)); offset += sizeof(clock_t);
+		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
+		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
 		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double);
 
 		int o_id, p_len, m_len;
@@ -463,6 +473,66 @@ public:
 	void setPingLatency(double pingLatency)
 	{
 		ping_latency = pingLatency;
+	}
+
+	clock_t getPingEndT() const
+	{
+		return ping_end_t;
+	}
+
+	void setPingEndT(clock_t pingEndT)
+	{
+		ping_end_t = pingEndT;
+	}
+
+	clock_t getPingStartT() const
+	{
+		return ping_start_t;
+	}
+
+	void setPingStartT(clock_t pingStartT)
+	{
+		ping_start_t = pingStartT;
+	}
+
+	double getProcessingDelay() const
+	{
+		return processing_delay;
+	}
+
+	void setProcessingDelay(double processingDelay)
+	{
+		processing_delay = processingDelay;
+	}
+
+	double getQueueDelay() const
+	{
+		return queue_delay;
+	}
+
+	void setQueueDelay(double queueDelay)
+	{
+		queue_delay = queueDelay;
+	}
+
+	clock_t getProcessingEndT() const
+	{
+		return processing_end_t;
+	}
+
+	void setProcessingEndT(clock_t processingEndT)
+	{
+		processing_end_t = processingEndT;
+	}
+
+	clock_t getProcessingStartT() const
+	{
+		return processing_start_t;
+	}
+
+	void setProcessingStartT(clock_t processingStartT)
+	{
+		processing_start_t = processingStartT;
 	}
 };
 

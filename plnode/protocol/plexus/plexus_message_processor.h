@@ -54,6 +54,9 @@ public:
 
 	bool processMessage(ABSMessage* message)
 	{
+		if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
+			message->setProcessingStartT(clock());
+
 		message->decrementOverlayTtl();
 		PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
 		Peer* container_peer = container_protocol->getContainerPeer();
@@ -61,14 +64,20 @@ public:
 		bool forward = plexus->setNextHop(message);
 
 		if (forward)
+		{
+			if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
+				message->setProcessingEndT(clock());
 			return true;
-
+		}
 		//PUT
 		if (message->getMessageType() == MSG_PLEXUS_PUT)
 		{
 			MessagePUT* putMsg = (MessagePUT*) message;
 			puts("Adding to index table");
 			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
+			putMsg->setProcessingEndT(clock());
+			putMsg->updateStatistics();
+
 			puts("PUT Successful");
 		} //GET
 		else if (message->getMessageType() == MSG_PLEXUS_GET)
@@ -77,6 +86,9 @@ public:
 			HostAddress hostAddress;
 			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
+				msg->setProcessingEndT(clock());
+				msg->updateStatistics();
+
 				puts("Got it :)");
 				MessageGET_REPLY *reply = new MessageGET_REPLY(
 						container_peer->getHostName(),
@@ -87,11 +99,18 @@ public:
 
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
 				reply->setResolutionHops(msg->getOverlayHops());
+				reply->setQueueDelay(msg->getQueueDelay());
+				reply->setProcessingDelay(msg->getProcessingDelay());
+				reply->setPingLatency(msg->getPingLatency());
+
 				plexus->addToOutgoingQueue(reply);
 				//send message
 			}
 			else
 			{
+				msg->setProcessingEndT(clock());
+				msg->updateStatistics();
+
 				puts("GET Failed");
 				MessageGET_REPLY *reply = new MessageGET_REPLY(
 						container_peer->getHostName(),
@@ -99,8 +118,13 @@ public:
 						msg->getSourceHost(), msg->getSourcePort(),
 						container_peer->getOverlayID(), msg->getDstOid(),
 						ERROR_GET_FAILED, hostAddress, msg->GetDeviceName());
+
 				reply->setIssueTimeStamp(msg->getIssueTimeStamp());
 				reply->setResolutionHops(msg->getOverlayHops());
+				reply->setQueueDelay(msg->getQueueDelay());
+				reply->setProcessingDelay(msg->getProcessingDelay());
+				reply->setPingLatency(msg->getPingLatency());
+
 				plexus->addToOutgoingQueue(reply);
 			}
 		} //GET_REPLY
@@ -207,6 +231,7 @@ public:
                         PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*)message;
                         container_peer->SetDyn_status(dcsMsg->getDynStatus());
 		}
+
 		return false;
 	}
 
