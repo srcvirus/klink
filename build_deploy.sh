@@ -15,5 +15,8 @@ grep error server_output
 grep error client_output
 rm server_output client_output
 
+
+
+
 scp config pweb_agent ihostlist pweb@cn101.cs.uwaterloo.ca:~/klink
 ssh pweb@cn101.cs.uwaterloo.ca "cd klink; ./copy_script_src.sh"

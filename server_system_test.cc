@@ -250,6 +250,11 @@ void *listener_thread(void* args)
 							//rcvd_message->message_print_dump();
 							break;
 
+						case MSG_PLEXUS_PUT_REPLY:
+							rcvd_message = new MessagePUT_REPLY();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+
 						case MSG_PEER_INITIATE_GET:
 							rcvd_message = new PeerInitiateGET();
 							rcvd_message->deserialize(buffer, buffer_length);
