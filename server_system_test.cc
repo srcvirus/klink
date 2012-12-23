@@ -452,9 +452,9 @@ static void *callback(enum mg_event event,
                         int content_length = snprintf(content, sizeof (content),
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/>"\
+                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/>"\
+                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>Index Table</strong><br/>size = %d<br/>", //%s<br/>"
                                 this_peer->getOverlayID().toString(),
                                 this_peer->getProtocol()->getRoutingTable()->size(),

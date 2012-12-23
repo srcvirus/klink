@@ -331,7 +331,7 @@ public:
                         msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
                 }
-                getContainerPeer()->incrementGet_received();
+                getContainerPeer()->incrementGet_generated();
         }
 
         void get_from_client(string name, HostAddress destination) {
@@ -364,7 +364,7 @@ public:
                         msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
                 }
-                getContainerPeer()->incrementPut_received();
+                getContainerPeer()->incrementPut_generated();
         }
 
         void put_from_client(string name, HostAddress hostAddress,

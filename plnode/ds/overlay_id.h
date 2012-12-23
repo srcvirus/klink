@@ -25,14 +25,19 @@ class OverlayID {
 public:
         int MAX_LENGTH;
 
+        void INIT() {
+                ReedMuller *rm = new ReedMuller(2, 4);
+                MAX_LENGTH = rm->rm->k;
+                //MAX_LENGTH = GlobalData::rm->rm->k;
+
+        }
+
         OverlayID() {
-                //ReedMuller *rm = new ReedMuller(2, 4);
-                MAX_LENGTH = GlobalData::rm->rm->k;
+                INIT();
         }
 
         OverlayID(unsigned int overlay_id, int prefix_lenght) {
-                //ReedMuller *rm = new ReedMuller(2, 4);
-                MAX_LENGTH = GlobalData::rm->rm->k;
+                INIT();
                 this->overlay_id = overlay_id;
                 this->prefix_length = prefix_lenght;
         }
@@ -44,10 +49,13 @@ public:
         //    }
 
         OverlayID(int pattern) {
-                //mkReedMuller *rm = new ReedMuller(2, 4);
-                MAX_LENGTH = GlobalData::rm->rm->k;
-                this->overlay_id = GlobalData::rm->decode(pattern);
-                this->prefix_length = GlobalData::rm->rm->k;
+                ReedMuller *rm = new ReedMuller(2, 4);
+                MAX_LENGTH = rm->rm->k;
+                this->overlay_id = rm->decode(pattern);
+                this->prefix_length = rm->rm->k;
+                //                MAX_LENGTH = GlobalData::rm->rm->k;
+                //                this->overlay_id = GlobalData::rm->decode(pattern);
+                //                this->prefix_length = GlobalData::rm->rm->k;
         }
 
         void SetPrefix_length(int prefix_length) {
@@ -135,7 +143,6 @@ public:
                 }
                 return digits;
         }
-
 
         int getStringSize() {
                 return MAX_LENGTH + 1 + numDigits(prefix_length);

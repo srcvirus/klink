@@ -92,7 +92,7 @@ void BuildTree::execute() {
                 this->max_height = ceil(log2(treeSize));
 
                 //rm code
-                rm = GlobalData::rm;
+                rm = new ReedMuller(2, 4);
                 //cout << "k = " << rm->rm->k << endl;
                 //cout << "n = " << rm->rm->n << endl;
 
