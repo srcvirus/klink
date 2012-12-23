@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
         }
 
         pthread_create(&logger, NULL, logging_thread, NULL);
-        //pthread_create(&controller, NULL, controlling_thread, NULL);
+        pthread_create(&controller, NULL, controlling_thread, NULL);
         pthread_create(&web, NULL, web_thread, NULL);
 
         pthread_join(listener, NULL);
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
                 pthread_join(forwarder[i], NULL);
         pthread_join(processor, NULL);
         pthread_join(logger, NULL);
-        //pthread_join(controller, NULL);
+        pthread_join(controller, NULL);
         pthread_join(web, NULL);
 
         cleanup();
@@ -163,6 +163,11 @@ void *forwarding_thread(void* args) {
                         int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
                         message->setPingEndT(clock());
                         message->updateStatistics();
+
+                        if (message->getMessageType() == MSG_PLEXUS_GET)
+                                this_peer->incrementGet_forwarded();
+                        else if (message->getMessageType() == MSG_PLEXUS_PUT)
+                                this_peer->incrementPut_forwarded();
                 }
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
@@ -254,6 +259,7 @@ void *listener_thread(void* args) {
                                                                 break;
 
                                                         case MSG_PLEXUS_GET:
+                                                                this_peer->incrementGet_received();
                                                                 rcvd_message = new MessageGET();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 rcvd_message->message_print_dump();
@@ -266,17 +272,20 @@ void *listener_thread(void* args) {
                                                                 break;
 
                                                         case MSG_PLEXUS_PUT:
+                                                                this_peer->incrementPut_received();
                                                                 rcvd_message = new MessagePUT();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 //rcvd_message->message_print_dump();
                                                                 break;
 
                                                         case MSG_PEER_INITIATE_GET:
+                                                                this_peer->incrementGet_received();
                                                                 rcvd_message = new PeerInitiateGET();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 rcvd_message->message_print_dump();
                                                                 break;
                                                         case MSG_PEER_INITIATE_PUT:
+                                                                this_peer->incrementPut_received();
                                                                 rcvd_message = new PeerInitiatePUT();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 break;
@@ -337,7 +346,7 @@ void *processing_thread(void* args) {
                                 message->getDestHost().c_str(), message->getDestPort(),
                                 message->getOverlayTtl(), message->getOverlayHops());
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
-                }
+                } 
         }
 }
 
@@ -428,13 +437,18 @@ static void *callback(enum mg_event event,
                         char content[2048];
                         int content_length = snprintf(content, sizeof (content),
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
-                        "<strong>Index Table</strong><br/>size = %d<br/>%s<br/>",
+                                "<strong>PUT Message</strong><br/>received = %d<br/>processed = %d<br/>forwarded = %d<br/>"\
+                                "<strong>GET Message</strong><br/>received = %d<br/>processed = %d<br/>forwarded = %d<br/>"\
+                                "<strong>Index Table</strong><br/>size = %d<br/>",//%s<br/>"
                                 this_peer->getOverlayID().toString(),
                                 this_peer->getProtocol()->getRoutingTable()->size(),
                                 printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
-                                this_peer->getProtocol()->getIndexTable()->size(),
-                                printIndexTable2String(*this_peer->getProtocol()->getIndexTable()));
-                        printf("html content: %d::%s\n", content_length, content);
+                                this_peer->numOfPut_received(), this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(),
+                                this_peer->numOfGet_received(), this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(),
+                                this_peer->getProtocol()->getIndexTable()->size()//,
+                                //printIndexTable2String(*this_peer->getProtocol()->getIndexTable())
+                                );
+                        //printf("html content: %d::%s\n", content_length, content);
                         mg_printf(conn,
                                 "HTTP/1.1 200 OK\r\n"
                                 "Content-Type: text/html\r\n"

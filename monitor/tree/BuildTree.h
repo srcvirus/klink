@@ -183,6 +183,7 @@ void BuildTree::execute() {
                 for (int i = 0; i < this->treeSize; i++) {
                         rtArray[i] = LookupTable<OverlayID, HostAddress > ();
                         for (int j = 0; j < treeSize; j++) {
+                                if(i==j) continue;
                                 HostAddress ha;
                                 hosts->lookup(idArray[j], &ha);
                                 rtArray[i].add(idArray[j], ha);
