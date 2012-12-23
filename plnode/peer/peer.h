@@ -41,12 +41,14 @@ class Peer
         int webserver_port;
         
         //PUT
-        int put_received, put_processed, put_forwarded;
+        int put_generated, put_received, put_processed, put_forwarded;
+        pthread_mutex_t put_generated_lock;
         pthread_mutex_t put_received_lock;
         pthread_mutex_t put_processed_lock;
         pthread_mutex_t put_forwarded_lock;
         //GET
-        int get_received, get_processed, get_forwarded;
+        int get_generated, get_received, get_processed, get_forwarded;
+        pthread_mutex_t get_generated_lock;
         pthread_mutex_t get_received_lock;
         pthread_mutex_t get_processed_lock;
         pthread_mutex_t get_forwarded_lock;
@@ -88,9 +90,11 @@ public:
 		init_rcvd = false;
 		start_gen_name = false;
                 
+                pthread_mutex_init(&put_generated_lock, NULL);
                 pthread_mutex_init(&put_received_lock, NULL);
                 pthread_mutex_init(&put_processed_lock, NULL);
                 pthread_mutex_init(&put_forwarded_lock, NULL);
+                pthread_mutex_init(&get_generated_lock, NULL);
                 pthread_mutex_init(&get_received_lock, NULL);
                 pthread_mutex_init(&get_processed_lock, NULL);
                 pthread_mutex_init(&get_forwarded_lock, NULL);
@@ -241,9 +245,11 @@ public:
 
 		address_db.clear();
                 
+                pthread_mutex_destroy(&put_generated_lock);
                 pthread_mutex_destroy(&put_received_lock);
                 pthread_mutex_destroy(&put_processed_lock);
                 pthread_mutex_destroy(&put_forwarded_lock);
+                pthread_mutex_destroy(&get_generated_lock);
                 pthread_mutex_destroy(&get_received_lock);
                 pthread_mutex_destroy(&get_processed_lock);
                 pthread_mutex_destroy(&get_forwarded_lock);
@@ -514,6 +520,10 @@ public:
                 return webserver_port;
         }
 
+        int numOfGet_generated() const {
+                return get_generated;
+        }
+
         int numOfGet_forwarded() const {
                 return get_forwarded;
         }
@@ -526,6 +536,10 @@ public:
                 return get_received;
         }
 
+        int numOfPut_generated() const {
+                return put_generated;
+        }
+
         int numOfPut_received() const {
                 return put_received;
         }
@@ -536,6 +550,12 @@ public:
 
         int numOfPut_processed() const {
                 return put_processed;
+        }
+
+        void incrementPut_generated() {
+                pthread_mutex_lock(&put_generated_lock);
+                this->put_generated++;
+                pthread_mutex_unlock(&put_generated_lock);
         }
 
         void incrementPut_received() {
@@ -556,6 +576,12 @@ public:
                 pthread_mutex_unlock(&put_forwarded_lock);
         }
         
+        void incrementGet_generated() {
+                pthread_mutex_lock(&get_generated_lock);
+                this->get_generated++;
+                pthread_mutex_unlock(&get_generated_lock);
+        }
+
         void incrementGet_received() {
                 pthread_mutex_lock(&get_received_lock);
                 this->get_received++;
