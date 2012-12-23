@@ -393,7 +393,7 @@ public:
         void addToIncomingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&incoming_queue_lock);
                 if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
-                	message->setInQueuePushTimeStamp(clock());
+                	message->setInQueuePushTimeStamp();
 
                 incoming_message_queue.push(message);
                 pthread_cond_broadcast(&cond_incoming_queue_empty);
@@ -416,7 +416,7 @@ public:
 
                 ABSMessage* ret = incoming_message_queue.front();
                 if(ret->getMessageType() == MSG_PLEXUS_GET || ret->getMessageType() == MSG_PLEXUS_PUT)
-                	ret->setInQueuePopTimeStamp(clock());
+                	ret->setInQueuePopTimeStamp();
                 incoming_message_queue.pop();
                 pthread_mutex_unlock(&incoming_queue_lock);
                 return ret;
@@ -425,7 +425,7 @@ public:
         void addToOutgoingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&outgoing_queue_lock);
                 if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
-                	message->setOutQueuePushTimeStamp(clock());
+                	message->setOutQueuePushTimeStamp();
                 outgoing_message_queue.push(message);
                 pthread_cond_broadcast(&cond_outgoing_queue_empty);
                 pthread_mutex_unlock(&outgoing_queue_lock);
@@ -449,7 +449,7 @@ public:
 
                 ABSMessage* ret = outgoing_message_queue.front();
                 if(ret->getMessageType() == MSG_PLEXUS_GET || ret->getMessageType() == MSG_PLEXUS_PUT)
-                	ret->setOutQueuePopTimeStamp(clock());
+                	ret->setOutQueuePopTimeStamp();
                 //printf("Got a messge from the outgoing queue");
                 outgoing_message_queue.pop();
                 pthread_mutex_unlock(&outgoing_queue_lock);

@@ -57,7 +57,7 @@ public:
 	{
 		if (message->getMessageType() == MSG_PLEXUS_GET
 				|| message->getMessageType() == MSG_PLEXUS_PUT)
-			message->setProcessingStartT(clock());
+			message->setProcessingStartT();
 
 		message->decrementOverlayTtl();
 		PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
@@ -69,7 +69,7 @@ public:
 		{
 			if (message->getMessageType() == MSG_PLEXUS_GET
 					|| message->getMessageType() == MSG_PLEXUS_PUT)
-				message->setProcessingEndT(clock());
+				message->setProcessingEndT();
 			return true;
 		}
 		//PUT
@@ -79,7 +79,7 @@ public:
             MessagePUT* putMsg = (MessagePUT*) message;
 			puts("Adding to index table");
 			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
-			putMsg->setProcessingEndT(clock());
+			putMsg->setProcessingEndT();
 			putMsg->updateStatistics();
 
 			puts("PUT Successful");
@@ -104,7 +104,7 @@ public:
 			HostAddress hostAddress;
 			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
-				msg->setProcessingEndT(clock());
+				msg->setProcessingEndT();
 				msg->updateStatistics();
 
 				puts("Got it :)");
@@ -124,7 +124,7 @@ public:
 			}
 			else
 			{
-				msg->setProcessingEndT(clock());
+				msg->setProcessingEndT();
 				msg->updateStatistics();
 
 				puts("GET Failed");
@@ -144,6 +144,9 @@ public:
 		} //GET_REPLY
 		else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY)
 		{
+			timeval end_t;
+			gettimeofday(&end_t, NULL);
+
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
 			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
@@ -156,10 +159,10 @@ public:
 					msg->getSequenceNo());
 			string key = i_str;
 
-			clock_t start_t = msg->getIssueTimeStamp();
-			clock_t end_t = clock();
+			timeval start_t = msg->getIssueTimeStamp();
 
-			double total_t = (double) (end_t - start_t) / (double) CLOCKS_PER_SEC;
+			double total_t;
+			timeval_subtract(end_t, start_t, &total_t);
 
 			double queue_delay = msg->getQueueDelay();
 			double processing_delay = msg->getProcessingDelay();
@@ -176,12 +179,15 @@ public:
 					msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
 					total_t, status.c_str(), msg->getDeviceName().c_str(),
 					msg->getSrcOid().GetOverlay_id());
-			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
+			printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
 			//cache->print();
 		}
 		else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY)
 		{
+			timeval end_t;
+			gettimeofday(&end_t, NULL);
+
 			MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
 			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
@@ -195,10 +201,10 @@ public:
 
 			string key = i_str;
 
-			clock_t start_t = msg->getIssueTimeStamp();
-			clock_t end_t = clock();
+			timeval start_t = msg->getIssueTimeStamp();
+			double total_t;
 
-			double total_t = (double) (end_t - start_t) / (double) CLOCKS_PER_SEC;
+			timeval_subtract(end_t, start_t, &total_t);
 
 			double queue_delay = msg->getQueueDelay();
 			double processing_delay = msg->getProcessingDelay();
@@ -211,7 +217,7 @@ public:
 					msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
 					total_t, msg->getDeviceName().c_str(),
 					msg->getSrcOid().GetOverlay_id());
-			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
+			printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
 			//cache->print();
 		}
