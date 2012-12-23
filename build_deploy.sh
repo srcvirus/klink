@@ -3,7 +3,6 @@ if [ -f agent ]
 then
 	rm agent
 fi
-
 if [ -f client ]
 then
 	rm client
