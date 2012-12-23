@@ -26,7 +26,7 @@
 #include "plnode/ds/thread_parameter.h"
 
 #include "webinterface/mongoose.h"
-#include "plnode/protocol/plexus/goley/GolayCode.h"
+#include "plnode/protocol/plexus/golay/GolayCode.h"
 
 #include <cstdlib>
 #include <cstdio>
