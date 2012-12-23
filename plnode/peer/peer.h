@@ -8,6 +8,7 @@
 #ifndef PEER_H_
 #define PEER_H_
 
+#include <pthread.h>
 #include <string.h>
 #include "../protocol/protocol.h"
 #include "../ds/overlay_id.h"
@@ -37,6 +38,19 @@ class Peer
 	int publish_name_range_end;
 	int lookup_name_range_start;
 	int lookup_name_range_end;
+        int webserver_port;
+        
+        //PUT
+        int put_received, put_processed, put_forwarded;
+        pthread_mutex_t put_received_lock;
+        pthread_mutex_t put_processed_lock;
+        pthread_mutex_t put_forwarded_lock;
+        //GET
+        int get_received, get_processed, get_forwarded;
+        pthread_mutex_t get_received_lock;
+        pthread_mutex_t get_processed_lock;
+        pthread_mutex_t get_forwarded_lock;
+
 	double alpha;
 	int k;
 
@@ -59,6 +73,8 @@ class Peer
 
 public:
 
+
+        
 	void INIT()
 	{
 		char hostname[100];
@@ -71,6 +87,14 @@ public:
 		//host_name = string(strcat(hostname, strcat(".", domain_name)));
 		init_rcvd = false;
 		start_gen_name = false;
+                
+                pthread_mutex_init(&put_received_lock, NULL);
+                pthread_mutex_init(&put_processed_lock, NULL);
+                pthread_mutex_init(&put_forwarded_lock, NULL);
+                pthread_mutex_init(&get_received_lock, NULL);
+                pthread_mutex_init(&get_processed_lock, NULL);
+                pthread_mutex_init(&get_forwarded_lock, NULL);
+                
 	}
 
 	Peer()
@@ -216,6 +240,14 @@ public:
 			delete configuration;
 
 		address_db.clear();
+                
+                pthread_mutex_destroy(&put_received_lock);
+                pthread_mutex_destroy(&put_processed_lock);
+                pthread_mutex_destroy(&put_forwarded_lock);
+                pthread_mutex_destroy(&get_received_lock);
+                pthread_mutex_destroy(&get_processed_lock);
+                pthread_mutex_destroy(&get_forwarded_lock);
+                
 	}
 
 	double getAlpha()
@@ -470,10 +502,79 @@ public:
 		this->dyn_status = dyn_status;
 	}
 
-	int GetDyn_status() const
-	{
-		return dyn_status;
-	}
+        int GetDyn_status() const {
+                return dyn_status;
+        }
+
+        void SetWebserverPort(int webserver_port) {
+                this->webserver_port = webserver_port;
+        }
+
+        int GetWebserverPort() const {
+                return webserver_port;
+        }
+
+        int numOfGet_forwarded() const {
+                return get_forwarded;
+        }
+
+        int numOfGet_processed() const {
+                return get_processed;
+        }
+
+        int numOfGet_received() const {
+                return get_received;
+        }
+
+        int numOfPut_received() const {
+                return put_received;
+        }
+
+        int numOfPut_forwarded() const {
+                return put_forwarded;
+        }
+
+        int numOfPut_processed() const {
+                return put_processed;
+        }
+
+        void incrementPut_received() {
+                pthread_mutex_lock(&put_received_lock);
+                this->put_received++;
+                pthread_mutex_unlock(&put_received_lock);
+        }
+
+        void incrementPut_processed() {
+                pthread_mutex_lock(&put_processed_lock);
+                this->put_processed++;
+                pthread_mutex_unlock(&put_processed_lock);
+        }
+        
+        void incrementPut_forwarded() {
+                pthread_mutex_lock(&put_forwarded_lock);
+                this->put_forwarded++;
+                pthread_mutex_unlock(&put_forwarded_lock);
+        }
+        
+        void incrementGet_received() {
+                pthread_mutex_lock(&get_received_lock);
+                this->get_received++;
+                pthread_mutex_unlock(&get_received_lock);
+        }
+
+        void incrementGet_processed() {
+                pthread_mutex_lock(&get_processed_lock);
+                this->get_processed++;
+                pthread_mutex_unlock(&get_processed_lock);
+        }
+        
+        void incrementGet_forwarded() {
+                pthread_mutex_lock(&get_forwarded_lock);
+                this->get_forwarded++;
+                pthread_mutex_unlock(&get_forwarded_lock);
+        }
+        
+
 };
 
 #endif /* PEER_H_ */
