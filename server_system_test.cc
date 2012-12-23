@@ -25,6 +25,7 @@
 #include "plnode/ds/thread_parameter.h"
 
 #include "webinterface/mongoose.h"
+#include "plnode/protocol/plexus/goley/GolayCode.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]) {
                 pthread_create(&processor, NULL, processing_thread, &t_param);
         }
 
-        pthread_create(&logger, NULL, logging_thread, NULL);
+        //pthread_create(&logger, NULL, logging_thread, NULL);
         pthread_create(&controller, NULL, controlling_thread, NULL);
         pthread_create(&web, NULL, web_thread, NULL);
 
@@ -87,7 +88,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
         pthread_join(processor, NULL);
-        pthread_join(logger, NULL);
+        //pthread_join(logger, NULL);
         pthread_join(controller, NULL);
         pthread_join(web, NULL);
 
@@ -120,7 +121,8 @@ void system_init() {
         this_peer->setProtocol(plexus);
         
         /* setting the code of the peer */
-        iCode = new ReedMuller(2, 4);
+        //iCode = new ReedMuller(2, 4);
+        iCode = new GolayCode();
         this_peer->SetiCode(iCode);
         
         /* initializing the connection sets */
@@ -368,7 +370,7 @@ void *controlling_thread(void* args) {
         puts("Starting a controlling thread");
 
         sleep(20);
-        vector <int> putId, getId;
+        vector <int> putId, getId, idsp, idsg;
         while (true) {
                 if (this_peer->IsInitRcvd()) {
                         char buffer[33];
@@ -387,6 +389,7 @@ void *controlling_thread(void* args) {
                                 printf("[Controlling Thread:]\tPublishing name: %d\n", i);
 
                                 putId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                idsp.push_back(i);
 
                                 this_peer->getProtocol()->put(string(buffer), ha);
                                 if (i % 3 == 0)
@@ -404,6 +407,7 @@ void *controlling_thread(void* args) {
                                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
                                 getId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                idsg.push_back(i);
 
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)
@@ -417,7 +421,7 @@ void *controlling_thread(void* args) {
         sleep(60);
         for(int X = 0; X < getId.size(); X++)
         	if(getId[X] != putId[X])
-        		printf("NOT EQUAL %d %d\n", getId[X], putId[X]);
+        		printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
         	else puts("EQUAL");
 }
 
