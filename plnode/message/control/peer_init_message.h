@@ -198,6 +198,7 @@ public:
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int));
 		offset += sizeof(int); //printf("offset = %d\n", offset);
+		printf("%d\n", routingTableSize);
 
 		for (int i = 0; i < routingTableSize; i++)
 		{
