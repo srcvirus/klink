@@ -354,10 +354,12 @@ void *controlling_thread(void* args) {
         puts("Starting a controlling thread");
 
         sleep(20);
+        vector <int> putId, getId;
         while (true) {
                 if (this_peer->IsInitRcvd()) {
                         char buffer[33];
 
+                        getId.clear(), putId.clear();
                         //publish names
                         printf("[Controlling Thread:]\tPublishing name in range %d %d\n",
                                 this_peer->getPublish_name_range_start(),
@@ -369,6 +371,9 @@ void *controlling_thread(void* args) {
                                 //itoa(i, buffer, 10);
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tPublishing name: %d\n", i);
+
+                                putId.push_back(OverlayID(i).GetOverlay_id());
+
                                 this_peer->getProtocol()->put(string(buffer), ha);
                                 if (i % 3 == 0)
                                         pthread_yield();
@@ -383,6 +388,9 @@ void *controlling_thread(void* args) {
                                 //itoa(i, buffer, 10);
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
+
+                                getId.push_back(OverlayID(i).GetOverlay_id());
+
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)
                                         pthread_yield();
@@ -391,6 +399,12 @@ void *controlling_thread(void* args) {
                 }
                 pthread_yield();
         }
+
+        sleep(60);
+        for(int X = 0; X < getId.size(); X++)
+        	if(getId[X] != putId[X])
+        		printf("NOT EQUAL %d %d\n", getId[X], putId[X]);
+        	else puts("EQUAL");
 }
 
 void *logging_thread(void*) {
@@ -405,7 +419,7 @@ void *logging_thread(void*) {
 
                 Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
                 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
-                printf("[Logging Thread:]\tlog flushed to the disk\n");
+                //printf("[Logging Thread:]\tlog flushed to the disk\n");
 
                 delete entry;
                 printf("Index table size = %d\n", plexus->getIndexTable()->size());

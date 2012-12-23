@@ -81,6 +81,7 @@ public:
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
+		issue_time_stamp = clock();
 		ping_latency = queue_delay = processing_delay = 0;
 		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
 		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
@@ -97,6 +98,7 @@ public:
 		overlay_hops = 0;
 		calculateOverlayTTL(GlobalData::network_size);
 
+		issue_time_stamp = clock();
 		ping_latency = queue_delay = processing_delay = 0;
 		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
 		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;

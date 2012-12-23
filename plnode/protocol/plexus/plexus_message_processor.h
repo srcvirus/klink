@@ -76,7 +76,7 @@ public:
 		if (message->getMessageType() == MSG_PLEXUS_PUT)
 		{
 			container_peer->incrementPut_processed();
-                        MessagePUT* putMsg = (MessagePUT*) message;
+            MessagePUT* putMsg = (MessagePUT*) message;
 			puts("Adding to index table");
 			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 			putMsg->setProcessingEndT(clock());
@@ -100,7 +100,7 @@ public:
 		else if (message->getMessageType() == MSG_PLEXUS_GET)
 		{
 			container_peer->incrementGet_processed();
-                        MessageGET *msg = ((MessageGET*) message);
+            MessageGET *msg = ((MessageGET*) message);
 			HostAddress hostAddress;
 			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
