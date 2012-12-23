@@ -12,6 +12,7 @@
 
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
+#include "plnode/protocol/code.h"
 
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
@@ -25,6 +26,7 @@
 #include "plnode/ds/thread_parameter.h"
 
 #include "webinterface/mongoose.h"
+#include "plnode/protocol/plexus/goley/GolayCode.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -41,6 +43,7 @@ using namespace std;
 //Globals
 Peer* this_peer;
 ABSProtocol* plexus;
+ABSCode *iCode;
 
 int fd_max;
 fd_set connection_pool;
@@ -78,7 +81,7 @@ int main(int argc, char* argv[]) {
                 pthread_create(&processor, NULL, processing_thread, &t_param);
         }
 
-        pthread_create(&logger, NULL, logging_thread, NULL);
+        //pthread_create(&logger, NULL, logging_thread, NULL);
         pthread_create(&controller, NULL, controlling_thread, NULL);
         pthread_create(&web, NULL, web_thread, NULL);
 
@@ -86,7 +89,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
         pthread_join(processor, NULL);
-        pthread_join(logger, NULL);
+        //pthread_join(logger, NULL);
         pthread_join(controller, NULL);
         pthread_join(web, NULL);
 
@@ -117,7 +120,12 @@ void system_init() {
 
         /* setting the protocol of the peer */
         this_peer->setProtocol(plexus);
-
+        
+        /* setting the code of the peer */
+        //iCode = new ReedMuller(2, 4);
+        iCode = new GolayCode();
+        this_peer->SetiCode(iCode);
+        
         /* initializing the connection sets */
         FD_ZERO(&connection_pool);
         FD_ZERO(&read_connection_fds);
@@ -264,6 +272,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessageGET();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 rcvd_message->message_print_dump();
+                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PLEXUS_GET_REPLY:
@@ -277,6 +286,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessagePUT();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 //rcvd_message->message_print_dump();
+                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PLEXUS_PUT_REPLY:
@@ -351,6 +361,12 @@ void *processing_thread(void* args) {
                         printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
                                 message->getDestHost().c_str(), message->getDestPort(),
                                 message->getOverlayTtl(), message->getOverlayHops());
+                        if(message->getMessageType() == MSG_PLEXUS_PUT){
+                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
+                        }
+                        if(message->getMessageType() == MSG_PLEXUS_GET){
+                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
+                        }
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
                 }
         }
@@ -360,7 +376,7 @@ void *controlling_thread(void* args) {
         puts("Starting a controlling thread");
 
         sleep(20);
-        vector <int> putId, getId;
+        vector <int> putId, getId, idsp, idsg;
         while (true) {
                 if (this_peer->IsInitRcvd()) {
                         char buffer[33];
@@ -378,7 +394,8 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tPublishing name: %d\n", i);
 
-                                putId.push_back(OverlayID(i).GetOverlay_id());
+                                putId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                idsp.push_back(i);
 
                                 this_peer->getProtocol()->put(string(buffer), ha);
                                 if (i % 3 == 0)
@@ -395,7 +412,8 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
-                                getId.push_back(OverlayID(i).GetOverlay_id());
+                                getId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                idsg.push_back(i);
 
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)
@@ -409,7 +427,7 @@ void *controlling_thread(void* args) {
         sleep(60);
         for(int X = 0; X < getId.size(); X++)
         	if(getId[X] != putId[X])
-        		printf("NOT EQUAL %d %d\n", getId[X], putId[X]);
+        		printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
         	else puts("EQUAL");
 }
 

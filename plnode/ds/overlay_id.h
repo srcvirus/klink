@@ -11,51 +11,45 @@
 #include <iostream>
 #include <cmath>
 
-#include "../protocol/plexus/rm/ReadMullerCode.h"
 #include "GlobalData.h"
+#include "../protocol/code.h"
 //#include "../../common/util.h"
 
 using namespace std;
 
-class GlobalData;
+//class GlobalData;
 
 class OverlayID {
-        unsigned int overlay_id;
+        long overlay_id;
         int prefix_length;
 public:
         int MAX_LENGTH;
 
         void INIT() {
-                ReedMuller *rm = new ReedMuller(2, 4);
-                MAX_LENGTH = rm->rm->k;
+                //ReedMuller *rm = new ReedMuller(2, 4);
+                //MAX_LENGTH = rm->rm->k;
                 //MAX_LENGTH = GlobalData::rm->rm->k;
-
         }
 
         OverlayID() {
-                INIT();
         }
 
-        OverlayID(unsigned int overlay_id, int prefix_lenght) {
-                INIT();
+        OverlayID(long overlay_id, int prefix_lenght, ABSCode *iCode) {
                 this->overlay_id = overlay_id;
                 this->prefix_length = prefix_lenght;
+                MAX_LENGTH = iCode->K();
         }
 
-        //    OverlayID(int pattern) {
-        //        this->overlay_id = Peer::rm->array2int(Peer::rm->encode(Peer::rm->int2array(pattern, Peer::rm->rm->k)), Peer::rm->rm->n);
-        //        this->prefix_length = Peer::rm->rm->n;
-        //        this->MAX_LENGTH = Peer::rm->rm->n;
-        //    }
+        OverlayID(long overlay_id, int prefix_lenght, int max_length) {
+                this->overlay_id = overlay_id;
+                this->prefix_length = prefix_lenght;
+                MAX_LENGTH = max_length;
+        }
 
-        OverlayID(int pattern) {
-                ReedMuller *rm = new ReedMuller(2, 4);
-                MAX_LENGTH = rm->rm->k;
-                this->overlay_id = rm->decode(pattern);
-                this->prefix_length = rm->rm->k;
-                //                MAX_LENGTH = GlobalData::rm->rm->k;
-                //                this->overlay_id = GlobalData::rm->decode(pattern);
-                //                this->prefix_length = GlobalData::rm->rm->k;
+        OverlayID(long pattern, ABSCode *iCode) {
+                this->overlay_id = iCode->decode(pattern);
+                this->prefix_length = iCode->K();
+                MAX_LENGTH = iCode->K();
         }
 
         void SetPrefix_length(int prefix_length) {
@@ -75,11 +69,12 @@ public:
         }
 
         int GetBitAtPosition(int n) const {
-                return (((this->overlay_id & (1 << n)) >> n) & 0x00000001);
+                int value = this->overlay_id;
+                return (((value & (1 << n)) >> n) & 0x00000001);
         }
 
         OverlayID ToggleBitAtPosition(int n) const {
-                OverlayID id(this->overlay_id, this->prefix_length);
+                OverlayID id(this->overlay_id, this->prefix_length, this->MAX_LENGTH);
                 id.overlay_id ^= (1 << n);
                 return id;
         }

@@ -3,12 +3,12 @@
 #include <fstream>
 #include <iostream>
 
-#include "../../plnode/protocol/plexus/rm/ReadMullerCode.h"
 #include "../../plnode/ds/lookup_table.h"
 #include "../../plnode/ds/lookup_table_iterator.h"
 #include "../../plnode/ds/overlay_id.h"
 #include "../../plnode/ds/host_address.h"
 #include "../../plnode/ds/GlobalData.h"
+#include "../../plnode/protocol/code.h"
 
 class BuildTree {
 private:
@@ -19,9 +19,9 @@ private:
         LookupTable<OverlayID, HostAddress> *rtArray;
         LookupTable<OverlayID, HostAddress> *hosts;
         int max_height;
-        ReedMuller *rm;
+        ABSCode *iCode;
 public:
-        BuildTree(string fileName);
+        BuildTree(string fileName, ABSCode *iCode);
         int GetHeight(int index);
         int GetIndexOfLongestMatchedPrefix(OverlayID id);
 
@@ -55,8 +55,9 @@ public:
 
 };
 
-BuildTree::BuildTree(string fileName) {
+BuildTree::BuildTree(string fileName, ABSCode *iCode) {
         this->fileName = fileName;
+        this->iCode = iCode;
 }
 
 int BuildTree::GetHeight(int index) {
@@ -92,7 +93,7 @@ void BuildTree::execute() {
                 this->max_height = ceil(log2(treeSize));
 
                 //rm code
-                rm = new ReedMuller(2, 4);
+                //rm = new ReedMuller(2, 4);
                 //cout << "k = " << rm->rm->k << endl;
                 //cout << "n = " << rm->rm->n << endl;
 
@@ -120,7 +121,7 @@ void BuildTree::execute() {
                         //idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(i, rm->rm->k)), rm->rm->n), GetHeight(i), rm->rm->n);
                         //method 2: complicated but makes forwarding easier
                         pattern = (((i < nodesAtMaxHeight) ? i : st++)
-                                << (rm->rm->k
+                                << (iCode->K()
                                 - ((i < nodesAtMaxHeight) ?
                                 max_height : (max_height - 1))));
                         //cout << "Pattern = ";
@@ -128,7 +129,7 @@ void BuildTree::execute() {
                         //cout << " ";
                         //idArray[i] = OverlayID(rm->array2int(rm->encode(rm->int2array(pattern, rm->rm->k)), rm->rm->n), (i < nodesAtMaxHeight) ? max_height : (max_height - 1), rm->rm->n);
                         idArray[i] = OverlayID(pattern,
-                                (i < nodesAtMaxHeight) ? max_height : (max_height - 1));
+                                (i < nodesAtMaxHeight) ? max_height : (max_height - 1), iCode);
                         //idArray[i].printBits();
                         //cout << " pl = " << idArray[i].GetPrefix_length() << endl;
 
@@ -195,7 +196,7 @@ void BuildTree::execute() {
 }
 
 void BuildTree::print() {
-        cout << "RM: k = " << rm->rm->k << " n = " << rm->rm->n << endl;
+        cout << "k = " << iCode->K() << " n = " << iCode->N() << endl;
         for (int i = 0; i < treeSize; i++) {
                 cout << "CW = ";
                 idArray[i].printBits();

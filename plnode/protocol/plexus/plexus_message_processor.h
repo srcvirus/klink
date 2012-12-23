@@ -148,7 +148,7 @@ public:
 			gettimeofday(&end_t, NULL);
 
 			MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
-			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length());
+			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
 			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
 			cache->add(srcID, ha);
@@ -189,7 +189,7 @@ public:
 			gettimeofday(&end_t, NULL);
 
 			MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
-			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length());
+			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
 			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
 			cache->add(srcID, ha);

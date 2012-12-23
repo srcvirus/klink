@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include "plnode/ds/GlobalData.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
+#include "plnode/protocol/plexus/goley/GolayCode.h"
 
 Peer* this_peer;
 
@@ -128,11 +129,13 @@ int main(int argc, char* argv[])
 
 	PlexusProtocol* plexus = new PlexusProtocol();
 	plexus->setContainerPeer(this_peer);
+        //ABSCode *iCode = new ReedMuller(2, 4);
+        ABSCode *iCode = new GolayCode();
 
 	Configuration config(GlobalData::config_file_name);
 	int name_count = config.getNameCount();
 
-	BuildTree tree(config.getNodesFilePath());
+	BuildTree tree(config.getNodesFilePath(), iCode);
 	tree.execute();
 	tree.print();
 
