@@ -73,7 +73,6 @@ public:
         container) {
                 this->msgProcessor->setContainerProtocol(this);
 
-
                 pthread_mutex_init(&incoming_queue_lock, NULL);
                 pthread_mutex_init(&outgoing_queue_lock, NULL);
                 pthread_mutex_init(&log_queue_lock, NULL);
@@ -135,6 +134,7 @@ public:
                         case MSG_PLEXUS_GET_REPLY:
                         case MSG_PEER_INITIATE_GET:
                         case MSG_PEER_INITIATE_PUT:
+                        		puts("returning false");
                                 return false;
                                 break;
                 }
@@ -142,7 +142,6 @@ public:
                 if (msg->getOverlayTtl() == 0)
                         return false;
 
-                //Peer *container_peer = getContainerPeer();
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
                 printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
@@ -159,16 +158,13 @@ public:
                 //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
                 //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
                 puts("creating iterator");
-                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
-                        routing_table);
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
                 rtable_iterator.reset_iterator();
 
                 puts("looking up in routing table");
                 OverlayID maxMatchOid;
                 //routing_table->reset_iterator();
                 while (rtable_iterator.hasMoreKey()) {
-                        //while (routing_table->hasMoreKey()) {
-                        //   OverlayID oid = routing_table->getNextKey();
                         OverlayID oid = rtable_iterator.getNextKey();
                         printf("next key = %d My id = ", oid.GetOverlay_id());
                         msg->getDstOid().printBits();
@@ -234,6 +230,7 @@ public:
                         case MSG_PLEXUS_GET_REPLY:
                         case MSG_PEER_INITIATE_GET:
                         case MSG_PEER_INITIATE_PUT:
+                        		puts("returning false");
                                 return false;
                                 break;
                 }
@@ -241,7 +238,6 @@ public:
                 if (msg->getOverlayTtl() == 0)
                         return false;
 
-                //Peer *container_peer = getContainerPeer();
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
                 printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
@@ -258,8 +254,7 @@ public:
                 //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
                 //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
                 puts("creating iterator");
-                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
-                        routing_table);
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
                 rtable_iterator.reset_iterator();
 
                 puts("looking up in routing table");
@@ -330,7 +325,6 @@ public:
 
                 printf("Constructed Get Message");
                 msg->message_print_dump();
-
 
                 if (msgProcessor->processMessage(msg))
                 {

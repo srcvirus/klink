@@ -45,6 +45,9 @@ public:
 	ServerSocket(int port) :
 			server_port_number(port)
 	{
+		char hostname[100];
+		gethostname(hostname, 100);
+		server_host_name = hostname;
 		active_connections.clear();
 	}
 	/* Initiates the socket (TCP) and prepares it to accept any incoming connections */
@@ -94,11 +97,9 @@ int ServerSocket::bind_port_to_socket()
 	local_socket_address.sin_family = AF_INET;
 	local_socket_address.sin_addr.s_addr = INADDR_ANY;
 	local_socket_address.sin_port = htons(server_port_number);
-	memset(local_socket_address.sin_zero, 0,
-			sizeof(local_socket_address.sin_zero));
+	memset(local_socket_address.sin_zero, 0, sizeof(local_socket_address.sin_zero));
 
-	if (bind(socket_fd, (sockaddr*) &local_socket_address, sizeof(sockaddr))
-			< 0)
+	if (bind(socket_fd, (sockaddr*) &local_socket_address, sizeof(sockaddr)) < 0)
 	{
 		close_socket();
 		ret_code = ERROR_SOCKET_BIND_FAIL;
@@ -138,7 +139,6 @@ int ServerSocket::init_connection()
 	}
 
 	ret_code = add_listener_to_socket();
-
 	if (ret_code < 0)
 	{
 		//	print_error_message(ret_code);

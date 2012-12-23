@@ -17,6 +17,7 @@ class ClientSocket: public ABSSocket
 {
 	string server_host_name;
 	int server_port_number;
+	addrinfo server_info;
 
 public:
 	//ClientSocket(){;}
@@ -24,12 +25,13 @@ public:
 	{
 		server_host_name = "localhost";
 		server_port_number = -1;
+		server_info.ai_addr = NULL;
 	}
 
 	ClientSocket(const string& server, int port) :
 			server_host_name(server), server_port_number(port)
 	{
-		;
+		server_info.ai_addr = NULL;
 	}
 
 	int connect_to_server();
@@ -51,6 +53,11 @@ public:
 		return server_port_number;
 	}
 
+	void setServerInfo(addrinfo server_info)
+	{
+		this->server_info = server_info;
+	}
+
 	int send_data(char* buffer, int n_bytes, timeval* timeout = NULL);
 	int receive_data(char** buffer);
 
@@ -60,24 +67,30 @@ public:
 int ClientSocket::connect_to_server()
 {
 	int ret_code = SUCCESS;
-	struct addrinfo hints, *res;
 
-	memset(&hints, 0, sizeof(addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
 
-	char str_server_port[10];
-	sprintf(str_server_port, "%d", server_port_number);
+	if(server_info.ai_addr == NULL)
+	{
+		addrinfo hints, *res;
+		memset(&hints, 0, sizeof(addrinfo));
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = 0;
+		hints.ai_flags = 0;
 
-	char s_host_name[300];
-	strcpy(s_host_name, server_host_name.c_str());
+		char str_server_port[10];
+		sprintf(str_server_port, "%d", server_port_number);
 
-	getaddrinfo(s_host_name, str_server_port, &hints, &res);
+		char str_host_name[300];
+		strcpy(str_host_name, server_host_name.c_str());
 
-	socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	fcntl(socket_fd, F_SETFL, O_NONBLOCK);
+		getaddrinfo(str_host_name, str_server_port, &hints, &res);
+		server_info = (*res);
+	}
 
-	if (connect(socket_fd, res->ai_addr, res->ai_addrlen))
+	socket_fd = socket(server_info.ai_family, server_info.ai_socktype, server_info.ai_protocol);
+
+	if (connect(socket_fd, server_info.ai_addr, server_info.ai_addrlen))
 	{
 		if (errno != EINPROGRESS)
 			ret_code = errno;
@@ -101,8 +114,9 @@ int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 	if (timeout == NULL)
 	{
 		ret_code = send(socket_fd, buffer, n_bytes, 0);
-                if(ret_code < 0) ret_code = ERROR_SERVER_CONNECTION_FAIL;
-	} else
+        if(ret_code < 0) ret_code = ERROR_DATA_SEND_FAILED;
+	}
+	else
 	{
 		fd_set write_connection;
 		FD_ZERO(&write_connection);
@@ -114,8 +128,9 @@ int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 			if (FD_ISSET(socket_fd, &write_connection))
 			{
 				ret_code = send(socket_fd, buffer, n_bytes, 0);
-                                if(ret_code < 0) ret_code = ERROR_SERVER_CONNECTION_FAIL;
-			} else
+                if(ret_code < 0) ret_code = ERROR_DATA_SEND_FAILED;
+			}
+			else
 			{
 				ret_code = ERROR_CONNECTION_TIMEOUT;
 			}

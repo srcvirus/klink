@@ -43,6 +43,8 @@ int fd_max;
 fd_set connection_pool;
 fd_set read_connection_fds;
 
+
+
 ServerSocket* s_socket = NULL;
 
 void system_init();
@@ -128,8 +130,14 @@ void system_init()
 	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
 	fd_max = s_socket->getSocketFd();
+
+	sleep(5);
+
+	this_peer->populate_addressdb();
+
 	s_socket->print_socket_info();
 }
+
 
 void cleanup()
 {

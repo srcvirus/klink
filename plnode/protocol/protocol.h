@@ -36,7 +36,7 @@ public:
 
 	ABSProtocol()
 	{
-		this->routing_table = NULL;
+		this->routing_table = new LookupTable <OverlayID, HostAddress>();
 		this->index_table = new LookupTable<string, HostAddress>();
 		this->container_peer = NULL;
 		this->cache = new Cache();
@@ -56,7 +56,7 @@ public:
 
 	ABSProtocol(Peer* container, MessageProcessor* msgProcessor)
 	{
-		routing_table = NULL;
+		routing_table = new LookupTable <OverlayID, HostAddress>();
 		index_table = new LookupTable<string, HostAddress>();
 		this->msgProcessor = msgProcessor;
 		cache = new Cache();
@@ -122,16 +122,13 @@ public:
 				routing_table);
 		rtable_iterator.reset_iterator();
 
-		//routing_table->reset_iterator();
 		while (rtable_iterator.hasMoreKey())
-		//while(routing_table->hasMoreKey())
 		{
 			//OverlayID key = routing_table->getNextKey();
 			OverlayID key = rtable_iterator.getNextKey();
 			HostAddress value;
 			routing_table->lookup(key, &value);
-			printf("%d %s:%d\n", key.GetOverlay_id(),
-					value.GetHostName().c_str(), value.GetHostPort());
+			printf("%d %s:%d\n", key.GetOverlay_id(), value.GetHostName().c_str(), value.GetHostPort());
 		}
 	}
 
@@ -140,6 +137,12 @@ public:
 		int error_code = 0;
 
 		ClientSocket c_socket(message->getDestHost(), message->getDestPort());
+
+		HostAddress dest_address(message->getDestHost(), message->getDestPort());
+
+		addrinfo server_info = container_peer->lookup_address(dest_address);
+		c_socket.setServerInfo(server_info);
+
 		error_code = c_socket.connect_to_server();
 
 		if (error_code < 0)
@@ -156,12 +159,13 @@ public:
 		error_code = c_socket.send_data(buffer, buffer_length, &timeout);
 		c_socket.close_socket();
 
-//		delete[] buffer;
+		delete[] buffer;
 		return error_code;
 	}
 
 	int getIPHops(string destination)
 	{
+		return 0;
 		string command = "ping -c 1 ";
 		command += destination;
 
@@ -186,6 +190,9 @@ public:
 
 		char* hop_str = strtok(token, "=");
 		hop_str = strtok(NULL, "=");
+
+		if(hop_str == NULL) return 0;
+
 		int ip_hops = atoi(hop_str);
 		int two_pow = 2;
 
