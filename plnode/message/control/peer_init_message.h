@@ -33,7 +33,7 @@ class PeerInitMessage: public ABSMessage
 	double alpha;
 	int publish_name_range_start, publish_name_range_end;
 	int lookup_name_range_start, lookup_name_range_end;
-        int webserver_port;
+    int webserver_port;
 
 public:
 	PeerInitMessage()

@@ -10,8 +10,11 @@
 
 #include <string>
 #include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
 #include "../ds/overlay_id.h"
 #include "../ds/GlobalData.h"
+#include "../../common/util.h"
 
 using namespace std;
 
@@ -50,12 +53,18 @@ protected:
 	OverlayID dst_oid;
 	OverlayID src_oid;
 
-	clock_t issue_time_stamp;
+	timeval issue_time_stamp;
+//	clock_t issue_time_stamp;
 
-	clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
+	/*clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
 	clock_t out_queue_push_time_stamp, out_queue_pop_time_stamp;
 	clock_t processing_start_t, processing_end_t;
-	clock_t ping_start_t, ping_end_t;
+	clock_t ping_start_t, ping_end_t;*/
+
+	timeval in_queue_push_time_stamp, in_queue_pop_time_stamp;
+	timeval out_queue_push_time_stamp, out_queue_pop_time_stamp;
+	timeval processing_start_t, processing_end_t;
+	timeval ping_start_t, ping_end_t;
 
 	double queue_delay;
 	double processing_delay;
@@ -67,7 +76,7 @@ protected:
 				+ sizeof(int) * 11
 				+ sizeof(char) * (dest_host.size() + source_host.size())
 				+ sizeof(double) * 3
-                + sizeof(clock_t);
+                + sizeof(timeval);
 
 		return size;
 	}
@@ -81,12 +90,21 @@ public:
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
-		issue_time_stamp = clock();
+
+		gettimeofday(&issue_time_stamp, NULL);
 		ping_latency = queue_delay = processing_delay = 0;
-		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
-		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
-		processing_start_t = processing_end_t = 0;
-		ping_start_t = ping_end_t = 0;
+
+		in_queue_pop_time_stamp.tv_sec = in_queue_push_time_stamp.tv_sec = 0;
+		in_queue_pop_time_stamp.tv_usec = in_queue_push_time_stamp.tv_usec = 0;
+
+		out_queue_pop_time_stamp.tv_sec = out_queue_push_time_stamp.tv_sec = 0;
+		out_queue_pop_time_stamp.tv_usec = out_queue_push_time_stamp.tv_usec = 0;
+
+		processing_start_t.tv_sec = processing_end_t.tv_sec = 0;
+		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
+
+		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
 	}
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host,
@@ -98,12 +116,20 @@ public:
 		overlay_hops = 0;
 		calculateOverlayTTL(GlobalData::network_size);
 
-		issue_time_stamp = clock();
+		gettimeofday(&issue_time_stamp, NULL);
 		ping_latency = queue_delay = processing_delay = 0;
-		in_queue_pop_time_stamp = in_queue_push_time_stamp = 0;
-		out_queue_pop_time_stamp = out_queue_push_time_stamp = 0;
-		processing_start_t = processing_end_t = 0;
-		ping_start_t = ping_end_t = 0;
+
+		in_queue_pop_time_stamp.tv_sec = in_queue_push_time_stamp.tv_sec = 0;
+		in_queue_pop_time_stamp.tv_usec = in_queue_push_time_stamp.tv_usec = 0;
+
+		out_queue_pop_time_stamp.tv_sec = out_queue_push_time_stamp.tv_sec = 0;
+		out_queue_pop_time_stamp.tv_usec = out_queue_push_time_stamp.tv_usec = 0;
+
+		processing_start_t.tv_sec = processing_end_t.tv_sec = 0;
+		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
+
+		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
 	}
 
 	virtual size_t getSize()
@@ -118,13 +144,18 @@ public:
 
 	void updateStatistics()
 	{
-		double q_delay = (double)(in_queue_pop_time_stamp - in_queue_push_time_stamp);
-		q_delay += (double) (out_queue_pop_time_stamp - out_queue_push_time_stamp);
-		q_delay /= (double)CLOCKS_PER_SEC;
+		double iq_delay, oq_delay, pr_delay, pi_delay;
 
-		this->queue_delay += q_delay;
-		this->processing_delay += ((double)(processing_end_t - processing_end_t) / (double)CLOCKS_PER_SEC);
-		this->ping_latency += ((double)(ping_end_t - ping_start_t) / (double)CLOCKS_PER_SEC);
+		timeval_subtract(in_queue_pop_time_stamp, in_queue_push_time_stamp, &iq_delay);
+		timeval_subtract(out_queue_pop_time_stamp, out_queue_push_time_stamp, &oq_delay);
+
+		this->queue_delay += (iq_delay + oq_delay);
+
+		timeval_subtract(processing_end_t, processing_start_t, &pr_delay);
+		this->processing_delay += pr_delay;
+
+		timeval_subtract(ping_end_t , ping_start_t, &pi_delay);
+		this->ping_latency += pi_delay;
 	}
 
 	virtual char* serialize(int* serialize_length)
@@ -169,8 +200,8 @@ public:
 		memcpy(buffer + offset, (char*) (&overlay_ttl), sizeof(char));
 		offset += sizeof(char);
 
-		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(clock_t));
-		offset += sizeof(clock_t);
+		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(timeval));
+		offset += sizeof(timeval);
 
 		memcpy(buffer + offset, (char*)&queue_delay, sizeof(double)); offset += sizeof(double);
 		memcpy(buffer + offset, (char*)&processing_delay, sizeof(double)); offset += sizeof(double);
@@ -244,8 +275,8 @@ public:
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
 		offset += sizeof(char); //printf("offset = %d\n", offset);
 
-		memcpy(&issue_time_stamp, buffer + offset, sizeof(clock_t));
-		offset += sizeof(clock_t);
+		memcpy(&issue_time_stamp, buffer + offset, sizeof(timeval));
+		offset += sizeof(timeval);
 
 		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
 		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
@@ -290,20 +321,20 @@ public:
 		printf("Destination Overlay ID: %d\n", dst_oid.GetOverlay_id());
 		printf("Overlay Hops %d\n", overlay_hops);
 		printf("Overlay TTL %d\n", overlay_ttl);
-		printf("Issue time stamp = %ld\n", issue_time_stamp);
+		//printf("Issue time stamp = %ld\n", issue_time_stamp);
 	}
 
-	clock_t getIssueTimeStamp() const
+	timeval getIssueTimeStamp() const
 	{
 		return issue_time_stamp;
 	}
 
 	void setIssueTimeStamp()
 	{
-		issue_time_stamp = clock();
+		gettimeofday(&issue_time_stamp, NULL);
 	}
 
-	void setIssueTimeStamp(clock_t timestamp)
+	void setIssueTimeStamp(timeval timestamp)
 	{
 		issue_time_stamp = timestamp;
 	}
@@ -429,44 +460,44 @@ public:
 		//overlay_ttl = ceil(log2(n)) + 2;//(int) floor(log10(n) / log(2.0)) + 2;
 	}
 
-	clock_t getInQueuePopTimeStamp() const
+	timeval getInQueuePopTimeStamp() const
 	{
 		return in_queue_pop_time_stamp;
 	}
 
-	void setInQueuePopTimeStamp(clock_t inQueuePopTimeStamp)
+	void setInQueuePopTimeStamp()
 	{
-		in_queue_pop_time_stamp = inQueuePopTimeStamp;
+		gettimeofday(&in_queue_pop_time_stamp, NULL);
 	}
 
-	clock_t getInQueuePushTimeStamp() const
+	timeval getInQueuePushTimeStamp() const
 	{
 		return in_queue_push_time_stamp;
 	}
 
-	void setInQueuePushTimeStamp(clock_t inQueuePushTimeStamp)
+	void setInQueuePushTimeStamp()
 	{
-		in_queue_push_time_stamp = inQueuePushTimeStamp;
+		gettimeofday(&in_queue_push_time_stamp, NULL);
 	}
 
-	clock_t getOutQueuePopTimeStamp() const
+	timeval getOutQueuePopTimeStamp() const
 	{
 		return out_queue_pop_time_stamp;
 	}
 
-	void setOutQueuePopTimeStamp(clock_t outQueuePopTimeStamp)
+	void setOutQueuePopTimeStamp()
 	{
-		out_queue_pop_time_stamp = outQueuePopTimeStamp;
+		gettimeofday(&out_queue_pop_time_stamp, NULL);
 	}
 
-	clock_t getOutQueuePushTimeStamp() const
+	timeval getOutQueuePushTimeStamp() const
 	{
 		return out_queue_push_time_stamp;
 	}
 
-	void setOutQueuePushTimeStamp(clock_t outQueuePushTimeStamp)
+	void setOutQueuePushTimeStamp()
 	{
-		out_queue_push_time_stamp = outQueuePushTimeStamp;
+		gettimeofday(&out_queue_push_time_stamp, NULL);
 	}
 
 	double getPingLatency() const
@@ -479,24 +510,24 @@ public:
 		ping_latency = pingLatency;
 	}
 
-	clock_t getPingEndT() const
+	timeval getPingEndT() const
 	{
 		return ping_end_t;
 	}
 
-	void setPingEndT(clock_t pingEndT)
+	void setPingEndT()
 	{
-		ping_end_t = pingEndT;
+		gettimeofday(&ping_end_t, NULL);
 	}
 
-	clock_t getPingStartT() const
+	timeval getPingStartT() const
 	{
 		return ping_start_t;
 	}
 
-	void setPingStartT(clock_t pingStartT)
+	void setPingStartT()
 	{
-		ping_start_t = pingStartT;
+		gettimeofday(&ping_start_t, NULL);
 	}
 
 	double getProcessingDelay() const
@@ -519,24 +550,24 @@ public:
 		queue_delay = queueDelay;
 	}
 
-	clock_t getProcessingEndT() const
+	timeval getProcessingEndT() const
 	{
 		return processing_end_t;
 	}
 
-	void setProcessingEndT(clock_t processingEndT)
+	void setProcessingEndT()
 	{
-		processing_end_t = processingEndT;
+		gettimeofday(&processing_end_t, NULL);
 	}
 
-	clock_t getProcessingStartT() const
+	timeval getProcessingStartT() const
 	{
 		return processing_start_t;
 	}
 
-	void setProcessingStartT(clock_t processingStartT)
+	void setProcessingStartT()
 	{
-		processing_start_t = processingStartT;
+		gettimeofday(&processing_start_t, NULL);
 	}
 };
 

@@ -20,6 +20,7 @@
 #include "plnode/message/control/peer_initiate_put.h"
 #include "plnode/message/control/peer_start_message.h"
 #include "plnode/message/control/peer_change_status_message.h"
+#include "plnode/message/p2p/message_put_reply.h"
 
 #include "plnode/ds/thread_parameter.h"
 
@@ -159,9 +160,9 @@ void *forwarding_thread(void* args) {
                 message->incrementOverlayHops();
 
                 if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT) {
-                        message->setPingStartT(clock());
+                        message->setPingStartT();
                         int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
-                        message->setPingEndT(clock());
+                        message->setPingEndT();
                         message->updateStatistics();
 
                         if (message->getMessageType() == MSG_PLEXUS_GET)
@@ -277,6 +278,11 @@ void *listener_thread(void* args) {
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 //rcvd_message->message_print_dump();
                                                                 break;
+
+                                                        case MSG_PLEXUS_PUT_REPLY:
+                                                        	rcvd_message = new MessagePUT_REPLY();
+                                                        	rcvd_message->deserialize(buffer, buffer_length);
+                                                        	break;
 
                                                         case MSG_PEER_INITIATE_GET:
                                                                 this_peer->incrementGet_received();
