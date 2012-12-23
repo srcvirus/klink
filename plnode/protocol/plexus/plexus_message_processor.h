@@ -62,7 +62,7 @@ public:
 		PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
 		Peer* container_peer = container_protocol->getContainerPeer();
 
-		bool forward = plexus->setNextHop(message);
+		bool forward = plexus->setNextHop2(message);
 
 		if (forward)
 		{

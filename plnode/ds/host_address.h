@@ -2,7 +2,11 @@
 #define HOST_ADDRESS_H
 
 #include <string>
+<<<<<<< HEAD
 #include <cmath>
+=======
+#include <cstring>
+>>>>>>> e38d2aee50c88ffdb761835915c1be83608ac1b5
 
 using namespace std;
 
@@ -12,6 +16,7 @@ private:
         int hostPort;
 public:
 
+<<<<<<< HEAD
         HostAddress() {
         }
 
@@ -56,5 +61,61 @@ public:
         int getStringSize() {
                 return hostName.size() + 1 + numDigits(hostPort);
         }
+=======
+	HostAddress()
+	{
+		hostName = "";
+		hostPort = -1;
+	}
+
+	HostAddress(string name, int port)
+	{
+		hostName = name;
+		hostPort = port;
+	}
+
+	void SetHostPort(int hostPort)
+	{
+		this->hostPort = hostPort;
+	}
+
+	int GetHostPort() const
+	{
+		return hostPort;
+	}
+
+	void SetHostName(string hostName)
+	{
+		this->hostName = hostName;
+	}
+
+	string GetHostName() const
+	{
+		return hostName;
+	}
+
+	bool operator < (const HostAddress& addr) const
+	{
+		int minLength = this->hostName.size();
+		if(minLength < addr.hostName.size())
+			minLength = addr.hostName.size();
+
+		if(strncmp(this->hostName.c_str(), addr.hostName.c_str(), minLength) < 0)
+		{
+			return true;
+		}
+		else return this->hostPort < addr.hostPort;
+	}
+
+	bool operator == (const HostAddress& addr)
+	{
+		int minLength = this->hostName.size();
+		if(minLength < addr.hostName.size())
+			minLength = addr.hostName.size();
+
+		return (strncmp(this->hostName.c_str(), addr.hostName.c_str(), minLength) == 0 &&
+				this->hostPort == addr.hostPort);
+	}
+>>>>>>> e38d2aee50c88ffdb761835915c1be83608ac1b5
 };
 #endif

@@ -14,6 +14,7 @@
 #include "../ds/ip_address.h"
 #include "../ds/configuration.h"
 #include "../../communication/server_socket.h"
+#include "../ds/lookup_table.h"
 
 class ABSProtocol;
 
@@ -47,7 +48,7 @@ class Peer
 
 	bool init_rcvd;
 	bool start_gen_name;
-        int dyn_status;
+	int dyn_status;
 
 	ABSProtocol* protocol;
 	ServerSocket* server_socket;
@@ -56,6 +57,8 @@ class Peer
 	string log_server_user;
 
 	Configuration* configuration;
+	LookupTable<HostAddress, addrinfo > address_db;
+
 public:
 
         //PUT
@@ -67,7 +70,7 @@ public:
 	void INIT()
 	{
 		char hostname[100];
-                hostname[0] = '\0';
+		hostname[0] = '\0';
 		gethostname(hostname, 100);
 		//getdomainname(domain_name, 100);
 		struct hostent* host_info;
@@ -100,8 +103,7 @@ public:
 		k = configuration->getK();
 		n_retry = configuration->getNRetry();
 		timeout_sec = (int) configuration->getTimeout();
-		timeout_micro_sec = (int) ((configuration->getTimeout()
-				- (double) timeout_sec) * 1000000);
+		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
 		log_server_name = configuration->getLogServerHostName();
 		log_server_user = configuration->getLogServerUserName();
 
@@ -113,7 +115,7 @@ public:
 		listen_port_number = -1;
 
 		FILE* hosts_ptr = fopen(hosts_file, "r");
-		if(hosts_ptr == NULL)
+		if (hosts_ptr == NULL)
 		{
 			printf("bad hosts file %s\n", hosts_file);
 			listen_port_number = -1;
@@ -132,9 +134,8 @@ public:
 		for (int i = 0; i < n_hosts; i++)
 		{
 			fscanf(hosts_ptr, "%s %d", host_name, &port);
-			if (strncmp(this->getHostName().c_str(), host_name,
-					strlen(this->getHostName().c_str())) == 0
-					|| strcmp(host_name, "localhost") == 0)
+			if (strncmp(this->getHostName().c_str(), host_name, strlen(this->getHostName().c_str()))
+					== 0 || strcmp(host_name, "localhost") == 0)
 			{
 				listen_port_number = port;
 				server_socket = new ServerSocket(listen_port_number);
@@ -150,12 +151,78 @@ public:
 		}
 		fclose(hosts_ptr);
 	}
+
+	void populate_addressdb()
+	{
+		FILE* nodes_file_ptr = fopen(configuration->getNodesFilePath().c_str(),"r");
+		char buffer[300];
+		address_db.clear();
+		fgets(buffer, sizeof(buffer), nodes_file_ptr);
+		int N = atoi(buffer);
+
+		while (N > 0)
+		{
+			N--;
+			fgets(buffer, sizeof(buffer), nodes_file_ptr);
+
+			addrinfo hints;
+			addrinfo* result;
+
+			HostAddress h_address;
+
+			char* str_h_addr = strtok(buffer, " \n");
+			char* str_h_port = strtok(NULL, " \n");
+
+			h_address.SetHostName(string(str_h_addr));
+			h_address.SetHostPort(atoi(str_h_port));
+
+			memset(&hints, 0, sizeof(addrinfo));
+
+			hints.ai_family = AF_INET;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_protocol = 0;
+
+			printf("resolving address = %s:%s\n", str_h_addr, str_h_port);
+
+			int ret_code = getaddrinfo(str_h_addr, str_h_port, &hints, &result);
+
+			if(ret_code < 0)
+			{
+				printf("%s\n", gai_strerror(ret_code));
+				continue;
+			}
+
+			addrinfo* rp;
+			for(rp = result; rp != NULL; rp = result->ai_next)
+			{
+				int sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+				if(sfd < 0) continue;
+				int res = connect(sfd, rp->ai_addr, rp->ai_addrlen);
+				if(res < 0) continue;
+				address_db.add(h_address, *rp);
+				close(sfd);
+				break;
+			}
+		}
+		fclose(nodes_file_ptr);
+	}
+
+	addrinfo lookup_address(const HostAddress& h_address)
+	{
+		addrinfo ret;
+		ret.ai_addr = NULL;
+		address_db.lookup(h_address, &ret);
+		return ret;
+	}
+
 	~Peer()
 	{
 		delete protocol;
 		delete server_socket;
 		if (configuration != NULL)
 			delete configuration;
+
+		address_db.clear();
 	}
 
 	double getAlpha()
@@ -380,6 +447,11 @@ public:
 		return configuration;
 	}
 
+	void setConfiguration(const char* config_file)
+	{
+		configuration = new Configuration(config_file);
+	}
+
 	string getLogServerName() const
 	{
 		return log_server_name;
@@ -400,10 +472,12 @@ public:
 		log_server_user = logServerUser;
 	}
 
-        void SetDyn_status(int dyn_status) {
-                this->dyn_status = dyn_status;
-        }
+	void SetDyn_status(int dyn_status)
+	{
+		this->dyn_status = dyn_status;
+	}
 
+<<<<<<< HEAD
         int GetDyn_status() const {
                 return dyn_status;
         }
@@ -415,6 +489,12 @@ public:
         int GetWebserverPort() const {
                 return webserver_port;
         }
+=======
+	int GetDyn_status() const
+	{
+		return dyn_status;
+	}
+>>>>>>> e38d2aee50c88ffdb761835915c1be83608ac1b5
 };
 
 #endif /* PEER_H_ */

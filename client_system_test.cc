@@ -14,23 +14,34 @@
 #include "plnode/ds/GlobalData.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
 
+Peer* this_peer;
+
 void send_init_message(BuildTree &tree, int name_count)
 {
 	int n = tree.getTreeSize();
-	printf("n = %d\n", n);
+	printf("Tree size = %d\n", n);
 	int retCode = 0;
+
 	ClientSocket* c_socket;
         int webserver_port_start = 8080;
 
 	for (int i = 0; i < n; i++)
 	{
+		puts("----------------------------------------");
+
 		HostAddress address = tree.getHostAddress(i);
 		printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
-		c_socket = new ClientSocket(address.GetHostName(),
-				address.GetHostPort());
+		c_socket = new ClientSocket(address.GetHostName(),address.GetHostPort());
+		addrinfo s_info = this_peer->lookup_address(address);
+		if(s_info.ai_addr != NULL)
+		{
+			puts("not null");
+		}
+
+		c_socket->setServerInfo(s_info);
 		retCode = c_socket->connect_to_server();
-		puts("Connected to server");
+		printf("Connected to %s:%d\n", address.GetHostName().c_str(), address.GetHostPort());
 
 		if (retCode < 0)
 		{
@@ -39,30 +50,34 @@ void send_init_message(BuildTree &tree, int name_count)
 		}
 
 		PeerInitMessage* pInit = new PeerInitMessage();
-
 		LookupTable<OverlayID, HostAddress> rt = tree.getRoutingTablePtr(i);
 
 		//rt.reset_iterator();
 		/*while(rt.hasMoreKey())
 		 {
-		 OverlayID key = rt.getNextKey();
-		 HostAddress val;
-		 rt.lookup(key, &val);
-		 printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
+			 OverlayID key = rt.getNextKey();
+			 HostAddress val;
+			 rt.lookup(key, &val);
+			 printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
 		 }*/
 
+		pInit->setDestHost(address.GetHostName().c_str());
+		pInit->setDestPort(address.GetHostPort());
 		pInit->setDstOid(tree.getOverlayID(i));
 		pInit->setNPeers(n);
 		pInit->setRoutingTable(tree.getRoutingTablePtr(i));
 
 		int name_interval = name_count / n;
+
 		pInit->setPublish_name_range_start(name_interval * i);
 		pInit->setLookup_name_range_start(name_interval * i);
+
 		if (i < n - 1)
 		{
 			pInit->setPublish_name_range_end(name_interval * (i + 1) - 1);
 			pInit->setLookup_name_range_end(name_interval * (i + 1) - 1);
-		} else
+		}
+		else
 		{
 			pInit->setPublish_name_range_end(name_count - 1);
 			pInit->setLookup_name_range_end(name_count - 1);
@@ -77,23 +92,28 @@ void send_init_message(BuildTree &tree, int name_count)
 		buffer = pInit->serialize(&buffer_length);
 		printf("Serialized Length = %d bytes\n", buffer_length);
 
-		/*PeerInitMessage* a = new PeerInitMessage();
+		 /*PeerInitMessage* a = new PeerInitMessage();
 		 a->deserialize(buffer, buffer_length);
+		 puts("deserialized message");
 		 a->message_print_dump();*/
+
 		//puts("Sending Init Packet");
 		timeval timeout;
 		timeout.tv_sec = 5;
-		//puts("sending data");
+		timeout.tv_usec = 500;
 
 		retCode = c_socket->send_data(buffer, buffer_length, &timeout);
 		if (retCode < 0)
 			print_error_message(retCode);
+
 		//printf("ret_code = %d\n", retCode);
 		//puts("data sent");
 		//else printf("Sent %d Bytes", retCode);
+
 		c_socket->close_socket();
 		//puts("socket closed");
 		//puts("Init Packet Sent");
+		puts("----------------------------------------");
 		delete c_socket;
 		delete pInit;
 	}
@@ -101,29 +121,26 @@ void send_init_message(BuildTree &tree, int name_count)
 
 int main(int argc, char* argv[])
 {
-	//char* server_name = argv[1];
-	//int server_port = atoi(argv[2]);
-
-	int name_count = 1000;
-
-	Peer* this_peer = new Peer();
+	this_peer = new Peer();
 	this_peer->setTimeoutSec(5);
+	this_peer->setConfiguration(GlobalData::config_file_name.c_str());
+	this_peer->populate_addressdb();
 
 	PlexusProtocol* plexus = new PlexusProtocol();
 	plexus->setContainerPeer(this_peer);
-	this_peer->setTimeoutSec(5);
 
-	BuildTree tree(GlobalData::host_file_name);
+	Configuration config(GlobalData::config_file_name);
+	int name_count = config.getNameCount();
+
+	BuildTree tree(config.getNodesFilePath());
 	tree.execute();
 	tree.print();
 
-	int ip_hops = plexus->getIPHops("cn102.cs.uwaterloo.ca");
-	printf("ip hops = %d\n", ip_hops);
-
 	send_init_message(tree, name_count);
-	//PlexusProtocol* plexus = new PlexusProtocol();
+
 	char input[1000];
 	srand(time(NULL));
+
 	while (true)
 	{
 		printf("$");
@@ -145,66 +162,69 @@ int main(int argc, char* argv[])
 			}
 			string name = p;
 			char* address = strtok(NULL, " ");
+			string hostname;
+			int port;
 
 			if (address == NULL)
 			{
-				puts("usage: put <name> <hostname:port>");
-				continue;
+				hostname = "dummy_host";
+				port = 11111;
+				/*puts("usage: put <name> <hostname:port>");
+				continue;*/
 			}
-
-			int nTokens = 0;
-
-			//puts(name.c_str());
-			//puts(address);
-			p = strtok(address, ":");
-			if (p == NULL)
+			else
 			{
-				puts("usage: put <name> <hostname:port>");
-				continue;
-			}
+				int nTokens = 0;
 
-			string hostname = p;
-			//puts(hostname.c_str());
-			p = strtok(NULL, ":");
-			if (p == NULL)
-			{
-				puts("usage: put <name> <hostname:port>");
-				continue;
-			}
+				p = strtok(address, ":");
+				if (p == NULL)
+				{
+					puts("usage: put <name> <hostname:port>");
+					continue;
+				}
+				hostname = p;
+				//puts(hostname.c_str());
+				p = strtok(NULL, ":");
+				if (p == NULL)
+				{
+					puts("usage: put <name> <hostname:port>");
+					continue;
+				}
 
-			int port = atoi(p);
+				port = atoi(p);
+			}
 
 			HostAddress h_address;
 			h_address.SetHostName(hostname);
 			h_address.SetHostPort(port);
 
-			HostAddress destination = tree.getHostAddress(
-					rand() % tree.getTreeSize());
-			//	puts(destination.GetHostName().c_str());
-			//	printf("%d\n",destination.GetHostPort());
+			HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
+			//printf("destination = %s:%d\n",destination.GetHostName().c_str(), destination.GetHostPort());
 			plexus->put_from_client(name, h_address, destination);
-		} else if (strcmp(command, "get") == 0)
+		}
+		else if (strcmp(command, "get") == 0)
 		{
 			char* p = strtok(NULL, " ");
 			if (p == NULL)
 				puts("usage get <name>");
+
 			else
 			{
 				string name = p;
-				HostAddress destination = tree.getHostAddress(
-						rand() % tree.getTreeSize());
+				HostAddress destination = tree.getHostAddress(rand() % tree.getTreeSize());
 				plexus->get_from_client(name, destination);
 			}
-		} else if (strcmp(command, "init") == 0 || strcmp(command, "INIT") == 0)
+		}
+		else if (strcmp(command, "init") == 0 || strcmp(command, "INIT") == 0)
 		{
 			send_init_message(tree, name_count);
-		} else if (strcmp(command, "clear") == 0 || strcmp(command, "cls") == 0)
+		}
+		else if (strcmp(command, "clear") == 0 || strcmp(command, "cls") == 0)
 		{
 			for (int line = 0; line < 55; line++)
-			{
 				putchar('\n');
-			}
-		} else
+		}
+		else
 			puts("invalid command");
 	}
 
