@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include "plnode/ds/GlobalData.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
-#include "plnode/protocol/plexus/goley/GolayCode.h"
+#include "plnode/protocol/plexus/golay/GolayCode.h"
 
 Peer* this_peer;
 
