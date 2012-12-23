@@ -23,6 +23,8 @@
 
 #include "plnode/ds/thread_parameter.h"
 
+#include "webinterface/mongoose.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <pthread.h>
@@ -45,6 +47,8 @@ fd_set read_connection_fds;
 
 ServerSocket* s_socket = NULL;
 
+struct mg_context *ctx;
+
 void system_init();
 void cleanup();
 
@@ -52,11 +56,12 @@ void *listener_thread(void*);
 void *forwarding_thread(void*);
 void *processing_thread(void*);
 void *controlling_thread(void*);
+void *web_thread(void*);
 void *logging_thread(void*);
 
 int main(int argc, char* argv[]) {
         system_init();
-        pthread_t listener, processor, controller, logger;
+        pthread_t listener, processor, controller, web, logger;
         pthread_t forwarder[MAX_FORWARDING_THREAD];
 
         pthread_create(&listener, NULL, listener_thread, NULL);
@@ -71,14 +76,16 @@ int main(int argc, char* argv[]) {
         }
 
         pthread_create(&logger, NULL, logging_thread, NULL);
-        pthread_create(&controller, NULL, controlling_thread, NULL);
+        //pthread_create(&controller, NULL, controlling_thread, NULL);
+        pthread_create(&web, NULL, web_thread, NULL);
 
         pthread_join(listener, NULL);
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
         pthread_join(processor, NULL);
         pthread_join(logger, NULL);
-        pthread_join(controller, NULL);
+        //pthread_join(controller, NULL);
+        pthread_join(web, NULL);
 
         cleanup();
 }
@@ -129,8 +136,9 @@ void cleanup() {
         delete this_peer;
         this_peer = NULL;
         plexus = NULL;
-}
 
+        mg_stop(ctx);
+}
 
 void *listener_thread(void* args) {
         puts("Starting Listener Thread");
@@ -277,12 +285,11 @@ void *forwarding_thread(void* args) {
                 message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
                 message->incrementOverlayHops();
 
-                if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
-                {
-                	message->setPingStartT(clock());
-                	int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
-                	message->setPingEndT(clock());
-                	message->updateStatistics();
+                if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT) {
+                        message->setPingStartT(clock());
+                        int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
+                        message->setPingEndT(clock());
+                        message->updateStatistics();
                 }
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
@@ -307,8 +314,8 @@ void *processing_thread(void* args) {
 
         ABSMessage* message = NULL;
         while (true) {
-//                if (!this_peer->IsInitRcvd())
-//                        continue;
+                //                if (!this_peer->IsInitRcvd())
+                //                        continue;
 
                 message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
@@ -389,4 +396,62 @@ void *logging_thread(void*) {
                 delete entry;
                 printf("Index table size = %d\n", plexus->getIndexTable()->size());
         }
+}
+
+static void *callback(enum mg_event event,
+        struct mg_connection *conn) {
+        const struct mg_request_info *request_info = mg_get_request_info(conn);
+
+        if (event == MG_NEW_REQUEST) {
+                if (!this_peer->IsInitRcvd()) {
+                        char content[1024];
+                        int content_length = snprintf(content, sizeof (content),
+                                "Peer Status Report<br/><br/> \
+                        peer oid %s<br/>\
+                        INIT not received",
+                                this_peer->getOverlayID().toString());
+                        mg_printf(conn,
+                                "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: text/html\r\n"
+                                "Content-Length: %d\r\n" // Always set Content-Length
+                                "\r\n"
+                                "%s",
+                                content_length, content);
+                        //delete[] content;
+                        // Mark as processed
+                } else {
+                        char content[2048];
+                        int content_length = snprintf(content, sizeof (content),
+                                "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
+                        "<strong>Index Table</strong><br/>size = %d<br/>%s<br/>",
+                                this_peer->getOverlayID().toString(),
+                                this_peer->getProtocol()->getRoutingTable()->size(),
+                                printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
+                                this_peer->getProtocol()->getIndexTable()->size(),
+                                printIndexTable2String(*this_peer->getProtocol()->getIndexTable()));
+                        printf("html content: %d::%s\n",content_length, content);
+                        mg_printf(conn,
+                                "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: text/html\r\n"
+                                "Content-Length: %d\r\n" // Always set Content-Length
+                                "\r\n"
+                                "%s",
+                                content_length, content);
+                }
+        }
+        return NULL;
+}
+
+void *web_thread(void*) {
+        printf("Starting a web thread on port ");
+        char buffer[33];
+        int port = 20002;
+        while (true) {
+                sprintf(buffer, "%d", port++);
+                const char *options[] = {"listening_ports", buffer, NULL};
+                ctx = mg_start(&callback, NULL, options);
+                if (ctx != NULL)
+                        break;
+        }
+        puts(buffer);
 }

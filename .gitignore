@@ -7,5 +7,5 @@ Release/*
 test/*
 *.o
 ihostlist
-config_temp
+config
 build_deploy.sh

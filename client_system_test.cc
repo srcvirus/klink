@@ -20,6 +20,7 @@ void send_init_message(BuildTree &tree, int name_count)
 	printf("n = %d\n", n);
 	int retCode = 0;
 	ClientSocket* c_socket;
+        int webserver_port_start = 8080;
 
 	for (int i = 0; i < n; i++)
 	{
@@ -66,7 +67,8 @@ void send_init_message(BuildTree &tree, int name_count)
 			pInit->setPublish_name_range_end(name_count - 1);
 			pInit->setLookup_name_range_end(name_count - 1);
 		}
-
+                pInit->setWebserverPort(webserver_port_start++);
+                
 		char* buffer;
 		int buffer_length = 0;
 		pInit->message_print_dump();

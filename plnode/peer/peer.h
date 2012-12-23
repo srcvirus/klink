@@ -36,6 +36,8 @@ class Peer
 	int publish_name_range_end;
 	int lookup_name_range_start;
 	int lookup_name_range_end;
+        int webserver_port;
+        
 	double alpha;
 	int k;
 
@@ -56,6 +58,12 @@ class Peer
 	Configuration* configuration;
 public:
 
+        //PUT
+        int put_received, put_processed, put_forwarded;
+        //GET
+        int get_received, get_processed, get_forwarded;
+
+        
 	void INIT()
 	{
 		char hostname[100];
@@ -398,6 +406,14 @@ public:
 
         int GetDyn_status() const {
                 return dyn_status;
+        }
+
+        void SetWebserverPort(int webserver_port) {
+                this->webserver_port = webserver_port;
+        }
+
+        int GetWebserverPort() const {
+                return webserver_port;
         }
 };
 

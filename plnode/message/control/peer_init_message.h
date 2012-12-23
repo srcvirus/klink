@@ -33,6 +33,7 @@ class PeerInitMessage: public ABSMessage
 	double alpha;
 	int publish_name_range_start, publish_name_range_end;
 	int lookup_name_range_start, lookup_name_range_end;
+        int webserver_port;
 
 public:
 	PeerInitMessage()
@@ -80,7 +81,7 @@ public:
 	size_t getSize()
 	{
 		size_t ret = getBaseSize();
-		ret += sizeof(int) * 3;
+		ret += sizeof(int) * 4;
 		ret += sizeof(double);
 		ret += sizeof(int) * 4;
 		LookupTableIterator<OverlayID, HostAddress> r_iterator(
@@ -127,6 +128,8 @@ public:
 		memcpy(buffer + offset, (char*)(&lookup_name_range_start), sizeof(int));
 		offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&lookup_name_range_end), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*)(&webserver_port), sizeof(int));
 		offset += sizeof(int);
 
 		int routingTableSize = routing_table.size();
@@ -188,6 +191,8 @@ public:
 		memcpy(&lookup_name_range_start, buffer + offset, sizeof(int));
 		offset += sizeof(int);
 		memcpy(&lookup_name_range_end, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&webserver_port, buffer + offset, sizeof(int));
 		offset += sizeof(int);
 
 		int routingTableSize;
@@ -258,6 +263,7 @@ public:
 				publish_name_range_end);
 		printf("Lookup Start = %d End = %d\n", lookup_name_range_start,
 				lookup_name_range_end);
+		printf("Webserver Port = %d\n", webserver_port);
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
 
@@ -300,6 +306,14 @@ public:
 	{
 		return publish_name_range_start;
 	}
+
+        void setWebserverPort(int webserver_port) {
+                this->webserver_port = webserver_port;
+        }
+
+        int getWebserverPort() const {
+                return webserver_port;
+        }
 
 };
 

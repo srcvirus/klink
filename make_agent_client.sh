@@ -7,7 +7,7 @@ if [ -f client ]
 then
 	rm client
 fi
-g++ -static -g -W server_system_test.cc -lpthread -o agent &> output_agent
+g++ -static -g -W server_system_test.cc ../web_interface/mongoose.c -lpthread -ldl -o agent &> output_agent
 grep error output_agent
 g++ -static -g -W client_system_test.cc -lpthread -o client &> output_client
 grep error output_client

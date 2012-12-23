@@ -180,6 +180,7 @@ public:
 			container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
 			container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
 			container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
+                        container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
 
 			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 		}
