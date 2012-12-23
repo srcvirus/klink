@@ -11,13 +11,12 @@
 class ABSCode
 {
 public:
-	ABSCode();
-	virtual ~ABSCode();
-
-	virtual void encode(const char* bit_string) = 0;
-	virtual char* decode(const char* bit_string) = 0;
-        virtual int getK() = 0;
-        virtual int getN() = 0;
+	ABSCode(){};
+	virtual ~ABSCode(){};
+	virtual long encode(long message) = 0;
+	virtual long decode(long codeword) = 0;
+        virtual int K() = 0;
+        virtual int N() = 0;
 };
 
 #endif /* CODE_H_ */

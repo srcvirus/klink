@@ -16,6 +16,7 @@
 #include "../ds/configuration.h"
 #include "../../communication/server_socket.h"
 #include "../ds/lookup_table.h"
+#include "../protocol/code.h"
 
 class ABSProtocol;
 
@@ -65,6 +66,7 @@ class Peer
 	int dyn_status;
 
 	ABSProtocol* protocol;
+        ABSCode *iCode;
 	ServerSocket* server_socket;
 
 	string log_server_name;
@@ -89,6 +91,8 @@ public:
 		//host_name = string(strcat(hostname, strcat(".", domain_name)));
 		init_rcvd = false;
 		start_gen_name = false;
+                
+                iCode = new ReedMuller(2, 4);
                 
                 pthread_mutex_init(&put_generated_lock, NULL);
                 pthread_mutex_init(&put_received_lock, NULL);
@@ -598,6 +602,14 @@ public:
                 pthread_mutex_lock(&get_forwarded_lock);
                 this->get_forwarded++;
                 pthread_mutex_unlock(&get_forwarded_lock);
+        }
+
+        void SetiCode(ABSCode* iCode) {
+                this->iCode = iCode;
+        }
+
+        ABSCode* GetiCode() const {
+                return iCode;
         }
         
 

@@ -12,6 +12,7 @@
 
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
+#include "plnode/protocol/code.h"
 
 #include "plnode/message/message.h"
 #include "plnode/message/control/peer_init_message.h"
@@ -40,6 +41,7 @@ using namespace std;
 //Globals
 Peer* this_peer;
 ABSProtocol* plexus;
+ABSCode *iCode;
 
 int fd_max;
 fd_set connection_pool;
@@ -116,7 +118,11 @@ void system_init() {
 
         /* setting the protocol of the peer */
         this_peer->setProtocol(plexus);
-
+        
+        /* setting the code of the peer */
+        iCode = new ReedMuller(2, 4);
+        this_peer->SetiCode(iCode);
+        
         /* initializing the connection sets */
         FD_ZERO(&connection_pool);
         FD_ZERO(&read_connection_fds);
@@ -263,6 +269,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessageGET();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 rcvd_message->message_print_dump();
+                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PLEXUS_GET_REPLY:
@@ -276,6 +283,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessagePUT();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 //rcvd_message->message_print_dump();
+                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PEER_INITIATE_GET:
@@ -345,6 +353,12 @@ void *processing_thread(void* args) {
                         printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
                                 message->getDestHost().c_str(), message->getDestPort(),
                                 message->getOverlayTtl(), message->getOverlayHops());
+                        if(message->getMessageType() == MSG_PLEXUS_PUT){
+                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
+                        }
+                        if(message->getMessageType() == MSG_PLEXUS_GET){
+                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
+                        }
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
                 }
         }
@@ -372,7 +386,7 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tPublishing name: %d\n", i);
 
-                                putId.push_back(OverlayID(i).GetOverlay_id());
+                                putId.push_back(OverlayID(i, iCode).GetOverlay_id());
 
                                 this_peer->getProtocol()->put(string(buffer), ha);
                                 if (i % 3 == 0)
@@ -389,7 +403,7 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
-                                getId.push_back(OverlayID(i).GetOverlay_id());
+                                getId.push_back(OverlayID(i, iCode).GetOverlay_id());
 
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)

@@ -17,7 +17,7 @@ public:
 		{
 			return;
 		}
-		OverlayID oid(key.GetOverlay_id(), key.GetPrefix_length());
+		OverlayID oid(key.GetOverlay_id(), key.GetPrefix_length(), key.MAX_LENGTH);
 		HostAddress host_address(string(value.GetHostName().c_str()),
 				value.GetHostPort());
 		DLLNode *new_node = new DLLNode(oid, host_address);

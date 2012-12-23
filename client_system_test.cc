@@ -128,11 +128,12 @@ int main(int argc, char* argv[])
 
 	PlexusProtocol* plexus = new PlexusProtocol();
 	plexus->setContainerPeer(this_peer);
+        ABSCode *iCode = new ReedMuller(2, 4);
 
 	Configuration config(GlobalData::config_file_name);
 	int name_count = config.getNameCount();
 
-	BuildTree tree(config.getNodesFilePath());
+	BuildTree tree(config.getNodesFilePath(), iCode);
 	tree.execute();
 	tree.print();
 
