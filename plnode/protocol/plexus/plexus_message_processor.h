@@ -14,6 +14,7 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
+#include "../../message/p2p/message_put_reply.h"
 
 #include "../../message/control/peer_init_message.h"
 #include "../../message/control/peer_initiate_get.h"
@@ -82,6 +83,19 @@ public:
 			putMsg->updateStatistics();
 
 			puts("PUT Successful");
+
+			MessagePUT_REPLY *reply = new MessagePUT_REPLY(container_peer->getHostName(),
+					container_peer->getListenPortNumber(), putMsg->getSourceHost(),
+					putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getDstOid(),
+					SUCCESS, putMsg->GetDeviceName());
+
+			reply->setIssueTimeStamp(putMsg->getIssueTimeStamp());
+			reply->setResolutionHops(putMsg->getOverlayHops());
+			reply->setQueueDelay(putMsg->getQueueDelay());
+			reply->setProcessingDelay(putMsg->getProcessingDelay());
+			reply->setPingLatency(putMsg->getPingLatency());
+
+			plexus->addToOutgoingQueue(reply);
 		} //GET
 		else if (message->getMessageType() == MSG_PLEXUS_GET)
 		{
@@ -159,13 +173,49 @@ public:
 				status = "F";
 
 			LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idddddssi",
-					msg->getResolutionHops(),
-					latency, queue_delay, processing_delay, ping_delay, total_t,
-					status.c_str(), msg->getDeviceName().c_str(), msg->getSrcOid().GetOverlay_id());
+					msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
+					total_t, status.c_str(), msg->getDeviceName().c_str(),
+					msg->getSrcOid().GetOverlay_id());
 			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
 			//cache->print();
-		} //INIT Message
+		}
+		else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY)
+		{
+			MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
+			OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length());
+
+			HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
+			cache->add(srcID, ha);
+			Log* p_log = plexus->getPutLog();
+
+			char i_str[300];
+			sprintf(i_str, "%s_%s_%d", msg->getSourceHost().c_str(), msg->getDestHost().c_str(),
+					msg->getSequenceNo());
+
+			string key = i_str;
+
+			clock_t start_t = msg->getIssueTimeStamp();
+			clock_t end_t = clock();
+
+			double total_t = (double) (end_t - start_t) / (double) CLOCKS_PER_SEC;
+
+			double queue_delay = msg->getQueueDelay();
+			double processing_delay = msg->getProcessingDelay();
+			double ping_delay = msg->getPingLatency();
+
+			double non_network_latency_t = queue_delay + processing_delay + ping_delay;
+			double latency = total_t - non_network_latency_t;
+
+			LogEntry *entry = new LogEntry(LOG_PUT, key.c_str(), "idddddsi",
+					msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
+					total_t, msg->getDeviceName().c_str(),
+					msg->getSrcOid().GetOverlay_id());
+			//printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
+			plexus->addToLogQueue(entry);
+			//cache->print();
+		}
+		//INIT Message
 		else if (message->getMessageType() == MSG_PEER_INIT)
 		{
 			PeerInitMessage* pInitMsg = (PeerInitMessage*) message;

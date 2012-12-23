@@ -207,8 +207,9 @@ public:
 				printf("%s\n", gai_strerror(ret_code));
 				continue;
 			}
+			address_db.add(h_address, *result);
 
-			addrinfo* rp;
+			/*addrinfo* rp;
 			for(rp = result; rp != NULL; rp = result->ai_next)
 			{
 				int sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -218,7 +219,7 @@ public:
 				address_db.add(h_address, *rp);
 				close(sfd);
 				break;
-			}
+			}*/
 		}
 		fclose(nodes_file_ptr);
 	}
