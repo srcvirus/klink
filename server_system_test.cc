@@ -437,14 +437,14 @@ static void *callback(enum mg_event event,
                         char content[2048];
                         int content_length = snprintf(content, sizeof (content),
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
-                                "<strong>PUT Message</strong><br/>received = %d<br/>processed = %d<br/>forwarded = %d<br/>"\
-                                "<strong>GET Message</strong><br/>received = %d<br/>processed = %d<br/>forwarded = %d<br/>"\
+                                "<strong>PUT Message</strong><br/>received/Generated = %d<br/>Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/>"\
+                                "<strong>GET Message</strong><br/>received/Generated = %d<br/>Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/>"\
                                 "<strong>Index Table</strong><br/>size = %d<br/>",//%s<br/>"
                                 this_peer->getOverlayID().toString(),
                                 this_peer->getProtocol()->getRoutingTable()->size(),
                                 printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
-                                this_peer->numOfPut_received(), this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(),
-                                this_peer->numOfGet_received(), this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(),
+                                this_peer->numOfPut_received(), this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),
+                                this_peer->numOfGet_received(), this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(), this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded(),
                                 this_peer->getProtocol()->getIndexTable()->size()//,
                                 //printIndexTable2String(*this_peer->getProtocol()->getIndexTable())
                                 );
