@@ -477,7 +477,6 @@ public:
 		this->dyn_status = dyn_status;
 	}
 
-<<<<<<< HEAD
         int GetDyn_status() const {
                 return dyn_status;
         }
@@ -489,12 +488,7 @@ public:
         int GetWebserverPort() const {
                 return webserver_port;
         }
-=======
-	int GetDyn_status() const
-	{
-		return dyn_status;
-	}
->>>>>>> e38d2aee50c88ffdb761835915c1be83608ac1b5
+
 };
 
 #endif /* PEER_H_ */
