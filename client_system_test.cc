@@ -32,7 +32,7 @@ void loadMonitors(const char* monitor_file)
 	fclose(fp);
 }
 
-string getLogServerIndex(int node_index)
+string getLogServer(int node_index)
 {
 	return log_servers[node_index % log_servers.size()];
 }
@@ -69,8 +69,10 @@ void send_init_message(BuildTree &tree, int name_count)
 
 	ClientSocket* c_socket;
     int webserver_port_start = 8080;
-    int seq_no = getRunSequenceNo("seq");
+    int seq_no = getRunSequenceNo(this_peer->getConfiguration()->getSeqFilePath());
     string log_server_user = this_peer->getConfiguration()->getLogServerUserName();
+
+    loadMonitors(this_peer->getConfiguration()->getMonitorsFilePath().c_str());
 
 	for (int i = 0; i < n; i++)
 	{
@@ -108,7 +110,7 @@ void send_init_message(BuildTree &tree, int name_count)
 			 printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
 		 }*/
 
-		string log_server = getLogServerIndex(i);
+		string log_server = getLogServer(i);
 
 		pInit->setDestHost(address.GetHostName().c_str());
 		pInit->setDestPort(address.GetHostPort());

@@ -81,7 +81,7 @@ public:
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
                 pthread_cond_init(&cond_log_queue_empty, NULL);
 
-                initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+                //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
         PlexusProtocol(Peer* container, MessageProcessor* msgProcessor) :
@@ -96,13 +96,13 @@ public:
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
                 pthread_cond_init(&cond_log_queue_empty, NULL);
 
-                initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+                //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
-        void initLogs(const char* log_server_name, const char* log_server_user) {
-                log[LOG_GET] = new Log("seq", "get", log_server_name,
+        void initLogs(int log_seq_no, const char* log_server_name, const char* log_server_user) {
+                log[LOG_GET] = new Log(log_seq_no, "get", log_server_name,
                         log_server_user);
-                log[LOG_PUT] = new Log("seq", "put", log_server_name,
+                log[LOG_PUT] = new Log(log_seq_no, "put", log_server_name,
                         log_server_user);
 
                 log[LOG_GET]->open("a");

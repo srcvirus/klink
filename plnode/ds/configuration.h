@@ -31,7 +31,7 @@ class Configuration
 	int K;
 	double alpha;
 	int name_count;
-
+	int check_point_row;
 	double timeout;
 	int n_retry;
 
@@ -115,6 +115,10 @@ public:
 			{
 				K = atoi(value);
 			}
+			else if(strcmp(key, "check_point_row") == 0)
+			{
+				check_point_row = atoi(value);
+			}
 			else if(strcmp(key, "alpha") == 0)
 			{
 				alpha = atof(value);
@@ -190,7 +194,7 @@ public:
 		return nodes_file_path;
 	}
 
-	string seqFilePath() const
+	string getSeqFilePath() const
 	{
 		return seq_file_path;
 	}

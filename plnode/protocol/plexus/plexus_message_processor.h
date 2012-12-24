@@ -232,13 +232,18 @@ public:
 			container_peer->setNPeers(pInitMsg->getNPeers());
 			GlobalData::network_size = pInitMsg->getNPeers();
 			container_peer->setOverlayID(pInitMsg->getDstOid());
+			container_peer->setLogServerName(pInitMsg->getLogServerName());
+			container_peer->setLogServerUser(pInitMsg->getLogServerUser());
+			container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
 
 			container_peer->SetInitRcvd(true);
 			container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
 			container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
 			container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
 			container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
-                        container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
+            container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
+
+            plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 
 			this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
 		}

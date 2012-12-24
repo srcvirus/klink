@@ -44,6 +44,9 @@ public:
 	Log(const char* seq_file, const char* type, const char* monitor_host,
 			const char* monitor_user, const char* hostname = NULL);
 
+	Log(int seq_no, const char* type, const char* monitor_host,
+				const char* monitor_user, const char* hostname = NULL);
+
 	void setLogType(const string& type)
 	{
 		log_type = type;
@@ -233,6 +236,34 @@ Log::Log(const char* seq_file, const char* type, const char* monitor_host,
 	monitor_user_name = monitor_user;
 	remote_ftp_directory = "/var/ftp/logs";
 	check_point_row_count = 3;
+	current_row_count = 0;
+	current_segment_no = 1;
+	log_file_ptr = NULL;
+}
+
+Log::Log(int seq_no, const char* type, const char* monitor_host,
+		const char* monitor_user, const char* hostname)
+{
+	log_sequence_no = seq_no;
+	log_type = type;
+
+	if (hostname != NULL)
+		host_name = hostname;
+	else
+	{
+		char h_name[100];
+		gethostname(h_name, 100);
+		host_name = h_name;
+	}
+
+	this->setLogFileName(NULL);
+	this->setArchiveName(NULL);
+
+	mode = "w";
+	monitor_host_name = monitor_host;
+	monitor_user_name = monitor_user;
+	remote_ftp_directory = "/var/ftp/logs";
+	check_point_row_count = 10;
 	current_row_count = 0;
 	current_segment_no = 1;
 	log_file_ptr = NULL;

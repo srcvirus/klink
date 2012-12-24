@@ -173,22 +173,31 @@ void *forwarding_thread(void* args) {
                         message->setPingEndT();
                         message->updateStatistics();
 
-                        if (message->getMessageType() == MSG_PLEXUS_GET)
-                                this_peer->incrementGet_forwarded();
-                        else if (message->getMessageType() == MSG_PLEXUS_PUT)
-                                this_peer->incrementPut_forwarded();
+
                 }
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
                         message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
 
                 int retry = 0;
-                while (retry < this_peer->getNRetry()) {
-                        int error_code = plexus->send_message(message);
-                        if (error_code == ERROR_CONNECTION_TIMEOUT)
+                int error_code = 0;
+                while (retry < this_peer->getNRetry())
+                {
+                        error_code = plexus->send_message(message);
+                        if(error_code < 0) retry++;
+                        else break;
+                        /*if (error_code == ERROR_CONNECTION_TIMEOUT)
                                 retry++;
                         else
-                                break;
+                                break;*/
+                }
+
+                if(error_code >= 0)
+                {
+                	if (message->getMessageType() == MSG_PLEXUS_GET)
+							this_peer->incrementGet_forwarded();
+					else if (message->getMessageType() == MSG_PLEXUS_PUT)
+							this_peer->incrementPut_forwarded();
                 }
 
                 delete message;
