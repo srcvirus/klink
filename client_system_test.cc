@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
 	plexus->setContainerPeer(this_peer);
         //ABSCode *iCode = new ReedMuller(2, 4);
         ABSCode *iCode = new GolayCode();
+        this_peer->SetiCode(iCode);
 
 	Configuration config(GlobalData::config_file_name);
 	int name_count = config.getNameCount();
