@@ -8,5 +8,5 @@ alpha=0.9
 timeout=5.5
 name_count=10000
 retry=2
-check_poing_row=10
+check_point_row=10
 
