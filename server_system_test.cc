@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
                 pthread_create(&processor, NULL, processing_thread, &t_param);
         }
 
-        //pthread_create(&logger, NULL, logging_thread, NULL);
+        pthread_create(&logger, NULL, logging_thread, NULL);
         pthread_create(&controller, NULL, controlling_thread, NULL);
         pthread_create(&web, NULL, web_thread, NULL);
 
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
         pthread_join(processor, NULL);
-        //pthread_join(logger, NULL);
+        pthread_join(logger, NULL);
         pthread_join(controller, NULL);
         pthread_join(web, NULL);
 
