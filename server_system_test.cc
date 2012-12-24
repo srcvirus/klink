@@ -281,7 +281,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessageGET();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 rcvd_message->message_print_dump();
-                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
+                                                                //rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PLEXUS_GET_REPLY:
@@ -295,7 +295,7 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new MessagePUT();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 //rcvd_message->message_print_dump();
-                                                                rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
+                                                                //rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                                                 break;
 
                                                         case MSG_PLEXUS_PUT_REPLY:
@@ -370,12 +370,12 @@ void *processing_thread(void* args) {
                         printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
                                 message->getDestHost().c_str(), message->getDestPort(),
                                 message->getOverlayTtl(), message->getOverlayHops());
-                        if(message->getMessageType() == MSG_PLEXUS_PUT){
-                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
-                        }
-                        if(message->getMessageType() == MSG_PLEXUS_GET){
-                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
-                        }
+//                        if(message->getMessageType() == MSG_PLEXUS_PUT){
+//                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
+//                        }
+//                        if(message->getMessageType() == MSG_PLEXUS_GET){
+//                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
+//                        }
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
                 }
         }
