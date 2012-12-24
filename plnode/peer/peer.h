@@ -92,8 +92,6 @@ public:
 		init_rcvd = false;
 		start_gen_name = false;
                 
-                iCode = new ReedMuller(2, 4);
-                
                 pthread_mutex_init(&put_generated_lock, NULL);
                 pthread_mutex_init(&put_received_lock, NULL);
                 pthread_mutex_init(&put_processed_lock, NULL);
