@@ -40,20 +40,22 @@ class Peer
 	int publish_name_range_end;
 	int lookup_name_range_start;
 	int lookup_name_range_end;
-        int webserver_port;
+	int webserver_port;
         
-        //PUT
-        int put_generated, put_received, put_processed, put_forwarded;
-        pthread_mutex_t put_generated_lock;
-        pthread_mutex_t put_received_lock;
-        pthread_mutex_t put_processed_lock;
-        pthread_mutex_t put_forwarded_lock;
-        //GET
-        int get_generated, get_received, get_processed, get_forwarded;
-        pthread_mutex_t get_generated_lock;
-        pthread_mutex_t get_received_lock;
-        pthread_mutex_t get_processed_lock;
-        pthread_mutex_t get_forwarded_lock;
+	//PUT
+	int put_generated, put_received, put_processed, put_forwarded, put_dropped;
+	pthread_mutex_t put_generated_lock;
+	pthread_mutex_t put_received_lock;
+	pthread_mutex_t put_processed_lock;
+	pthread_mutex_t put_forwarded_lock;
+	pthread_mutex_t put_dropped_lock;
+	//GET
+	int get_generated, get_received, get_processed, get_forwarded, get_dropped;
+	pthread_mutex_t get_generated_lock;
+	pthread_mutex_t get_received_lock;
+	pthread_mutex_t get_processed_lock;
+	pthread_mutex_t get_forwarded_lock;
+	pthread_mutex_t get_dropped_lock;
 
 	double alpha;
 	int k;
@@ -89,19 +91,24 @@ public:
 		struct hostent* host_info;
 		host_info = gethostbyname(hostname);
 		host_name = string(host_info->h_name);
-		//host_name = string(strcat(hostname, strcat(".", domain_name)));
+
 		init_rcvd = false;
 		start_gen_name = false;
-                
-                pthread_mutex_init(&put_generated_lock, NULL);
-                pthread_mutex_init(&put_received_lock, NULL);
-                pthread_mutex_init(&put_processed_lock, NULL);
-                pthread_mutex_init(&put_forwarded_lock, NULL);
-                pthread_mutex_init(&get_generated_lock, NULL);
-                pthread_mutex_init(&get_received_lock, NULL);
-                pthread_mutex_init(&get_processed_lock, NULL);
-                pthread_mutex_init(&get_forwarded_lock, NULL);
-                
+
+		put_generated, put_received, put_processed, put_forwarded, put_dropped = 0;
+		get_generated, get_received, get_processed, get_forwarded, get_dropped = 0;
+
+		pthread_mutex_init(&put_generated_lock, NULL);
+		pthread_mutex_init(&put_received_lock, NULL);
+		pthread_mutex_init(&put_processed_lock, NULL);
+		pthread_mutex_init(&put_forwarded_lock, NULL);
+		pthread_mutex_init(&put_forwarded_lock, NULL);
+
+		pthread_mutex_init(&get_generated_lock, NULL);
+		pthread_mutex_init(&get_received_lock, NULL);
+		pthread_mutex_init(&get_processed_lock, NULL);
+		pthread_mutex_init(&get_forwarded_lock, NULL);
+		pthread_mutex_init(&get_dropped_lock, NULL);
 	}
 
 	Peer()
@@ -248,14 +255,16 @@ public:
 
 		address_db.clear();
                 
-                pthread_mutex_destroy(&put_generated_lock);
-                pthread_mutex_destroy(&put_received_lock);
-                pthread_mutex_destroy(&put_processed_lock);
-                pthread_mutex_destroy(&put_forwarded_lock);
-                pthread_mutex_destroy(&get_generated_lock);
-                pthread_mutex_destroy(&get_received_lock);
-                pthread_mutex_destroy(&get_processed_lock);
-                pthread_mutex_destroy(&get_forwarded_lock);
+		pthread_mutex_destroy(&put_generated_lock);
+		pthread_mutex_destroy(&put_received_lock);
+		pthread_mutex_destroy(&put_processed_lock);
+		pthread_mutex_destroy(&put_forwarded_lock);
+		pthread_mutex_destroy(&put_dropped_lock);
+		pthread_mutex_destroy(&get_generated_lock);
+		pthread_mutex_destroy(&get_received_lock);
+		pthread_mutex_destroy(&get_processed_lock);
+		pthread_mutex_destroy(&get_forwarded_lock);
+		pthread_mutex_destroy(&get_dropped_lock);
                 
 	}
 
@@ -539,6 +548,10 @@ public:
                 return get_received;
         }
 
+        int numOfGet_dropped() const {
+        	return get_dropped;
+        }
+
         int numOfPut_generated() const {
                 return put_generated;
         }
@@ -555,6 +568,9 @@ public:
                 return put_processed;
         }
 
+        int numOfPut_dropped() const {
+        	return put_dropped;
+        }
         void incrementPut_generated() {
                 pthread_mutex_lock(&put_generated_lock);
                 this->put_generated++;
@@ -579,6 +595,13 @@ public:
                 pthread_mutex_unlock(&put_forwarded_lock);
         }
         
+        void incrementPut_Dropped()
+        {
+        	pthread_mutex_lock(&put_dropped_lock);
+        	this->put_dropped++;
+        	pthread_mutex_unlock(&put_dropped_lock);
+        }
+
         void incrementGet_generated() {
                 pthread_mutex_lock(&get_generated_lock);
                 this->get_generated++;
@@ -601,6 +624,13 @@ public:
                 pthread_mutex_lock(&get_forwarded_lock);
                 this->get_forwarded++;
                 pthread_mutex_unlock(&get_forwarded_lock);
+        }
+
+        void incrementGet_Dropped()
+        {
+        	pthread_mutex_lock(&get_dropped_lock);
+        	this->get_dropped++;
+        	pthread_mutex_unlock(&get_dropped_lock);
         }
 
         void SetiCode(ABSCode* iCode) {

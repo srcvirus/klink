@@ -9,3 +9,5 @@ test/*
 ihostlist
 config
 config_temp
+build_deploy.sh
+
