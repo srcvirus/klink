@@ -140,7 +140,7 @@ void BuildTree::execute() {
 
                 //build routing table
                 ///////////////////////////////////////////////////////////////////////////
-                /*
+                
                 int nbrIndex;
                 cout << "OID MAX LENGHT " << idArray[0].MAX_LENGTH << endl;
                 for (int i = 0; i < this->treeSize; i++)
@@ -173,24 +173,24 @@ void BuildTree::execute() {
                         {
                                 HostAddress ha;
                                 hosts->lookup(idArray[nbrIndex], &ha);
-                                //rtArray[i].add(idArray[nbrIndex], ha);
+                                rtArray[i].add(idArray[nbrIndex], ha);
                         }
                 }
                 /////////////////////////////////////////////////////////////////////
-                 */
+                 
 
-                int nbrIndex;
-                cout << "OID MAX LENGHT " << idArray[0].MAX_LENGTH << endl;
-                for (int i = 0; i < this->treeSize; i++) {
-                        rtArray[i] = LookupTable<OverlayID, HostAddress > ();
-                        for (int j = 0; j < treeSize; j++) {
-                                if(i==j) continue;
-                                HostAddress ha;
-                                hosts->lookup(idArray[j], &ha);
-                                rtArray[i].add(idArray[j], ha);
-                        }
-
-                }
+//                int nbrIndex;
+//                cout << "OID MAX LENGHT " << idArray[0].MAX_LENGTH << endl;
+//                for (int i = 0; i < this->treeSize; i++) {
+//                        rtArray[i] = LookupTable<OverlayID, HostAddress > ();
+//                        for (int j = 0; j < treeSize; j++) {
+//                                if(i==j) continue;
+//                                HostAddress ha;
+//                                hosts->lookup(idArray[j], &ha);
+//                                rtArray[i].add(idArray[j], ha);
+//                        }
+//
+//                }
         } else
                 cout << "ERROR: opening host list file.";
 }
