@@ -8,6 +8,4 @@ test/*
 *.o
 ihostlist
 config
-build_deploy.sh
 config_temp
-build_deploy*

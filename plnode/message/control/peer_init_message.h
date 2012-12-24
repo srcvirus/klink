@@ -35,6 +35,10 @@ class PeerInitMessage: public ABSMessage
 	int lookup_name_range_start, lookup_name_range_end;
     int webserver_port;
 
+    int run_sequence_no;
+    string log_server_name;
+    string log_server_user;
+
 public:
 	PeerInitMessage()
 	{
@@ -84,8 +88,10 @@ public:
 		ret += sizeof(int) * 4;
 		ret += sizeof(double);
 		ret += sizeof(int) * 4;
-		LookupTableIterator<OverlayID, HostAddress> r_iterator(
-				&routing_table);
+		ret += sizeof(int) * 3;
+		ret += sizeof(char) * (log_server_name.size() + log_server_user.size());
+
+		LookupTableIterator<OverlayID, HostAddress> r_iterator(&routing_table);
 		r_iterator.reset_iterator();
 
 		while (r_iterator.hasMoreKey())
@@ -131,6 +137,25 @@ public:
 		offset += sizeof(int);
 		memcpy(buffer + offset, (char*)(&webserver_port), sizeof(int));
 		offset += sizeof(int);
+
+		memcpy(buffer + offset, (char*)&run_sequence_no, sizeof(int));
+		offset += sizeof(int);
+
+		int logServerNameLength = log_server_name.size();
+		memcpy(buffer + offset, (char*)&logServerNameLength, sizeof(int));
+		offset += sizeof(int);
+
+		const char* str_lg_server = log_server_name.c_str();
+		memcpy(buffer + offset, str_lg_server, logServerNameLength);
+		offset += logServerNameLength;
+
+		int logServerUserLength = log_server_user.size();
+		memcpy(buffer + offset, (char*)&logServerUserLength, sizeof(int));
+		offset += sizeof(int);
+
+		const char* str_lg_user = log_server_user.c_str();
+		memcpy(buffer + offset, str_lg_user, logServerUserLength);
+		offset += logServerUserLength;
 
 		int routingTableSize = routing_table.size();
 		memcpy(buffer + offset, (char*)(&routingTableSize), sizeof(int));
@@ -194,6 +219,26 @@ public:
 		offset += sizeof(int);
 		memcpy(&webserver_port, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+
+		memcpy(&run_sequence_no, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+
+		int logNameLength, logUserLength;
+		memcpy(&logNameLength, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		char* str_lg_name = new char[logNameLength + 1];
+		memcpy(str_lg_name, buffer + offset, logNameLength);
+		offset += logNameLength;
+		log_server_name = string(str_lg_name);
+		delete[] str_lg_name;
+
+		memcpy(&logUserLength, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		char* str_lg_user = new char[logUserLength + 1];
+		memcpy(str_lg_user, buffer + offset, logUserLength);
+		offset += logUserLength;
+		log_server_user = string(str_lg_user);
+		delete[] str_lg_user;
 
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int));
@@ -310,14 +355,43 @@ public:
 		return publish_name_range_start;
 	}
 
-        void setWebserverPort(int webserver_port) {
-                this->webserver_port = webserver_port;
-        }
+	void setWebserverPort(int webserver_port) {
+		this->webserver_port = webserver_port;
+	}
 
-        int getWebserverPort() const {
-                return webserver_port;
-        }
+	int getWebserverPort() const {
+		return webserver_port;
+	}
 
+	string getLogServerName() const
+	{
+		return log_server_name;
+	}
+
+	void setLogServerName(const string& logServerName)
+	{
+		log_server_name = logServerName;
+	}
+
+	string getLogServerUser() const
+	{
+		return log_server_user;
+	}
+
+	void setLogServerUser(const string& logServerUser)
+	{
+		log_server_user = logServerUser;
+	}
+
+	int getRunSequenceNo() const
+	{
+		return run_sequence_no;
+	}
+
+	void setRunSequenceNo(int runSequenceNo)
+	{
+		run_sequence_no = runSequenceNo;
+	}
 };
 
 #endif /* PEER_INIT_MESSAGE_H_ */

@@ -24,6 +24,7 @@ class ABSProtocol;
 
 class Peer
 {
+	int run_sequence_no;
 	int n_peers;
 
 	int peer_id;
@@ -126,8 +127,8 @@ public:
 		n_retry = configuration->getNRetry();
 		timeout_sec = (int) configuration->getTimeout();
 		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
-		log_server_name = configuration->getLogServerHostName();
-		log_server_user = configuration->getLogServerUserName();
+		/*log_server_name = configuration->getLogServerHostName();
+		log_server_user = configuration->getLogServerUserName();*/
 
 		initListenSocket(configuration->getNodesFilePath().c_str());
 	}
@@ -610,6 +611,15 @@ public:
                 return iCode;
         }
         
+        int getRunSequenceNo() const
+        {
+        	return run_sequence_no;
+        }
+
+        void setRunSequenceNo(int seq_no)
+        {
+        	run_sequence_no = seq_no;
+        }
 
 };
 

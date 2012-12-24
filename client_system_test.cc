@@ -16,6 +16,50 @@
 #include "plnode/protocol/plexus/golay/GolayCode.h"
 
 Peer* this_peer;
+vector <string> log_servers;
+
+void loadMonitors(const char* monitor_file)
+{
+	FILE* fp = fopen(monitor_file, "r");
+	char name[300];
+	int N;
+	fscanf(fp, "%d", &N);
+	while(N--)
+	{
+		fscanf(fp, "%s", name);
+		log_servers.push_back(name);
+	}
+	fclose(fp);
+}
+
+string getLogServer(int node_index)
+{
+	return log_servers[node_index % log_servers.size()];
+}
+
+int getRunSequenceNo(string seq_file_name)
+{
+	int seq_no = 0;
+	FILE* seq_file_ptr = fopen(seq_file_name.c_str(), "r+");
+
+	if (seq_file_ptr == NULL)
+	{
+		seq_no = 0;
+		seq_file_ptr = fopen(seq_file_name.c_str(), "w");
+		fprintf(seq_file_ptr, "%d\n", seq_no);
+		fclose(seq_file_ptr);
+	}
+	else
+	{
+		fscanf(seq_file_ptr, "%d", &seq_no);
+		seq_no++;
+
+		fseek(seq_file_ptr, 0, SEEK_SET);
+		fprintf(seq_file_ptr, "%d", seq_no);
+		fclose(seq_file_ptr);
+	}
+	return seq_no;
+}
 
 void send_init_message(BuildTree &tree, int name_count)
 {
@@ -24,7 +68,11 @@ void send_init_message(BuildTree &tree, int name_count)
 	int retCode = 0;
 
 	ClientSocket* c_socket;
-        int webserver_port_start = 8080;
+    int webserver_port_start = 8080;
+    int seq_no = getRunSequenceNo(this_peer->getConfiguration()->getSeqFilePath());
+    string log_server_user = this_peer->getConfiguration()->getLogServerUserName();
+
+    loadMonitors(this_peer->getConfiguration()->getMonitorsFilePath().c_str());
 
 	for (int i = 0; i < n; i++)
 	{
@@ -62,11 +110,16 @@ void send_init_message(BuildTree &tree, int name_count)
 			 printf("%d %s %d\n", key.GetOverlay_id(), val.GetHostName().c_str(), val.GetHostPort());
 		 }*/
 
+		string log_server = getLogServer(i);
+
 		pInit->setDestHost(address.GetHostName().c_str());
 		pInit->setDestPort(address.GetHostPort());
 		pInit->setDstOid(tree.getOverlayID(i));
 		pInit->setNPeers(n);
 		pInit->setRoutingTable(tree.getRoutingTablePtr(i));
+		pInit->setRunSequenceNo(seq_no);
+		pInit->setLogServerName(log_server);
+		pInit->setLogServerUser(log_server_user);
 
 		int name_interval = name_count / n;
 

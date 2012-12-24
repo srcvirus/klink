@@ -26,10 +26,12 @@ class Configuration
 	string log_server_host_name;
 	string log_server_user_name;
 
+	string seq_file_path;
+
 	int K;
 	double alpha;
 	int name_count;
-
+	int check_point_row;
 	double timeout;
 	int n_retry;
 
@@ -91,7 +93,8 @@ public:
 			{
 				nodes_file_path = value;
 			}
-			else if(strcmp(key, "monitor_file") == 0 || strcmp(key, "monitors_file") == 0)
+			else if(strcmp(key, "monitor_file") == 0 || strcmp(key, "monitors_file") == 0
+					|| strcmp(key, "monitors_file_path") == 0 || strcmp(key, "monitor_file_path") == 0)
 			{
 				monitors_file_path = value;
 			}
@@ -104,9 +107,17 @@ public:
 			{
 				log_server_user_name = value;
 			}
+			else if(strcmp(key, "seq_file") == 0)
+			{
+				seq_file_path = value;
+			}
 			else if(strcasecmp(key, "k") == 0)
 			{
 				K = atoi(value);
+			}
+			else if(strcmp(key, "check_point_row") == 0)
+			{
+				check_point_row = atoi(value);
 			}
 			else if(strcmp(key, "alpha") == 0)
 			{
@@ -183,6 +194,11 @@ public:
 		return nodes_file_path;
 	}
 
+	string getSeqFilePath() const
+	{
+		return seq_file_path;
+	}
+
 	int getInt(string key)
 	{
 		int ret = -1;
@@ -217,6 +233,7 @@ public:
 		}
 		return ret;
 	}
+
 
 	void print_configuration()
 	{
