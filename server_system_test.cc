@@ -199,6 +199,13 @@ void *forwarding_thread(void* args) {
 					else if (message->getMessageType() == MSG_PLEXUS_PUT)
 							this_peer->incrementPut_forwarded();
                 }
+                else
+                {
+                	if(message->getMessageType() == MSG_PLEXUS_GET)
+                		this_peer->incrementGet_Dropped();
+                	else if(message->getMessageType() == MSG_PLEXUS_PUT)
+                		this_peer->incrementPut_Dropped();
+                }
 
                 delete message;
         }
@@ -485,19 +492,19 @@ static void *callback(enum mg_event event,
                         int content_length = snprintf(content, sizeof (content),
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
+                                "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
+                                "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>Index Table</strong><br/>size = %d<br/>", //%s<br/>"
                                 this_peer->getOverlayID().toString(),
                                 this_peer->getProtocol()->getRoutingTable()->size(),
                                 
                                 printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
                                 this_peer->numOfPut_generated(), this_peer->numOfPut_received(), this_peer->numOfPut_generated() + this_peer->numOfPut_received(),
-                                this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),
+                                this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_dropped(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),
 
                                 this_peer->numOfGet_generated(), this_peer->numOfGet_received(), this_peer->numOfGet_generated() + this_peer->numOfGet_received(),
-                                this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(), this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded(),
+                                this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(), this_peer->numOfGet_dropped(), this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded(),
                                 
                                 this_peer->getProtocol()->getIndexTable()->size()//,
                                 //printIndexTable2String(*this_peer->getProtocol()->getIndexTable())

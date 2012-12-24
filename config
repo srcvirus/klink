@@ -1,5 +1,5 @@
 node_file=ihostlist
-monitor_file=imonitorlist
+monitors_file=imonitorlist
 seq_file=seq
 log_server_name=cn101.cs.uwaterloo.ca
 log_server_user=pweb
