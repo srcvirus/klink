@@ -120,12 +120,12 @@ void system_init() {
 
         /* setting the protocol of the peer */
         this_peer->setProtocol(plexus);
-        
+
         /* setting the code of the peer */
         //iCode = new ReedMuller(2, 4);
         iCode = new GolayCode();
         this_peer->SetiCode(iCode);
-        
+
         /* initializing the connection sets */
         FD_ZERO(&connection_pool);
         FD_ZERO(&read_connection_fds);
@@ -181,10 +181,9 @@ void *forwarding_thread(void* args) {
 
                 int retry = 0;
                 int error_code = 0;
-                while (retry < this_peer->getNRetry())
-                {
+                while (retry < this_peer->getNRetry()) {
                         error_code = plexus->send_message(message);
-                        if(error_code < 0) retry++;
+                        if (error_code < 0) retry++;
                         else break;
                         /*if (error_code == ERROR_CONNECTION_TIMEOUT)
                                 retry++;
@@ -192,12 +191,11 @@ void *forwarding_thread(void* args) {
                                 break;*/
                 }
 
-                if(error_code >= 0)
-                {
-                	if (message->getMessageType() == MSG_PLEXUS_GET)
-							this_peer->incrementGet_forwarded();
-					else if (message->getMessageType() == MSG_PLEXUS_PUT)
-							this_peer->incrementPut_forwarded();
+                if (error_code >= 0) {
+                        if (message->getMessageType() == MSG_PLEXUS_GET)
+                                this_peer->incrementGet_forwarded();
+                        else if (message->getMessageType() == MSG_PLEXUS_PUT)
+                                this_peer->incrementPut_forwarded();
                 }
                 else
                 {
@@ -306,9 +304,9 @@ void *listener_thread(void* args) {
                                                                 break;
 
                                                         case MSG_PLEXUS_PUT_REPLY:
-                                                        	rcvd_message = new MessagePUT_REPLY();
-                                                        	rcvd_message->deserialize(buffer, buffer_length);
-                                                        	break;
+                                                                rcvd_message = new MessagePUT_REPLY();
+                                                                rcvd_message->deserialize(buffer, buffer_length);
+                                                                break;
 
                                                         case MSG_PEER_INITIATE_GET:
                                                                 this_peer->incrementGet_received();
@@ -377,12 +375,12 @@ void *processing_thread(void* args) {
                         printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
                                 message->getDestHost().c_str(), message->getDestPort(),
                                 message->getOverlayTtl(), message->getOverlayHops());
-//                        if(message->getMessageType() == MSG_PLEXUS_PUT){
-//                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
-//                        }
-//                        if(message->getMessageType() == MSG_PLEXUS_GET){
-//                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
-//                        }
+                        //                        if(message->getMessageType() == MSG_PLEXUS_PUT){
+                        //                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
+                        //                        }
+                        //                        if(message->getMessageType() == MSG_PLEXUS_GET){
+                        //                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
+                        //                        }
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
                 }
         }
@@ -441,10 +439,10 @@ void *controlling_thread(void* args) {
         }
 
         sleep(60);
-        for(int X = 0; X < getId.size(); X++)
-        	if(getId[X] != putId[X])
-        		printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
-        	else puts("EQUAL");
+        for (int X = 0; X < getId.size(); X++)
+                if (getId[X] != putId[X])
+                        printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
+                else puts("EQUAL");
 }
 
 void *logging_thread(void*) {
@@ -498,7 +496,7 @@ static void *callback(enum mg_event event,
                                 "<strong>Index Table</strong><br/>size = %d<br/>", //%s<br/>"
                                 this_peer->getOverlayID().toString(),
                                 this_peer->getProtocol()->getRoutingTable()->size(),
-                                
+
                                 printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
                                 this_peer->numOfPut_generated(), this_peer->numOfPut_received(), this_peer->numOfPut_generated() + this_peer->numOfPut_received(),
                                 this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_dropped(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),
@@ -506,6 +504,7 @@ static void *callback(enum mg_event event,
                                 this_peer->numOfGet_generated(), this_peer->numOfGet_received(), this_peer->numOfGet_generated() + this_peer->numOfGet_received(),
                                 this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(), this_peer->numOfGet_dropped(), this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded(),
                                 
+
                                 this_peer->getProtocol()->getIndexTable()->size()//,
                                 //printIndexTable2String(*this_peer->getProtocol()->getIndexTable())
                                 );
