@@ -8,6 +8,7 @@
 #include "../plnode/ds/overlay_id.h"
 #include "../plnode/ds/host_address.h"
 #include <time.h>
+#include <climits>
 
 using namespace std;
 
@@ -96,6 +97,19 @@ char* printIndexTable2String(LookupTable<string, HostAddress> &itable)
 int stringHash(string str)
 {
 	return atoi(str.c_str());
+}
+
+long urlHash(string url){
+        unsigned int r_shift = 2;
+        unsigned int l_shift = 4;
+        unsigned long seed = 99099;
+        unsigned int range = LONG_MAX;
+        const char* chars = url.c_str();
+        for (int i = 0; i < url.size(); i++) {
+            seed ^= ((seed << l_shift) + (seed >> r_shift) + (chars[i] & 0xff));
+        }
+        if (seed < 0) seed = -seed;
+        return seed % range;
 }
 
 unsigned GetNumberOfDigits(unsigned number)
