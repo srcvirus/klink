@@ -80,8 +80,6 @@ class Peer
 
 public:
 
-
-        
 	void INIT()
 	{
 		char hostname[100];

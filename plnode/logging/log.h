@@ -390,7 +390,7 @@ bool Log::sshUploadLog()
 	string command = "cat ";
 	command += log_file_name;
 	command += " | ";
-	command += "ssh ";
+	command += "ssh -o StrictHostKeyChecking=no";
 	command += monitor_user_name;
 	command += "@";
 	command += monitor_host_name;
@@ -415,7 +415,7 @@ bool Log::sshUploadArchive()
 	/*sftp <monitor_user_name>@<monitor_host_name>:<remote_ftp_directory>/
 	 then put <archive_name> */
 
-	string command = "sftp ";
+	string command = "sftp -o StrictHostKeyChecking=no";
 	command += monitor_user_name;
 	command += "@";
 	command += monitor_host_name;
