@@ -64,7 +64,7 @@ public:
 	{
 		//close(socket_fd);
 	}
-	;
+	
 };
 
 #endif /* SOCKET_H_ */

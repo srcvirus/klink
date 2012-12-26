@@ -181,6 +181,30 @@ public:
 		}
 		cout << endl;
 	}
+        
+        char* toString(){
+                int size = getStringSize(), index = 0;
+                char* result = new char[size + 1];
+		DLLNode *temp = head;
+		while (temp != NULL)
+		{
+                        sprintf(result + index, "%s --> %s<br/>", temp->key.getStringSize(), temp->value.getStringSize());
+                        index += temp->key.getStringSize() + 5 + temp->value.getStringSize() + 5;
+		}
+                
+                result[size] = '\0';
+                return result;
+        }
+        
+        int getStringSize(){
+                int size;
+		DLLNode *temp = head;
+		while (temp != NULL)
+		{
+                        size += temp->key.getStringSize() + 5 + temp->value.getStringSize() + 5;
+		}
+                return size;
+        }
 };
 
 #endif	/* DOUBLELINKEDLIST_H */

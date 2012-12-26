@@ -39,6 +39,7 @@ class PlexusProtocol : public ABSProtocol {
         queue<ABSMessage*> incoming_message_queue;
         queue<ABSMessage*> outgoing_message_queue;
         queue<LogEntry*> logging_queue;
+        
 
         pthread_mutex_t incoming_queue_lock;
         pthread_mutex_t outgoing_queue_lock;
@@ -48,6 +49,8 @@ class PlexusProtocol : public ABSProtocol {
         pthread_cond_t cond_outgoing_queue_empty;
         pthread_cond_t cond_log_queue_empty;
 public:
+        int incoming_queue_pushed, incoming_queue_popped;
+        int outgoing_queue_pushed, outgoing_queue_popped;
 
 
         PlexusProtocol() :
@@ -63,6 +66,9 @@ public:
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
                 pthread_cond_init(&cond_log_queue_empty, NULL);
 
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
+                
                 //this->msgProcessor->setContainerProtocol(this);
         }
 
@@ -81,6 +87,8 @@ public:
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
                 pthread_cond_init(&cond_log_queue_empty, NULL);
 
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -96,6 +104,8 @@ public:
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
                 pthread_cond_init(&cond_log_queue_empty, NULL);
 
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -218,7 +228,7 @@ public:
         bool setNextHop(ABSMessage* msg) {
                 printf("Setting next hop, Message type = %d\n", msg->getMessageType());
                 int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
-                HostAddress next_hop;
+                HostAddress next_hop("", -1);
 
                 switch (msg->getMessageType()) {
                         case MSG_PEER_INIT:
@@ -396,6 +406,7 @@ public:
                 	message->setInQueuePushTimeStamp();
 
                 incoming_message_queue.push(message);
+                incoming_queue_pushed++;
                 pthread_cond_broadcast(&cond_incoming_queue_empty);
                 pthread_mutex_unlock(&incoming_queue_lock);
         }
@@ -418,6 +429,7 @@ public:
                 if(ret->getMessageType() == MSG_PLEXUS_GET || ret->getMessageType() == MSG_PLEXUS_PUT)
                 	ret->setInQueuePopTimeStamp();
                 incoming_message_queue.pop();
+                incoming_queue_popped++;
                 pthread_mutex_unlock(&incoming_queue_lock);
                 return ret;
         }
@@ -427,6 +439,7 @@ public:
                 if(message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
                 	message->setOutQueuePushTimeStamp();
                 outgoing_message_queue.push(message);
+                outgoing_queue_pushed++;
                 pthread_cond_broadcast(&cond_outgoing_queue_empty);
                 pthread_mutex_unlock(&outgoing_queue_lock);
         }
@@ -452,6 +465,7 @@ public:
                 	ret->setOutQueuePopTimeStamp();
                 //printf("Got a messge from the outgoing queue");
                 outgoing_message_queue.pop();
+                outgoing_queue_popped++;
                 pthread_mutex_unlock(&outgoing_queue_lock);
                 return ret;
         }
