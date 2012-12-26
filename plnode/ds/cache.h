@@ -101,6 +101,22 @@ public:
 		cout << size << endl;
 		dll->printNodesForward();
 	}
+        
+        int getStringSize(){
+                return dll->getStringSize();
+        }
+        
+        char* toString(){
+                return dll->toString();
+        }
+
+        void setSize(int size) {
+                this->size = size;
+        }
+
+        int getSize() const {
+                return size;
+        }
 };
 
 #endif	/* CACHE_H */
