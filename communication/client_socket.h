@@ -12,6 +12,7 @@
 #include "error_code.h"
 #include <fcntl.h>
 #include <error.h>
+#include <sys/types.h>
 
 class ClientSocket: public ABSSocket
 {
@@ -111,6 +112,10 @@ int ClientSocket::receive_data(char** buffer)
 int ClientSocket::send_data(char* buffer, int n_bytes, timeval* timeout)
 {
 	int ret_code;
+	int st = 1;
+
+	setsockopt(socket_fd, SOL_SOCKET, MSG_NOSIGNAL, (void *)&st, sizeof(int));
+
 	if (timeout == NULL)
 	{
 		ret_code = send(socket_fd, buffer, n_bytes, 0);
