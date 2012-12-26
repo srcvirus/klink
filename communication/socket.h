@@ -62,7 +62,7 @@ public:
 
 	virtual ~ABSSocket()
 	{
-		close(socket_fd);
+		//close(socket_fd);
 	}
 	;
 };

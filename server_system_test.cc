@@ -236,6 +236,7 @@ void *listener_thread(void* args) {
                                         }
                                 }
                         }
+                        this_peer->incrementPut_Dropped();
                         //exit(1);
                         continue;
                 }
@@ -416,7 +417,7 @@ void *controlling_thread(void* args) {
                                         pthread_yield();
                         }
                         //lookup names
-                        printf("[Controlling Thread:]\tLooking up name ...\n");
+                        /*printf("[Controlling Thread:]\tLooking up name ...\n");
                         //usleep(8000000);
                         sleep(60);
                         for (int i = this_peer->getLookup_name_range_start();
@@ -432,7 +433,7 @@ void *controlling_thread(void* args) {
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)
                                         pthread_yield();
-                        }
+                        }*/
                         break;
                 }
                 pthread_yield();
