@@ -180,8 +180,6 @@ void *forwarding_thread(void* args) {
                         int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
                         message->setPingEndT();
                         message->updateStatistics();
-
-
                 }
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
@@ -259,14 +257,14 @@ void *listener_thread(void* args) {
                                         FD_SET(connection_fd, &connection_pool);
                                         if (connection_fd > fd_max)
                                                 fd_max = connection_fd;
-                                        puts("new connection");
-                                        s_socket->printActiveConnectionList();
+                                        //puts("new connection");
+                                        //s_socket->printActiveConnectionList();
                                 } else {
                                         buffer_length = s_socket->receive_data(i, &buffer);
                                         printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
 
-                                        for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                                        putchar('\n');
+                                        /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+                                        putchar('\n');*/
 
                                         s_socket->close_connection(i);
                                         FD_CLR(i, &connection_pool);
@@ -380,18 +378,18 @@ void *processing_thread(void* args) {
 
                 message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
-                printf("[Processing Thread %d:]\tpulled a %d type message from the incoming queue\n",
+                printf("[Processing Thread %d]\tpulled a %d type message from the incoming queue\n",
                         t_param.getThreadId(), message->getMessageType());
 
                 bool forward = plexus->getMessageProcessor()->processMessage(message);
                 if (forward) {
-                        printf("[Processing Thread %d:]\tpushed a %d type message for forwarding\n",
+                        printf("[Processing Thread %d]\tpushed a %d type message for forwarding\n",
                                 t_param.getThreadId(), message->getMessageType());
 
                         message->getDstOid().printBits();
-                        printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
+                        /*printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
                                 message->getDestHost().c_str(), message->getDestPort(),
-                                message->getOverlayTtl(), message->getOverlayHops());
+                                message->getOverlayTtl(), message->getOverlayHops());*/
                         //                        if(message->getMessageType() == MSG_PLEXUS_PUT){
                         //                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
                         //                        }
@@ -414,7 +412,7 @@ void *controlling_thread(void* args) {
 
                         getId.clear(), putId.clear();
                         //publish names
-                        printf("[Controlling Thread:]\tPublishing name in range %d %d\n",
+                        printf("[Controlling Thread]\tPublishing name in range %d %d\n",
                                 this_peer->getPublish_name_range_start(),
                                 this_peer->getPublish_name_range_end());
 
@@ -423,7 +421,7 @@ void *controlling_thread(void* args) {
                                 HostAddress ha("dummyhost", i);
                                 //itoa(i, buffer, 10);
                                 sprintf(buffer, "%d", i);
-                                printf("[Controlling Thread:]\tPublishing name: %d\n", i);
+                                printf("[Controlling Thread]\tPublishing name: %d\n", i);
 
                                 putId.push_back(OverlayID(i, iCode).GetOverlay_id());
                                 idsp.push_back(i);
@@ -467,14 +465,18 @@ void *logging_thread(void*) {
         LogEntry *entry;
         while (true) {
                 if (!this_peer->IsInitRcvd())
-                        continue;
+                {
+                	//puts("[Logging Thread]\tnot init received");
+                    continue;
+                }
 
+                printf("[Logging Thread]\twaiting for a log entry to pop\n");
                 entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
-                printf("[Logging Thread:]\tpulled a log entry from the queue\n");
+                printf("[Logging Thread]\tpulled a log entry from the queue\n");
 
                 Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
                 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
-                //printf("[Logging Thread:]\tlog flushed to the disk\n");
+                printf("[Logging Thread:]\tlog flushed to the disk\n");
 
                 delete entry;
                 printf("Index table size = %d\n", plexus->getIndexTable()->size());
@@ -510,6 +512,7 @@ static void *callback(enum mg_event event,
                                 "<strong>Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"\
                                 "Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
+                                "Logging Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
                                 "<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
                                 "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
@@ -525,6 +528,7 @@ static void *callback(enum mg_event event,
 
                                 plexus->incoming_queue_pushed, plexus->incoming_queue_popped,
                                 plexus->outgoing_queue_pushed, plexus->outgoing_queue_popped,
+                                plexus->logging_queue_pushed, plexus->logging_queue_popped,
 
                                 this_peer->numOfPut_generated(), this_peer->numOfPut_received(), this_peer->numOfPut_generated() + this_peer->numOfPut_received(),
                                 this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_dropped(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),

@@ -51,7 +51,7 @@ class PlexusProtocol : public ABSProtocol {
 public:
         int incoming_queue_pushed, incoming_queue_popped;
         int outgoing_queue_pushed, outgoing_queue_popped;
-
+        int logging_queue_pushed, logging_queue_popped;
 
         PlexusProtocol() :
         ABSProtocol() {
@@ -68,7 +68,7 @@ public:
 
                 incoming_queue_pushed = incoming_queue_popped = 0;
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
-                
+                logging_queue_pushed = logging_queue_popped = 0;
                 //this->msgProcessor->setContainerProtocol(this);
         }
 
@@ -89,6 +89,7 @@ public:
 
                 incoming_queue_pushed = incoming_queue_popped = 0;
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
+                logging_queue_pushed = logging_queue_popped = 0;
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -238,6 +239,7 @@ public:
                         case MSG_GENERATE_NAME:
                         case MSG_DYN_CHANGE_STATUS:
                         case MSG_PLEXUS_GET_REPLY:
+                        case MSG_PLEXUS_PUT_REPLY:
                         case MSG_PEER_INITIATE_GET:
                         case MSG_PEER_INITIATE_PUT:
                         		puts("returning false");
@@ -263,26 +265,26 @@ public:
                 //search in the RT
                 //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
                 //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
-                puts("creating iterator");
+                //puts("creating iterator");
                 LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
                 rtable_iterator.reset_iterator();
 
-                puts("looking up in routing table");
+                //puts("looking up in routing table");
                 OverlayID maxMatchOid;
                 //routing_table->reset_iterator();
                 while (rtable_iterator.hasMoreKey()) {
                         //while (routing_table->hasMoreKey()) {
                         //   OverlayID oid = routing_table->getNextKey();
                         OverlayID oid = rtable_iterator.getNextKey();
-                        printf("next key = %d My id = ", oid.GetOverlay_id());
-                        msg->getDstOid().printBits();
-                        putchar('\n');
+                        //printf("next key = %d My id = ", oid.GetOverlay_id());
+                        //msg->getDstOid().printBits();
+                        //putchar('\n');
 
                         //cout << endl << "current match ";
                         //oid.printBits();
                         currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
                         //cout << " ==== " << currentMatchLength << endl;
-                        printf(">current match length = %d\n", currentMatchLength);
+                        //printf(">current match length = %d\n", currentMatchLength);
 
                         if (currentMatchLength > maxLengthMatch) {
                                 maxLengthMatch = currentMatchLength;
@@ -311,12 +313,12 @@ public:
                 cout << endl << "max match : = " << maxLengthMatch << endl;
 
                 if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
-                        puts("returning false");
+                        //puts("returning false");
                         //msg->setDestHost("localhost");
                         //msg->setDestPort(container_peer->getListenPortNumber());
                         return false;
                 } else {
-                        puts("returning true");
+                        //puts("returning true");
                         msg->setDestHost(next_hop.GetHostName().c_str());
                         msg->setDestPort(next_hop.GetHostPort());
                         return true;
@@ -473,6 +475,7 @@ public:
         void addToLogQueue(LogEntry* log_entry) {
                 pthread_mutex_lock(&log_queue_lock);
                 logging_queue.push(log_entry);
+                logging_queue_pushed++;
                 pthread_cond_signal(&cond_log_queue_empty);
                 pthread_mutex_unlock(&log_queue_lock);
         }
@@ -492,6 +495,7 @@ public:
                 }
                 LogEntry* ret = logging_queue.front();
                 logging_queue.pop();
+                logging_queue_popped++;
                 pthread_mutex_unlock(&log_queue_lock);
                 return ret;
         }

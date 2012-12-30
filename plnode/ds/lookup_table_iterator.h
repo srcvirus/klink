@@ -29,7 +29,7 @@ public:
 	{
 		table_ptr = ptr;
 		table_iterator = table_ptr->begin();
-		puts("iterator created");
+		//puts("iterator created");
 	}
 
 	void reset_iterator()

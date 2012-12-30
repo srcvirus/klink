@@ -287,14 +287,16 @@ int Log::open(const char* mode)
 
 int Log::write(const char* key, const char* value)
 {
-	puts("writing log");
+
 	if (log_file_ptr == NULL)
 		return ERROR_FILE_NOT_OPEN;
+
+	puts("writing log");
 
 	string text = key;
 	text += " ";
 	text += value;
-	puts(text.c_str());
+	//puts(text.c_str());
 
 	int ret = fprintf(log_file_ptr, "%s\n", text.c_str());
 //	printf("Bytes written: %d\n", ret);
@@ -390,7 +392,7 @@ bool Log::sshUploadLog()
 	string command = "cat ";
 	command += log_file_name;
 	command += " | ";
-	command += "ssh -o StrictHostKeyChecking=no";
+	command += "ssh -o StrictHostKeyChecking=no ";
 	command += monitor_user_name;
 	command += "@";
 	command += monitor_host_name;
@@ -400,6 +402,7 @@ bool Log::sshUploadLog()
 	command += "/";
 	command += log_file_name;
 	command += "\"";
+	//puts(command.c_str());
 
 	FILE* shell_pipe = popen(command.c_str(), "w");
 	if (shell_pipe == NULL)
@@ -415,7 +418,7 @@ bool Log::sshUploadArchive()
 	/*sftp <monitor_user_name>@<monitor_host_name>:<remote_ftp_directory>/
 	 then put <archive_name> */
 
-	string command = "sftp -o StrictHostKeyChecking=no";
+	string command = "sftp -o StrictHostKeyChecking=no ";
 	command += monitor_user_name;
 	command += "@";
 	command += monitor_host_name;
