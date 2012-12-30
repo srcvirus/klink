@@ -28,7 +28,8 @@ using namespace std;
 #define MSG_DYN_CHANGE_STATUS			11
 #define MSG_DYN_CONFIG					12
 #define MSG_LOOKUP_CHANGE_STATUS		21
-#define MSG_GENERATE_NAME				31
+#define MSG_START_GENERATE_NAME				31
+#define MSG_START_LOOKUP_NAME				32
 #define	MSG_PLEXUS_PUT					41
 #define MSG_PLEXUS_GET					42
 #define MSG_PLEXUS_GET_REPLY			43
@@ -83,7 +84,7 @@ protected:
 
 public:
 
-	ABSMessage()
+	void INIT()
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
@@ -106,6 +107,15 @@ public:
 		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
 		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
 	}
+        
+        ABSMessage(){
+                INIT();
+        }
+        
+        ABSMessage(int messageType){
+                INIT();
+                this->messageType = messageType;
+        }
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host,
 			int dest_port, OverlayID src_oid, OverlayID dst_oid) :

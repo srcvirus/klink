@@ -140,7 +140,8 @@ public:
                         case MSG_PEER_CONFIG:
                         case MSG_PEER_CHANGE_STATUS:
                         case MSG_PEER_START:
-                        case MSG_GENERATE_NAME:
+                        case MSG_START_GENERATE_NAME:
+                        case MSG_START_LOOKUP_NAME:
                         case MSG_DYN_CHANGE_STATUS:
                         case MSG_PLEXUS_GET_REPLY:
                         case MSG_PEER_INITIATE_GET:
@@ -236,7 +237,8 @@ public:
                         case MSG_PEER_CONFIG:
                         case MSG_PEER_CHANGE_STATUS:
                         case MSG_PEER_START:
-                        case MSG_GENERATE_NAME:
+                        case MSG_START_GENERATE_NAME:
+                        case MSG_START_LOOKUP_NAME:
                         case MSG_DYN_CHANGE_STATUS:
                         case MSG_PLEXUS_GET_REPLY:
                         case MSG_PLEXUS_PUT_REPLY:

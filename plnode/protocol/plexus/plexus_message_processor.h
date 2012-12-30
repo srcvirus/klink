@@ -21,7 +21,7 @@
 #include "../../message/control/peer_initiate_put.h"
 #include "../../message/control/peer_config_msg.h"
 #include "../../message/control/peer_change_status_message.h"
-#include "../../message/control/peer_gen_name_message.h"
+#include "../../message/control/peer_start_gen_name_message.h"
 #include "../../message/control/peer_dyn_change_status_message.h"
 
 #include "../protocol.h"
@@ -43,12 +43,8 @@ class PlexusMessageProcessor : public MessageProcessor {
 public:
 
         void setup(LookupTable<OverlayID, HostAddress>* routing_table,
-                LookupTable<string, HostAddress>* index_table) {
-                MessageProcessor::setup(routing_table, index_table,
-                        new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
-                        container_protocol->getRoutingTable(),
-                        container_protocol->getContainerPeer()->getOverlayID(),
-                        container_protocol->getContainerPeer()->getK()));
+                LookupTable<string, HostAddress>* index_table, Cache *cache) {
+                MessageProcessor::setup(routing_table, index_table, cache);
         }
 
         bool processMessage(ABSMessage* message) {
@@ -214,6 +210,9 @@ public:
 
                         container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
                         container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
+                        container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
+                        container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
+                        container_protocol->getContainerPeer()->getK()));
 
                         container_peer->setNPeers(pInitMsg->getNPeers());
                         GlobalData::network_size = pInitMsg->getNPeers();
@@ -233,7 +232,7 @@ public:
 
                         plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 
-                        this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable());
+                        this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable(), container_protocol->getCache());
                 } else if (message->getMessageType() == MSG_PEER_CONFIG) {
                         PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
                         container_peer->setAlpha(pConfMsg->getAlpha());
@@ -251,8 +250,10 @@ public:
                 } else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS) {
                         PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
                         container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
-                } else if (message->getMessageType() == MSG_GENERATE_NAME) {
-                        container_peer->SetStart_gen_name(true);
+                } else if (message->getMessageType() == MSG_START_GENERATE_NAME) {
+                        container_peer->SetStart_gen_name_rcvd(true);
+                } else if (message->getMessageType() == MSG_START_LOOKUP_NAME) {
+                        container_peer->SetStart_lookup__name_rcvd(true);
                 } else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS) {
                         PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*) message;
                         container_peer->SetDyn_status(dcsMsg->getDynStatus());

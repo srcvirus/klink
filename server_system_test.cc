@@ -22,6 +22,8 @@
 #include "plnode/message/control/peer_start_message.h"
 #include "plnode/message/control/peer_change_status_message.h"
 #include "plnode/message/p2p/message_put_reply.h"
+#include "plnode/message/control/peer_start_gen_name_message.h"
+#include "plnode/message/control/peer_start_lookup_name_message.h"
 
 #include "plnode/ds/thread_parameter.h"
 
@@ -97,10 +99,8 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
-
         for( int i = 0; i < MAX_PROCESSOR_THREAD; i++)
         	pthread_join(processor[i], NULL);
-
         pthread_join(logger, NULL);
         pthread_join(controller, NULL);
         pthread_join(web, NULL);
@@ -332,8 +332,12 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new PeerChangeStatusMessage();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 break;
-                                                        case MSG_GENERATE_NAME:
-                                                                rcvd_message = new PeerGenNameMessage();
+                                                        case MSG_START_GENERATE_NAME:
+                                                                rcvd_message = new PeerStartGenNameMessage();
+                                                                rcvd_message->deserialize(buffer, buffer_length);
+                                                                break;
+                                                        case MSG_START_LOOKUP_NAME:
+                                                                rcvd_message = new PeerStartLookupNameMessage();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 break;
                                                         case MSG_DYN_CHANGE_STATUS:
@@ -397,20 +401,21 @@ void *processing_thread(void* args) {
                         //                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
                         //                        }
                         ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
-                } 
+                }
         }
 }
 
 void *controlling_thread(void* args) {
         puts("Starting a controlling thread");
 
-        sleep(20);
-        vector <int> putId, getId, idsp, idsg;
-        while (true) {
-                if (this_peer->IsInitRcvd()) {
-                        char buffer[33];
+        //sleep(20);
+        //vector <int> putId, getId, idsp, idsg;
+        bool publish_name_done = false, lookup_name_done = false;
+        char buffer[33];
+        while (!publish_name_done || !lookup_name_done) {
+                if (this_peer->IsStart_gen_name_rcvd() && !publish_name_done) {
 
-                        getId.clear(), putId.clear();
+                        //getId.clear(), putId.clear();
                         //publish names
                         printf("[Controlling Thread]\tPublishing name in range %d %d\n",
                                 this_peer->getPublish_name_range_start(),
@@ -423,17 +428,21 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread]\tPublishing name: %d\n", i);
 
-                                putId.push_back(OverlayID(i, iCode).GetOverlay_id());
-                                idsp.push_back(i);
+                                //putId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                //idsp.push_back(i);
 
                                 this_peer->getProtocol()->put(string(buffer), ha);
                                 if (i % 3 == 0)
                                         pthread_yield();
                         }
+                        publish_name_done = true;
+                }
+
+                if (this_peer->IsStart_lookup__name_rcvd() && !lookup_name_done) {
                         //lookup names
-                        /*printf("[Controlling Thread:]\tLooking up name ...\n");
+                        printf("[Controlling Thread:]\tLooking up name ...\n");
                         //usleep(8000000);
-                        sleep(60);
+                        //sleep(60);
                         for (int i = this_peer->getLookup_name_range_start();
                                 i <= this_peer->getLookup_name_range_end(); i++) {
                                 HostAddress ha("dummyhost", i);
@@ -441,23 +450,25 @@ void *controlling_thread(void* args) {
                                 sprintf(buffer, "%d", i);
                                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
-                                getId.push_back(OverlayID(i, iCode).GetOverlay_id());
-                                idsg.push_back(i);
+                                //getId.push_back(OverlayID(i, iCode).GetOverlay_id());
+                                //idsg.push_back(i);
 
                                 this_peer->getProtocol()->get(string(buffer));
                                 if (i % 3 == 0)
                                         pthread_yield();
-                        }*/
-                        break;
+                        }
+                        lookup_name_done = true;
                 }
+
                 pthread_yield();
         }
 
-        sleep(60);
-        for (int X = 0; X < getId.size(); X++)
-                if (getId[X] != putId[X])
-                        printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
-                else puts("EQUAL");
+
+        //        sleep(60);
+        //        for (int X = 0; X < getId.size(); X++)
+        //                if (getId[X] != putId[X])
+        //                        printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
+        //                else puts("EQUAL");
 }
 
 void *logging_thread(void*) {
@@ -507,7 +518,9 @@ static void *callback(enum mg_event event,
                 } else {
                         char content[2048];
                         PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
+                        //<meta http-equiv=\"refresh\" content=\"10\">
                         int content_length = snprintf(content, sizeof (content),
+                                "<html><head></head><body>"\
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"\
@@ -517,7 +530,7 @@ static void *callback(enum mg_event event,
                                 "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
                                 "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
-                                "<strong>Index Table</strong><br/>size = %d<br/>", //%s<br/>"
+                                "<strong>Index Table</strong><br/>size = %d<br/></body></html>",
                                 this_peer->getOverlayID().toString(),
 
                                 this_peer->getProtocol()->getRoutingTable()->size(),
