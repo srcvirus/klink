@@ -9,9 +9,14 @@ then
 fi
 
 touch nodes
+nodecount=`wc -l pssh_nodes | cut -d' ' f 1`
+echo $nodecount >> nodes
 for machine in `cat pssh_nodes`
 do
-	scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ../ihostlist ../imonitorlist ../agent ../client ../config uwaterloo_pweb@$machine:~/
 	echo "$machine 20000" >> nodes
+done
+for machine in `cat pssh_nodes`
+do
+	scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no nodes ../imonitorlist ../agent ../client ../config uwaterloo_pweb@$machine:~/
 done
 
