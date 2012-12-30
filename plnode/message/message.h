@@ -247,14 +247,16 @@ public:
 	{
 		int offset = 0;
 		memcpy(&messageType, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
+
 		memcpy(&sequence_no, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		int destHostLength = 0;
 		memcpy(&destHostLength, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		dest_host = "";
+
 		//printf("DH Length : %d\n", destHostLength);
 		for (int i = 0; i < destHostLength; i++)
 		{
@@ -263,54 +265,60 @@ public:
 			offset += sizeof(char); //printf("offset = %d\n", offset);
 			dest_host += ch;
 		}
+		printf("offset = %d\n", offset);
+
 		memcpy(&dest_port, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		int sourceHostLength = 0;
 		memcpy(&sourceHostLength, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		source_host = "";
+
 		for (int i = 0; i < sourceHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char); //printf("offset = %d\n", offset);
+			offset += sizeof(char); printf("offset = %d\n", offset);
 			source_host += ch;
 		}
+		printf("offset = %d\n", offset);
+
 		memcpy(&source_port, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		memcpy(&overlay_hops, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
+
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
 
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(timeval));
-		offset += sizeof(timeval);
+		offset += sizeof(timeval); printf("offset = %d\n", offset);
 
-		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
-		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double);
-		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double);
+		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double); printf("offset = %d\n", offset);
+		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double); printf("offset = %d\n", offset);
+		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double); printf("offset = %d\n", offset);
 
 		int o_id, p_len, m_len;
 
 		memcpy(&o_id, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		memcpy(&p_len, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		memcpy(&m_len, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		dst_oid.SetOverlay_id(o_id);
 		dst_oid.SetPrefix_length(p_len);
 		dst_oid.MAX_LENGTH = m_len;
 
 		memcpy(&o_id, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		memcpy(&p_len, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		memcpy(&m_len, buffer + offset, sizeof(int));
-		offset += sizeof(int);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		src_oid.SetOverlay_id(o_id);
 		src_oid.SetPrefix_length(p_len);

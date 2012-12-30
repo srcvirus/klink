@@ -69,18 +69,26 @@ void *logging_thread(void*);
 
 int main(int argc, char* argv[]) {
         system_init();
-        pthread_t listener, processor, controller, web, logger;
-        pthread_t forwarder[MAX_FORWARDING_THREAD];
+
+        pthread_t listener, controller, web, logger;
+        pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
+
+        ThreadParameter f_param[MAX_FORWARDING_THREAD], p_param[MAX_PROCESSOR_THREAD];
+
+        for(int i = 0; i < MAX_FORWARDING_THREAD; i++)
+        	f_param[i] = ThreadParameter(i);
+
+        for(int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+                	p_param[i] = ThreadParameter(i);
 
         pthread_create(&listener, NULL, listener_thread, NULL);
+
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++) {
-                ThreadParameter t_param(i);
-                pthread_create(&forwarder[i], NULL, forwarding_thread, &t_param);
+                pthread_create(&forwarder[i], NULL, forwarding_thread, &f_param[i]);
         }
 
         for (int i = 0; i < MAX_PROCESSOR_THREAD; i++) {
-                ThreadParameter t_param(i);
-                pthread_create(&processor, NULL, processing_thread, &t_param);
+                pthread_create(&processor[i], NULL, processing_thread, &p_param);
         }
 
         //pthread_create(&logger, NULL, logging_thread, NULL);
@@ -88,10 +96,12 @@ int main(int argc, char* argv[]) {
         pthread_create(&web, NULL, web_thread, NULL);
 
         pthread_join(listener, NULL);
+
         for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
                 pthread_join(forwarder[i], NULL);
-        pthread_join(processor, NULL);
-        //pthread_join(logger, NULL);
+        for( int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+        	pthread_join(processor[i], NULL);
+        pthread_join(logger, NULL);
         pthread_join(controller, NULL);
         pthread_join(web, NULL);
 
@@ -142,10 +152,6 @@ void system_init() {
         FD_SET(s_socket->getSocketFd(), &connection_pool);
 
         fd_max = s_socket->getSocketFd();
-
-        sleep(5);
-
-        this_peer->populate_addressdb();
 }
 
 void cleanup() {
@@ -259,8 +265,8 @@ void *listener_thread(void* args) {
                                         buffer_length = s_socket->receive_data(i, &buffer);
                                         printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
 
-                                        /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                                         putchar('\n');*/
+                                        for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+                                        putchar('\n');
 
                                         s_socket->close_connection(i);
                                         FD_CLR(i, &connection_pool);

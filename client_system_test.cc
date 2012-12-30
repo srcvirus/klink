@@ -222,6 +222,7 @@ int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree) {
                 puts("----------------------------------------");
                 delete c_socket;
         }
+
 }
 
 int main(int argc, char* argv[]) {
