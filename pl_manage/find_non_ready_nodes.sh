@@ -3,19 +3,20 @@ if [ -f not_ready ]
 then
 	rm not_ready
 fi
+touch not_ready
 
 for node in `cat pssh_nodes`
 do
+	found=0
 	for ready in `cat ready_nodes`
 	do
-		found=0
 		if [ "$ready" == "$node" ]
 		then
 			found=1
 			break
 		fi
 	done
-	if [ $found -eq 1 ]
+	if test $found -eq 1
 	then
 		break
 	else 
