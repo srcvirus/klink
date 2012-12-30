@@ -204,15 +204,19 @@ public:
 			h_address.SetHostName(string(str_h_addr));
 			h_address.SetHostPort(atoi(str_h_port));
 
+			char str_port[12];
+			sprintf(str_port, "%d", h_address.GetHostPort());
+
 			memset(&hints, 0, sizeof(addrinfo));
 
-			hints.ai_family = AF_INET;
+			hints.ai_family = AF_UNSPEC;
 			hints.ai_socktype = SOCK_STREAM;
-			hints.ai_protocol = 0;
+			hints.ai_flags = AI_CANONNAME;
+			hints.ai_protocol = IPPROTO_TCP;
 
-			printf("resolving address = %s:%s\n", str_h_addr, str_h_port);
+			printf("resolving address = %s:%s\n", str_h_addr, str_port);
 
-			int ret_code = getaddrinfo(str_h_addr, str_h_port, &hints, &result);
+			int ret_code = getaddrinfo(str_h_addr, str_port, &hints, &result);
 
 			if(ret_code < 0)
 			{
