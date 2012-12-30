@@ -5,18 +5,11 @@
 
 #include <cstring>
 
-class PeerGenNameMessage: public ABSMessage
+class PeerStartGenNameMessage: public ABSMessage
 {
 public:
 
-	PeerGenNameMessage()
-	{
-	}
-
-	PeerGenNameMessage(string source_host, int source_port, string dest_host,
-			int dest_port, OverlayID src_oid, OverlayID dst_id) :
-			ABSMessage(MSG_GENERATE_NAME, source_host, source_port, dest_host,
-					dest_port, src_oid, dst_id)
+	PeerStartGenNameMessage() : ABSMessage(MSG_START_GENERATE_NAME)
 	{
 	}
 

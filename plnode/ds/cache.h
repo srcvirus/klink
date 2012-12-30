@@ -9,6 +9,7 @@
 #define	CACHE_H
 
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 
 #include "double_linked_list.h"
@@ -29,13 +30,13 @@ public:
 	int size;
 	DLLNode *current;
 
-	Cache()
-	{
-		dll = new DoublyLinkedList();
-		hm = new LookupTable<OverlayID, DLLNode*>();
-		size = 0;
-		current = dll->getHead();
-	}
+//	Cache()
+//	{
+//		dll = new DoublyLinkedList();
+//		hm = new LookupTable<OverlayID, DLLNode*>();
+//		size = 0;
+//		current = dll->getHead();
+//	}
 
 	Cache(CacheInsertPolicy *cinPolicy, CacheReplacePolicy *crPolicy,
 			LookupTable<OverlayID, HostAddress>* rt, OverlayID oid,
@@ -76,12 +77,16 @@ public:
 
 	void add(OverlayID &key, HostAddress &value)
 	{
-		crPolicy->processHit(key);
-		if (size == capacity)
+		if (size == capacity && !crPolicy->processHit(key))
 		{
 			crPolicy->evict();
+                        size--;
 		}
 		cinPolicy->insert(key, value);
+                puts("*******************************************************");
+                printf("Cache size %d\n", size);
+                puts(toString());
+                puts("*******************************************************");
 	}
 
 	bool lookup(OverlayID key, HostAddress &hostAddress)

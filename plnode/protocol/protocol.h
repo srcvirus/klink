@@ -39,7 +39,7 @@ public:
 		this->routing_table = new LookupTable <OverlayID, HostAddress>();
 		this->index_table = new LookupTable<string, HostAddress>();
 		this->container_peer = NULL;
-		this->cache = new Cache();
+		this->cache = NULL;
 		this->msgProcessor = NULL;
 	}
 
@@ -59,7 +59,7 @@ public:
 		routing_table = new LookupTable <OverlayID, HostAddress>();
 		index_table = new LookupTable<string, HostAddress>();
 		this->msgProcessor = msgProcessor;
-		cache = new Cache();
+		//cache = new Cache();
 		this->container_peer = container;
 	}
 
@@ -72,7 +72,7 @@ public:
 		return container_peer;
 	}
 
-	void setCache(Cache* cahce)
+	void setCache(Cache* cache)
 	{
 		this->cache = cache;
 	}

@@ -93,7 +93,7 @@ public:
         bool operator==(const OverlayID &id) const {
                 if (this->prefix_length != id.prefix_length)
                         return false;
-                if (this->GetMatchedPrefixLength(id) < this->prefix_length)
+                if (this->overlay_id != id.overlay_id)
                         return false;
                 return true;
         }
