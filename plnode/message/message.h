@@ -237,13 +237,13 @@ public:
 	{
 		int offset = 0;
 		memcpy(&messageType, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
 		memcpy(&sequence_no, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		int destHostLength = 0;
 		memcpy(&destHostLength, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		dest_host = "";
 		//printf("DH Length : %d\n", destHostLength);
 		for (int i = 0; i < destHostLength; i++)
@@ -254,26 +254,26 @@ public:
 			dest_host += ch;
 		}
 		memcpy(&dest_port, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		int sourceHostLength = 0;
 		memcpy(&sourceHostLength, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		source_host = "";
 		for (int i = 0; i < sourceHostLength; i++)
 		{
 			char ch;
 			memcpy(&ch, buffer + offset, sizeof(char));
-			offset += sizeof(char); //printf("offset = %d\n", offset);
+			offset += sizeof(char); printf("offset = %d\n", offset);
 			source_host += ch;
 		}
 		memcpy(&source_port, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 
 		memcpy(&overlay_hops, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
-		offset += sizeof(char); //printf("offset = %d\n", offset);
+		offset += sizeof(char); printf("offset = %d\n", offset);
 
 		memcpy(&issue_time_stamp, buffer + offset, sizeof(timeval));
 		offset += sizeof(timeval);

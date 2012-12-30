@@ -204,10 +204,15 @@ public:
 
 		memcpy(&n_peers, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		printf("offset = %d\n", offset);
+
 		memcpy(&k, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		printf("offset = %d\n", offset);
+
 		memcpy(&alpha, buffer + offset, sizeof(double));
 		offset += sizeof(double);
+		printf("offset = %d\n", offset);
 
 		memcpy(&publish_name_range_start, buffer + offset, sizeof(int));
 		offset += sizeof(int);
@@ -242,7 +247,7 @@ public:
 
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int));
-		offset += sizeof(int); //printf("offset = %d\n", offset);
+		offset += sizeof(int); printf("offset = %d\n", offset);
 		printf("%d\n", routingTableSize);
 
 		for (int i = 0; i < routingTableSize; i++)
@@ -263,7 +268,7 @@ public:
 			key.MAX_LENGTH = m_len;
 
 			memcpy(&hostNameLength, buffer + offset, sizeof(int));
-			offset += sizeof(int); //printf("offset = %d\n", offset);
+			offset += sizeof(int); printf("offset = %d\n", offset);
 			char ch;
 
 			for (int i = 0; i < hostNameLength; i++)

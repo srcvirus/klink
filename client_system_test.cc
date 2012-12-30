@@ -149,10 +149,10 @@ void send_init_message(BuildTree &tree, int name_count)
 		for(int l = 0; l < buffer_length; l++) printf(" %d", buffer[l]);
 		putchar('\n');
 
-		 /*PeerInitMessage* a = new PeerInitMessage();
+		 PeerInitMessage* a = new PeerInitMessage();
 		 a->deserialize(buffer, buffer_length);
-		 puts("deserialized message");
-		 a->message_print_dump();*/
+		 //puts("deserialized message");
+		 //a->message_print_dump();*/
 
 		//puts("Sending Init Packet");
 		timeval timeout;
