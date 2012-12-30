@@ -200,7 +200,7 @@ public:
 		routing_table.clear();
 
 		ABSMessage::deserialize(buffer, buffer_length);
-		offset = getBaseSize();
+		offset = getBaseSize(); printf("offset = %d\n", offset);
 
 		memcpy(&n_peers, buffer + offset, sizeof(int));
 		offset += sizeof(int);
