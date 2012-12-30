@@ -257,8 +257,8 @@ void *listener_thread(void* args) {
                                         buffer_length = s_socket->receive_data(i, &buffer);
                                         printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
 
-                                        /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                                         putchar('\n');*/
+                                        for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+                                        putchar('\n');
 
                                         s_socket->close_connection(i);
                                         FD_CLR(i, &connection_pool);

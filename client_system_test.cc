@@ -146,6 +146,9 @@ void send_init_message(BuildTree &tree, int name_count)
 		buffer = pInit->serialize(&buffer_length);
 		printf("Serialized Length = %d bytes\n", buffer_length);
 
+		for(int l = 0; l < buffer_length; l++) printf(" %d", buffer[l]);
+		puthchar('\n');
+
 		 /*PeerInitMessage* a = new PeerInitMessage();
 		 a->deserialize(buffer, buffer_length);
 		 puts("deserialized message");
