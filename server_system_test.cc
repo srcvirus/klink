@@ -67,6 +67,7 @@ void *logging_thread(void*);
 
 int main(int argc, char* argv[]) {
         system_init();
+
         pthread_t listener, controller, web, logger;
         pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
 
@@ -151,10 +152,6 @@ void system_init() {
         FD_SET(s_socket->getSocketFd(), &connection_pool);
 
         fd_max = s_socket->getSocketFd();
-
-        sleep(5);
-
-        this_peer->populate_addressdb();
 }
 
 void cleanup() {

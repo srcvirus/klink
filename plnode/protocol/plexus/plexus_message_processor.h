@@ -222,6 +222,8 @@ public:
                         container_peer->setLogServerUser(pInitMsg->getLogServerUser());
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
 
+                        container_peer->populate_addressdb();
+
                         container_peer->SetInitRcvd(true);
                         container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
                         container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
