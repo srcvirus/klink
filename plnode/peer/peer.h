@@ -85,9 +85,9 @@ public:
 		hostname[0] = '\0';
 		gethostname(hostname, 100);
 		//getdomainname(domain_name, 100);
-		struct hostent* host_info;
-		host_info = gethostbyname(hostname);
-		host_name = string(host_info->h_name);
+		//struct hostent* host_info;
+		//host_info = gethostbyname(hostname);
+		host_name = string(hostname);
 
 		init_rcvd = false;
 		start_gen_name = false;
