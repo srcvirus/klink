@@ -162,7 +162,8 @@ void send_init_message(BuildTree &tree, int name_count) {
         }
 }
 
-int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree) {
+int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree)
+{
         int n = tree.getTreeSize();
         int retCode = 0;
 
