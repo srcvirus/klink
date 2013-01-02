@@ -16,19 +16,9 @@ for machine in `cat pssh_nodes`
 do
 	echo "$machine 20000" >> nodes
 done
-start=1
-seg_size=30
-n=$nodecount
-#while [ $n -gt 0 ]
-#do
-#	start=$(($start+$seg_size-1))
-#	n=$(($n-$seg_size))
-#	if [ $n -lt 0 ]
-#	then
-#		seg_size=$(($seg_size+$n))
-#	fi
-#	./upload.sh $start $seg_size &
-#done
+
+scp ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
 
 #for machine in `cat pssh_nodes`
 #do
