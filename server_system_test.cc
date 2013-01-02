@@ -40,7 +40,7 @@ using namespace std;
 #define MAX_LISTENER_THREAD 1
 #define MAX_CONTROL_THREAD 1
 #define MAX_PROCESSOR_THREAD 1
-#define MAX_FORWARDING_THREAD 10
+#define MAX_FORWARDING_THREAD 8
 #define MAX_LOGGING_THREAD 1
 //Globals
 Peer* this_peer;
