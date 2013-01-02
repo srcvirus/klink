@@ -116,6 +116,9 @@ public:
                 log[LOG_PUT] = new Log(log_seq_no, "put", log_server_name,
                         log_server_user);
 
+                log[LOG_GET]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
+                log[LOG_PUT]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
+
                 log[LOG_GET]->open("a");
                 log[LOG_PUT]->open("a");
         }

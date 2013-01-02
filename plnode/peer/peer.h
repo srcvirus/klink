@@ -222,6 +222,7 @@ public:
 				printf("%s\n", gai_strerror(ret_code));
 				continue;
 			}
+
 			address_db.add(h_address, *result);
 
 			/*addrinfo* rp;
@@ -243,7 +244,7 @@ public:
 	{
 		addrinfo ret;
 		ret.ai_addr = NULL;
-		address_db.lookup(h_address, &ret);
+		bool found = address_db.lookup(h_address, &ret);
 		return ret;
 	}
 

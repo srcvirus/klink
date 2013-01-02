@@ -40,7 +40,7 @@ public:
 
         bool operator<(const HostAddress& addr) const {
                 int minLength = this->hostName.size();
-                if (minLength < addr.hostName.size())
+                if (minLength > addr.hostName.size())
                         minLength = addr.hostName.size();
 
                 if (strncmp(this->hostName.c_str(), addr.hostName.c_str(), minLength) < 0) {
@@ -50,7 +50,7 @@ public:
 
         bool operator ==(const HostAddress& addr) {
                 int minLength = this->hostName.size();
-                if (minLength < addr.hostName.size())
+                if (minLength > addr.hostName.size())
                         minLength = addr.hostName.size();
 
                 return (strncmp(this->hostName.c_str(), addr.hostName.c_str(), minLength) == 0 &&

@@ -481,9 +481,9 @@ void *logging_thread(void*) {
                     continue;
                 }
 
-                printf("[Logging Thread]\twaiting for a log entry to pop\n");
+                //printf("[Logging Thread]\twaiting for a log entry to pop\n");
                 entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
-                printf("[Logging Thread]\tpulled a log entry from the queue\n");
+                //printf("[Logging Thread]\tpulled a log entry from the queue\n");
 
                 Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
                 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());

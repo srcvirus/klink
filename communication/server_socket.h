@@ -176,6 +176,7 @@ ServerSocket::~ServerSocket()
 		close(*active_con_it);
 	}
 	active_connections.clear();
+	close(socket_fd);
 }
 
 int ServerSocket::receive_data(int connection_fd, char** buffer)

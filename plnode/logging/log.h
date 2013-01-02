@@ -291,7 +291,7 @@ int Log::write(const char* key, const char* value)
 	if (log_file_ptr == NULL)
 		return ERROR_FILE_NOT_OPEN;
 
-	puts("writing log");
+	//puts("writing log");
 
 	string text = key;
 	text += " ";

@@ -169,6 +169,11 @@ public:
 		return K;
 	}
 
+	int getCheckPointRow() const
+	{
+		return check_point_row;
+	}
+
 	string getLogServerHostName() const
 	{
 		return log_server_host_name;
@@ -198,6 +203,8 @@ public:
 	{
 		return seq_file_path;
 	}
+
+
 
 	int getInt(string key)
 	{
