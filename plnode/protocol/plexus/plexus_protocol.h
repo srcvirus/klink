@@ -305,7 +305,7 @@ public:
                 }
                 routing_table->lookup(maxMatchOid, &next_hop);
                 //search in the Cache
-                /*cache->reset_iterator();
+                cache->reset_iterator();
                 while (cache->has_next())
                 {
                         DLLNode *node = cache->get_next();
@@ -315,9 +315,9 @@ public:
                         {
                                 maxLengthMatch = currentMatchLength;
                                 cache->lookup(msg->getDstOid(), next_hop);
-                                printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                                //printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
                         }
-                }*/
+                }
 
                 cout << endl << "max match : = " << maxLengthMatch << endl;
 
