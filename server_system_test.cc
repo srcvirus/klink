@@ -487,7 +487,6 @@ void *logging_thread(void*) {
 
                 Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
                 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
-                printf("[Logging Thread:]\tlog flushed to the disk\n");
 
                 delete entry;
                 printf("Index table size = %d\n", plexus->getIndexTable()->size());

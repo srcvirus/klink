@@ -20,7 +20,10 @@
 #include "../../message/p2p/message_get_reply.h"
 #include "../../message/control/peer_initiate_get.h"
 #include "../../message/control/peer_initiate_put.h"
+
 #include "../../ds/host_address.h"
+#include "../../ds/message_state_index.h"
+
 #include "../../message/message.h"
 #include "../../logging/log.h"
 #include "../../logging/log_entry.h"
@@ -35,6 +38,7 @@ class ABSProtocol;
 
 class PlexusProtocol : public ABSProtocol {
         Log *log[MAX_LOGS];
+        LookupTable <MessageStateIndex, timeval> unresolved_get, unresolved_put;
 
         queue<ABSMessage*> incoming_message_queue;
         queue<ABSMessage*> outgoing_message_queue;
@@ -340,8 +344,13 @@ public:
                         container_peer->getListenPortNumber(), "", -1,
                         container_peer->getOverlayID(), destID, name);
 
-                printf("Constructed Get Message");
-                msg->message_print_dump();
+                /*printf("Constructed Get Message");
+                msg->message_print_dump();*/
+
+                MessageStateIndex msg_index(hash_name_to_get, msg->getSequenceNo());
+                timeval timestamp;
+                gettimeofday(&timestamp, NULL);
+                unresolved_get.add(msg_index, timestamp);
 
                 if (msgProcessor->processMessage(msg))
                 {
@@ -365,7 +374,7 @@ public:
                         destination.GetHostName(), destination.GetHostPort(),
                         container_peer->getOverlayID(), destID, name);
                 msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
-                msg->message_print_dump();
+                //msg->message_print_dump();
                 send_message(msg);
         }
 
@@ -376,6 +385,11 @@ public:
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,
                         container_peer->getOverlayID(), destID, name, hostAddress);
+
+                MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
+                timeval timestamp;
+                gettimeofday(&timestamp, NULL);
+                unresolved_put.add(msg_index, timestamp);
 
                 if (msgProcessor->processMessage(msg)) {
                         msg->setIssueTimeStamp();
@@ -519,6 +533,8 @@ public:
                 return log[type];
         }
 
+
+
         ~PlexusProtocol() {
                 pthread_mutex_destroy(&incoming_queue_lock);
                 pthread_mutex_destroy(&outgoing_queue_lock);
@@ -528,6 +544,26 @@ public:
                 pthread_cond_destroy(&cond_outgoing_queue_empty);
                 pthread_cond_destroy(&cond_log_queue_empty);
         }
+
+		LookupTable<MessageStateIndex, timeval>& getUnresolvedGet()
+		{
+			return unresolved_get;
+		}
+
+		void setUnresolvedGet(const LookupTable<MessageStateIndex, timeval>& unresolvedGet)
+		{
+			unresolved_get = unresolvedGet;
+		}
+
+		LookupTable<MessageStateIndex, timeval>& getUnresolvedPut()
+		{
+			return unresolved_put;
+		}
+
+		void setUnresolvedPut(const LookupTable<MessageStateIndex, timeval>& unresolvedPut)
+		{
+			unresolved_put = unresolvedPut;
+		}
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */

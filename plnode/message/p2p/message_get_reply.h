@@ -18,6 +18,7 @@ class MessageGET_REPLY: public ABSMessage
 {
 	int resolution_status;
 	int resolution_hops;
+	int origin_seq_no;
 	HostAddress host_address;
 	string device_name;
 
@@ -42,7 +43,7 @@ public:
 	size_t getSize()
 	{
 		int ret = getBaseSize();
-		ret += sizeof(int) * 5
+		ret += sizeof(int) * 6
 				+ sizeof(char) * host_address.GetHostName().size()
 				+ sizeof(char) * device_name.size();
 		return ret;
@@ -62,6 +63,8 @@ public:
 		memcpy(buffer + offset, (char*) &resolution_status, sizeof(int));
 		offset += sizeof(int);
 		memcpy(buffer + offset, (char*) &resolution_hops, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &origin_seq_no, sizeof(int));
 		offset += sizeof(int);
 
 		int destHostLength = host_address.GetHostName().size();
@@ -102,6 +105,8 @@ public:
 		memcpy(&resolution_status, buffer + offset, sizeof(int));
 		offset += sizeof(int);
 		memcpy(&resolution_hops, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&origin_seq_no, buffer + offset, sizeof(int));
 		offset += sizeof(int);
 
 		int hostLength = 0;
@@ -175,6 +180,16 @@ public:
 	void setDeviceName(string d_name)
 	{
 		device_name = d_name;
+	}
+
+	int getOriginSeqNo() const
+	{
+		return origin_seq_no;
+	}
+
+	void setOriginSeqNo(int origin_seq_no)
+	{
+		this->origin_seq_no = origin_seq_no;
 	}
 };
 

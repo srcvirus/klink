@@ -311,6 +311,7 @@ int Log::write(const char* key, const char* value)
 	{
 		fflush(log_file_ptr);
 		fclose(log_file_ptr);
+		printf("[Logging Thread:]\tlog flushed to the disk\n");
 
 		log_file_ptr = NULL;
 

@@ -85,6 +85,7 @@ public:
                         reply->setQueueDelay(putMsg->getQueueDelay());
                         reply->setProcessingDelay(putMsg->getProcessingDelay());
                         reply->setPingLatency(putMsg->getPingLatency());
+                        reply->setOriginSeqNo(putMsg->getSequenceNo());
 
                         plexus->addToOutgoingQueue(reply);
                 }//GET
@@ -107,6 +108,7 @@ public:
                                 reply->setQueueDelay(msg->getQueueDelay());
                                 reply->setProcessingDelay(msg->getProcessingDelay());
                                 reply->setPingLatency(msg->getPingLatency());
+                                reply->setOriginSeqNo(msg->getSequenceNo());
 
                                 plexus->addToOutgoingQueue(reply);
                                 //send message
@@ -145,10 +147,18 @@ public:
                                 msg->getSequenceNo());
                         string key = i_str;
 
-                        timeval start_t = msg->getIssueTimeStamp();
+                        int hash_name_to_get =  atoi(msg->getDeviceName().c_str());
+                        MessageStateIndex msg_index(hash_name_to_get, msg->getOriginSeqNo());
 
-                        double total_t;
-                        timeval_subtract(end_t, start_t, &total_t);
+                        timeval start_t;
+                        if(plexus->getUnresolvedGet().lookup(msg_index, &start_t)) puts("found");
+                        else puts("not found");
+
+                        plexus->getUnresolvedGet().remove(msg_index);
+
+                        timeval total;
+                        timersub(&end_t, &start_t, &total);
+                        double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
 
                         double queue_delay = msg->getQueueDelay();
                         double processing_delay = msg->getProcessingDelay();
@@ -185,10 +195,18 @@ public:
 
                         string key = i_str;
 
-                        timeval start_t = msg->getIssueTimeStamp();
-                        double total_t;
+                        int hash_name_to_publish =  atoi(msg->getDeviceName().c_str());
+                        MessageStateIndex msg_index(hash_name_to_publish, msg->getOriginSeqNo());
 
-                        timeval_subtract(end_t, start_t, &total_t);
+                        timeval start_t;
+                        if(plexus->getUnresolvedPut().lookup(msg_index, &start_t)) puts("found");
+                        else puts("not found");
+
+                        plexus->getUnresolvedGet().remove(msg_index);
+
+                        timeval total;
+                        timersub(&end_t, &start_t, &total);
+                        double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
 
                         double queue_delay = msg->getQueueDelay();
                         double processing_delay = msg->getProcessingDelay();

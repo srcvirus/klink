@@ -155,16 +155,23 @@ public:
 	void updateStatistics()
 	{
 		double iq_delay, oq_delay, pr_delay, pi_delay;
+		timeval iq_t, oq_t, pr_t, pi_t;
 
-		timeval_subtract(in_queue_pop_time_stamp, in_queue_push_time_stamp, &iq_delay);
-		timeval_subtract(out_queue_pop_time_stamp, out_queue_push_time_stamp, &oq_delay);
+		timersub(&in_queue_pop_time_stamp, &in_queue_push_time_stamp, &iq_t);
+		iq_delay = ((double)iq_t.tv_sec * 1000.0) + ((double)iq_t.tv_usec / 1000.0);
+
+		timersub(&out_queue_pop_time_stamp, &out_queue_push_time_stamp, &oq_t);
+		oq_delay = ((double)oq_t.tv_sec * 1000.0) + ((double)oq_t.tv_usec / 1000.0);
 
 		this->queue_delay += (iq_delay + oq_delay);
 
-		timeval_subtract(processing_end_t, processing_start_t, &pr_delay);
+		timersub(&processing_end_t, &processing_start_t, &pr_t);
+		pr_delay = ((double)pr_t.tv_sec * 1000.0) + ((double)pr_t.tv_usec / 1000.0);
+
 		this->processing_delay += pr_delay;
 
-		timeval_subtract(ping_end_t , ping_start_t, &pi_delay);
+		timersub(&ping_end_t, &ping_start_t, &pi_t);
+		pi_delay = ((double)pi_t.tv_sec * 1000.0) + ((double)pi_t.tv_usec / 1000.0);
 		this->ping_latency += pi_delay;
 	}
 
