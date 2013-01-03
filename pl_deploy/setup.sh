@@ -17,7 +17,7 @@ do
 	echo "$machine 20000" >> nodes
 done
 
-scp ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+scp pssh_nodes ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
 ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
 
 #for machine in `cat pssh_nodes`

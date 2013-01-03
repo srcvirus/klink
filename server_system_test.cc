@@ -179,8 +179,9 @@ void *forwarding_thread(void* args) {
                         message->setPingStartT();
                         int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
                         message->setPingEndT();
-                        message->updateStatistics();
                 }
+
+                message->updateStatistics();
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
                         message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());

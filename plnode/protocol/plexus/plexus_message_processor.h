@@ -48,9 +48,8 @@ public:
         }
 
         bool processMessage(ABSMessage* message) {
-                if (message->getMessageType() == MSG_PLEXUS_GET
-                        || message->getMessageType() == MSG_PLEXUS_PUT)
-                        message->setProcessingStartT();
+
+                message->setProcessingStartT();
 
                 message->decrementOverlayTtl();
                 PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
@@ -59,9 +58,7 @@ public:
                 bool forward = plexus->setNextHop(message);
 
                 if (forward) {
-                        if (message->getMessageType() == MSG_PLEXUS_GET
-                                || message->getMessageType() == MSG_PLEXUS_PUT)
-                                message->setProcessingEndT();
+                		message->setProcessingEndT();
                         return true;
                 }
                 //PUT
@@ -132,6 +129,9 @@ public:
                         }
                 }//GET_REPLY
                 else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
+                		message->setProcessingEndT();
+                		message->updateStatistics();
+
                         timeval end_t;
                         gettimeofday(&end_t, NULL);
 
@@ -179,6 +179,8 @@ public:
                         plexus->addToLogQueue(entry);
                         //cache->print();
                 } else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY) {
+                		message->setProcessingEndT();
+                		message->updateStatistics();
                         timeval end_t;
                         gettimeofday(&end_t, NULL);
 

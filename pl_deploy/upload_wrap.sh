@@ -11,5 +11,5 @@ do
 		seg_size=$(($seg_size+$n))
 	fi
 	./upload.sh $start $seg_size &
-	start=$(($start+$seg_size-1))
+	start=$(($start+$seg_size))
 done
