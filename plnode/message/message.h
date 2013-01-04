@@ -173,6 +173,18 @@ public:
 		timersub(&ping_end_t, &ping_start_t, &pi_t);
 		pi_delay = ((double)pi_t.tv_sec * 1000.0) + ((double)pi_t.tv_usec / 1000.0);
 		this->ping_latency += pi_delay;
+
+		in_queue_pop_time_stamp.tv_sec = in_queue_push_time_stamp.tv_sec = 0;
+		in_queue_pop_time_stamp.tv_usec = in_queue_push_time_stamp.tv_usec = 0;
+
+		out_queue_pop_time_stamp.tv_sec = out_queue_push_time_stamp.tv_sec = 0;
+		out_queue_pop_time_stamp.tv_usec = out_queue_push_time_stamp.tv_usec = 0;
+
+		processing_start_t.tv_sec = processing_end_t.tv_sec = 0;
+		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
+
+		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
 	}
 
 	virtual char* serialize(int* serialize_length)
