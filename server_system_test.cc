@@ -422,6 +422,8 @@ void *controlling_thread(void* args) {
                                 this_peer->getPublish_name_range_start(),
                                 this_peer->getPublish_name_range_end());
 
+                        sleep(15);
+
                         for (int i = this_peer->getPublish_name_range_start();
                                 i <= this_peer->getPublish_name_range_end(); i++) {
                                 HostAddress ha("dummyhost", i);
