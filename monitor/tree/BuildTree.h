@@ -115,8 +115,10 @@ void BuildTree::execute() {
                 		line = "";
                         //hostname and port
                 	    std::getline(hostListFile, line);
+
                 	    char buf[400];
                 	    strcpy(buf, line.c_str());
+                	    printf("line >> %s\n", buf);
 
                 	    char* token = strtok(buf, " \n");
                 	    hostName = string(token);
