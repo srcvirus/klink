@@ -38,7 +38,7 @@ class ABSProtocol;
 
 class PlexusProtocol : public ABSProtocol {
         Log *log[MAX_LOGS];
-        LookupTable <MessageStateIndex, timeval> unresolved_get, unresolved_put;
+        LookupTable <MessageStateIndex, double> unresolved_get, unresolved_put;
 
         queue<ABSMessage*> incoming_message_queue;
         queue<ABSMessage*> outgoing_message_queue;
@@ -350,7 +350,8 @@ public:
                 MessageStateIndex msg_index(hash_name_to_get, msg->getSequenceNo());
                 timeval timestamp;
                 gettimeofday(&timestamp, NULL);
-                unresolved_get.add(msg_index, timestamp);
+                double timestamp_t = (double)(timestamp.tv_sec) * 1000.0 + (double)(timestamp.tv_usec) / 1000.0;
+                unresolved_get.add(msg_index, timestamp_t);
 
                 if (msgProcessor->processMessage(msg))
                 {
@@ -389,7 +390,8 @@ public:
                 MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
                 timeval timestamp;
                 gettimeofday(&timestamp, NULL);
-                unresolved_put.add(msg_index, timestamp);
+                double timestamp_t = (double)(timestamp.tv_sec) * 1000.0 + (double)(timestamp.tv_usec) / 1000.0;
+                unresolved_put.add(msg_index, timestamp_t);
 
                 if (msgProcessor->processMessage(msg)) {
                         msg->setIssueTimeStamp();
@@ -546,22 +548,22 @@ public:
                 pthread_cond_destroy(&cond_log_queue_empty);
         }
 
-		LookupTable<MessageStateIndex, timeval>& getUnresolvedGet()
+		LookupTable<MessageStateIndex, double>& getUnresolvedGet()
 		{
 			return unresolved_get;
 		}
 
-		void setUnresolvedGet(const LookupTable<MessageStateIndex, timeval>& unresolvedGet)
+		void setUnresolvedGet(const LookupTable<MessageStateIndex, double>& unresolvedGet)
 		{
 			unresolved_get = unresolvedGet;
 		}
 
-		LookupTable<MessageStateIndex, timeval>& getUnresolvedPut()
+		LookupTable<MessageStateIndex, double>& getUnresolvedPut()
 		{
 			return unresolved_put;
 		}
 
-		void setUnresolvedPut(const LookupTable<MessageStateIndex, timeval>& unresolvedPut)
+		void setUnresolvedPut(const LookupTable<MessageStateIndex, double>& unresolvedPut)
 		{
 			unresolved_put = unresolvedPut;
 		}

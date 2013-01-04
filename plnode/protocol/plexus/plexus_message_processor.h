@@ -134,6 +134,7 @@ public:
 
                         timeval end_t;
                         gettimeofday(&end_t, NULL);
+                        double end = (double)(end_t.tv_sec) * 1000.0 + (double)(end_t.tv_usec) / 1000.0;
 
                         MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
                         OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
@@ -150,15 +151,17 @@ public:
                         int hash_name_to_get =  atoi(msg->getDeviceName().c_str());
                         MessageStateIndex msg_index(hash_name_to_get, msg->getOriginSeqNo());
 
-                        timeval start_t;
-                        if(plexus->getUnresolvedGet().lookup(msg_index, &start_t)) puts("found");
+                        //timeval start_t;
+                        double start;
+                        if(plexus->getUnresolvedGet().lookup(msg_index, &start)) puts("found");
                         else puts("not found");
 
                         plexus->getUnresolvedGet().remove(msg_index);
 
-                        timeval total;
-                        timersub(&end_t, &start_t, &total);
-                        double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
+                        //timeval total;
+                        //timersub(&end_t, &start_t, &total);
+                        //double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
+                        double total_t = end - start;
 
                         double queue_delay = msg->getQueueDelay();
                         double processing_delay = msg->getProcessingDelay();
@@ -181,8 +184,9 @@ public:
                 } else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY) {
                 		message->setProcessingEndT();
                 		message->updateStatistics();
-                        timeval end_t;
-                        gettimeofday(&end_t, NULL);
+                		timeval end_t;
+                		gettimeofday(&end_t, NULL);
+                		double end = (double)(end_t.tv_sec) * 1000.0 + (double)(end_t.tv_usec) / 1000.0;
 
                         MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
                         OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
@@ -200,15 +204,16 @@ public:
                         int hash_name_to_publish =  atoi(msg->getDeviceName().c_str());
                         MessageStateIndex msg_index(hash_name_to_publish, msg->getOriginSeqNo());
 
-                        timeval start_t;
-                        if(plexus->getUnresolvedPut().lookup(msg_index, &start_t)) puts("found");
+                        double start;
+                        if(plexus->getUnresolvedPut().lookup(msg_index, &start)) puts("found");
                         else puts("not found");
 
                         plexus->getUnresolvedPut().remove(msg_index);
 
-                        timeval total;
-                        timersub(&end_t, &start_t, &total);
-                        double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
+                        //timeval total;
+                        //timersub(&end_t, &start_t, &total);
+                        //double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
+                        double total_t = end - start;
 
                         double queue_delay = msg->getQueueDelay();
                         double processing_delay = msg->getProcessingDelay();
