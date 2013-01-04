@@ -140,7 +140,7 @@ public:
 
 		HostAddress dest_address(message->getDestHost(), message->getDestPort());
 
-		addrinfo server_info = container_peer->lookup_address(dest_address);
+		sockaddr_in server_info = container_peer->lookup_address(dest_address);
 		c_socket.setServerInfo(server_info);
 
 		error_code = c_socket.connect_to_server();

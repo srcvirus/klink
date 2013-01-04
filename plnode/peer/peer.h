@@ -74,7 +74,7 @@ class Peer {
         string log_server_user;
 
         Configuration* configuration;
-        LookupTable<HostAddress, addrinfo > address_db;
+        LookupTable<HostAddress, sockaddr_in > address_db;
 
 public:
 
@@ -154,13 +154,23 @@ public:
 		int port = -1;
 		int n_hosts;
 		bool found = false;
+		char line[400];
 
-		fscanf(hosts_ptr, "%d", &n_hosts);
+		fgets(line, sizeof(line), hosts_ptr);
+		n_hosts = atoi(line);
+
+		//fscanf(hosts_ptr, "%d", &n_hosts);
 		printf("N hosts = %d\n", n_hosts);
 
 		for (int i = 0; i < n_hosts; i++)
 		{
-			fscanf(hosts_ptr, "%s %d", host_name, &port);
+			fgets(line, sizeof(line), hosts_ptr);
+			//fscanf(hosts_ptr, "%s %d", host_name, &port);
+			strcpy(host_name, strtok(line, " \n"));
+			port = atoi(strtok(NULL, " \n"));
+
+			printf("%s:%d\n", host_name, port);
+
 			if (strncmp(this->getHostName().c_str(), host_name, strlen(this->getHostName().c_str()))
 					== 0 || strcmp(host_name, "localhost") == 0)
 			{
@@ -186,6 +196,7 @@ public:
 		address_db.clear();
 		fgets(buffer, sizeof(buffer), nodes_file_ptr);
 		int N = atoi(buffer);
+		int total = N, done = 0;
 
 		while (N > 0)
 		{
@@ -195,10 +206,12 @@ public:
 			addrinfo hints;
 			addrinfo* result;
 
+
 			HostAddress h_address;
 
 			char* str_h_addr = strtok(buffer, " \n");
 			char* str_h_port = strtok(NULL, " \n");
+			char* ip_address = strtok(NULL, " \n");
 
 			h_address.SetHostName(string(str_h_addr));
 			h_address.SetHostPort(atoi(str_h_port));
@@ -206,24 +219,36 @@ public:
 			char str_port[12];
 			sprintf(str_port, "%d", h_address.GetHostPort());
 
-			memset(&hints, 0, sizeof(addrinfo));
-
-			hints.ai_family = AF_UNSPEC;
-			hints.ai_socktype = SOCK_STREAM;
-			hints.ai_flags = AI_CANONNAME;
-			hints.ai_protocol = IPPROTO_TCP;
-
-			printf("resolving address = %s:%s\n", str_h_addr, str_port);
-
-			int ret_code = getaddrinfo(str_h_addr, str_port, &hints, &result);
-
-			if(ret_code < 0)
+			if(ip_address == NULL)
 			{
-				printf("%s\n", gai_strerror(ret_code));
-				continue;
+				memset(&hints, 0, sizeof(addrinfo));
+
+				hints.ai_family = AF_UNSPEC;
+				hints.ai_socktype = SOCK_STREAM;
+				hints.ai_flags = AI_CANONNAME;
+				hints.ai_protocol = IPPROTO_TCP;
+
+				int ret_code = getaddrinfo(str_h_addr, str_port, &hints, &result);
+
+				if(ret_code < 0)
+				{
+					printf("%s\n", gai_strerror(ret_code));
+					continue;
+				}
+
+				address_db.add(h_address, *((sockaddr_in*)(result->ai_addr)));
+			}
+			else
+			{
+				sockaddr_in s_addr;
+				s_addr.sin_family = AF_INET;
+				inet_pton(AF_INET, ip_address, &(s_addr.sin_addr));
+				s_addr.sin_port = htons(h_address.GetHostPort());
+				address_db.add(h_address, s_addr);
 			}
 
-			address_db.add(h_address, *result);
+			done++;
+			printf("[%d/%d] resolving address = %s:%s\n", done, total, str_h_addr, str_port);
 
 			/*addrinfo* rp;
 			for(rp = result; rp != NULL; rp = result->ai_next)
@@ -240,10 +265,10 @@ public:
 		fclose(nodes_file_ptr);
 	}
 
-	addrinfo lookup_address(const HostAddress& h_address)
+	sockaddr_in lookup_address(const HostAddress& h_address)
 	{
-		addrinfo ret;
-		ret.ai_addr = NULL;
+		sockaddr_in ret;
+		ret.sin_port = 0;
 		bool found = address_db.lookup(h_address, &ret);
 		return ret;
 	}

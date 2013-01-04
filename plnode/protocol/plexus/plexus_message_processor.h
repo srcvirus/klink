@@ -204,7 +204,7 @@ public:
                         if(plexus->getUnresolvedPut().lookup(msg_index, &start_t)) puts("found");
                         else puts("not found");
 
-                        plexus->getUnresolvedGet().remove(msg_index);
+                        plexus->getUnresolvedPut().remove(msg_index);
 
                         timeval total;
                         timersub(&end_t, &start_t, &total);

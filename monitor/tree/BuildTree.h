@@ -82,10 +82,14 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
 void BuildTree::execute() {
         //open host list file
         ifstream hostListFile(fileName.c_str());
+        string line;
 
         if (hostListFile.is_open()) {
                 // Initialize local variables
-                hostListFile >> this->treeSize;
+        	    std::getline(hostListFile, line);
+        	    this->treeSize = atoi(line.c_str());
+
+                //hostListFile >> this->treeSize;
                 this->idArray = new OverlayID[treeSize];
                 this->hAddArray = new HostAddress[treeSize];
                 this->rtArray = new LookupTable<OverlayID, HostAddress> [treeSize];
@@ -108,9 +112,20 @@ void BuildTree::execute() {
                         - nodesAtPrevLevel;
                 int st = startingNodeAtPrevLevel;
                 for (int i = 0; i < treeSize; i++) {
+                		line = "";
                         //hostname and port
-                        hostListFile >> hostName;
-                        hostListFile >> hostPort;
+                	    std::getline(hostListFile, line);
+                	    char buf[400];
+                	    strcpy(buf, line.c_str());
+
+                	    char* token = strtok(buf, " \n");
+                	    hostName = string(token);
+
+                	    token = strtok(NULL, " \n");
+                	    hostPort = atoi(token);
+
+                        //hostListFile >> hostName;
+                        //hostListFile >> hostPort;
                         HostAddress ha;
                         ha.SetHostName(hostName);
                         ha.SetHostPort(hostPort);

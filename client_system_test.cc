@@ -75,10 +75,10 @@ void send_init_message(BuildTree &tree, int name_count) {
                 printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
                 c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
-                addrinfo s_info = this_peer->lookup_address(address);
-                if (s_info.ai_addr != NULL) {
+                sockaddr_in s_info = this_peer->lookup_address(address);
+                /*if (s_info.ai_addr != NULL) {
                         puts("not null");
-                }
+                }*/
 
                 c_socket->setServerInfo(s_info);
                 retCode = c_socket->connect_to_server();
@@ -176,10 +176,10 @@ int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree)
                 printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
                 c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
-                addrinfo s_info = this_peer->lookup_address(address);
-                if (s_info.ai_addr != NULL) {
+                sockaddr_in s_info = this_peer->lookup_address(address);
+                /*if (s_info.ai_addr != NULL) {
                         puts("not null");
-                }
+                }*/
 
                 c_socket->setServerInfo(s_info);
                 retCode = c_socket->connect_to_server();
@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
         this_peer = new Peer();
         this_peer->setTimeoutSec(5);
         this_peer->setConfiguration(GlobalData::config_file_name.c_str());
-        this_peer->populate_addressdb();
+        //this_peer->populate_addressdb();
 
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
