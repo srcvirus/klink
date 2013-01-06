@@ -188,7 +188,7 @@ pair <int, double> getCost(string ip_address)
 		char* time_str = strtok(NULL, " =");
 		if(time_str == NULL) { n_retry++; continue; }
 
-		char* str_rtt = atof(strtok(NULL, " ="));
+		char* str_rtt = strtok(NULL, " =");
 		if(str_rtt == NULL) { n_retry++; continue; }
 		double rtt = atof(str_rtt);
 
