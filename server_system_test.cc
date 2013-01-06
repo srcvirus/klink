@@ -184,7 +184,6 @@ void *forwarding_thread(void* args) {
                 	message->incrementIpHops(ip_hops);
                 	message->incrementLatency(latency);
                 	printf("Next hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n", ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops, latency);
-                	message->message_print_dump();
                 }
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),

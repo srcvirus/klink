@@ -72,7 +72,6 @@ public:
                                 putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getDstOid(),
                                 SUCCESS, putMsg->GetDeviceName());
 
-                        putMsg->message_print_dump();
                         reply->setResolutionHops(putMsg->getOverlayHops());
                         reply->setResolutionIpHops(putMsg->getIpHops());
                         reply->setResolutionLatency(putMsg->getLatency());
