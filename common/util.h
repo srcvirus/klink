@@ -160,24 +160,49 @@ pair <int, double> getCost(string ip_address)
 	string command = "ping -c 1 ";
 	command += ip_address;
 	command += " | grep -E 'ttl=|time=' | cut -d' ' -f 6- ";
+	puts(command.c_str());
 
-	FILE* pipe = popen(command.c_str(), "r");
+	int total_retry = 3;
+	int n_retry = 0;
+	pair <int, double> ret;
+	ret.first = 0;
+	ret.second = 0.0;
 
-	int line = 0;
-	char buffer[300];
+	while(n_retry < 0)
+	{
+		FILE* pipe = popen(command.c_str(), "r");
 
-	fgets(buffer, sizeof(buffer), pipe);
-	char* ttl_str = strtok(buffer, " =");
-	int ttl = atoi(strtok(NULL, " ="));
-	char* time_str = strtok(NULL, " =");
-	double rtt = atof(strtok(NULL, " ="));
+		char buffer[300];
 
-	int max_ttl = 1;
-	while(max_ttl < ttl) max_ttl *= 2;
-	int ip_hops = max_ttl - ttl;
+		fgets(buffer, sizeof(buffer), pipe);
+		puts(buffer);
+		if( strlen(buffer) <= 0) { n_retry++; continue; }
 
-	pair <int, double> ret(ip_hops, rtt / 2.0);
+		char* ttl_str = strtok(buffer, " =");
+		if(ttl_str == NULL) { n_retry++; continue; }
 
+		char* str_ttl = strtok(NULL, " =");
+		if(str_ttl == NULL) { n_retry++; continue; }
+		int ttl = atoi(str_ttl);
+
+		char* time_str = strtok(NULL, " =");
+		if(time_str == NULL) { n_retry++; continue; }
+
+		char* str_rtt = atof(strtok(NULL, " ="));
+		if(str_rtt == NULL) { n_retry++; continue; }
+		double rtt = atof(str_rtt);
+
+		int max_ttl = 1;
+		while(max_ttl < ttl) max_ttl *= 2;
+		int ip_hops = max_ttl - ttl;
+
+		ret.first = ip_hops;
+		ret.second = rtt / 2.0;
+
+		pclose(pipe);
+
+		break;
+	}
 	return ret;
 }
 
