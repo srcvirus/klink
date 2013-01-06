@@ -168,7 +168,7 @@ pair <int, double> getCost(string ip_address)
 	ret.first = 0;
 	ret.second = 0.0;
 
-	while(n_retry < 0)
+	while(n_retry < total_retry)
 	{
 		FILE* pipe = popen(command.c_str(), "r");
 
