@@ -6,6 +6,6 @@ log_server_user=pweb
 k=100
 alpha=0.9
 timeout=5.5
-name_count=100000
+name_count=1000
 retry=10
 check_point_row=10

@@ -137,10 +137,9 @@ public:
 		int error_code = 0;
 
 		ClientSocket c_socket(message->getDestHost(), message->getDestPort());
-
 		HostAddress dest_address(message->getDestHost(), message->getDestPort());
 
-		sockaddr_in server_info = container_peer->lookup_address(dest_address);
+		sockaddr_in server_info = (container_peer->lookup_address(dest_address)).first;
 		c_socket.setServerInfo(server_info);
 
 		error_code = c_socket.connect_to_server();
@@ -161,45 +160,6 @@ public:
 
 		delete[] buffer;
 		return error_code;
-	}
-
-	int getIPHops(string destination)
-	{
-		return 0;
-		string command = "ping -c 1 ";
-		command += destination;
-
-		FILE* pipe = popen(command.c_str(), "r");
-
-		int line = 0;
-		char buffer[300];
-
-		while (line < 2 && fgets(buffer, sizeof(buffer), pipe) != NULL) line++;
-
-		if( line < 2 ) return 0;
-
-		char* token = strtok(buffer, " ");
-		int n_token = 0;
-		while (n_token < 6 && token != NULL)
-		{
-			token = strtok(NULL, " ");
-			n_token++;
-		}
-
-		if(token == NULL) return 0;
-
-		char* hop_str = strtok(token, "=");
-		hop_str = strtok(NULL, "=");
-
-		if(hop_str == NULL) return 0;
-
-		int ip_hops = atoi(hop_str);
-		int two_pow = 2;
-
-		while(ip_hops < two_pow) two_pow <<= 1;
-		ip_hops = two_pow - ip_hops;
-
-		return ip_hops;
 	}
 
 	virtual ~ABSProtocol()

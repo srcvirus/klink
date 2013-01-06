@@ -50,11 +50,13 @@ protected:
 
 	unsigned char overlay_hops;
 	unsigned char overlay_ttl;
+	int ip_hops;
+	double latency;
 
 	OverlayID dst_oid;
 	OverlayID src_oid;
 
-	timeval issue_time_stamp;
+//	timeval issue_time_stamp;
 //	clock_t issue_time_stamp;
 
 	/*clock_t in_queue_push_time_stamp, in_queue_pop_time_stamp;
@@ -62,6 +64,7 @@ protected:
 	clock_t processing_start_t, processing_end_t;
 	clock_t ping_start_t, ping_end_t;*/
 
+/*
 	timeval in_queue_push_time_stamp, in_queue_pop_time_stamp;
 	timeval out_queue_push_time_stamp, out_queue_pop_time_stamp;
 	timeval processing_start_t, processing_end_t;
@@ -70,14 +73,14 @@ protected:
 	double queue_delay;
 	double processing_delay;
 	double ping_latency;
+*/
 
 	size_t getBaseSize()
 	{
 		size_t size = sizeof(char) * 3
-				+ sizeof(int) * 11
+				+ sizeof(int) * 12
 				+ sizeof(char) * (dest_host.size() + source_host.size())
-				+ sizeof(double) * 3
-                + sizeof(timeval);
+				+ sizeof(double);
 
 		return size;
 	}
@@ -88,12 +91,14 @@ public:
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
+		ip_hops = 0;
+		latency = 0.0;
 		dest_host = "";
 		source_host = "";
 		calculateOverlayTTL(GlobalData::network_size);
 
-		gettimeofday(&issue_time_stamp, NULL);
-		ping_latency = queue_delay = processing_delay = 0;
+		//gettimeofday(&issue_time_stamp, NULL);
+/*		ping_latency = queue_delay = processing_delay = 0;
 
 		in_queue_pop_time_stamp.tv_sec = in_queue_push_time_stamp.tv_sec = 0;
 		in_queue_pop_time_stamp.tv_usec = in_queue_push_time_stamp.tv_usec = 0;
@@ -105,17 +110,17 @@ public:
 		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
 
 		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
-		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;*/
 	}
         
-        ABSMessage(){
-                INIT();
-        }
-        
-        ABSMessage(int messageType){
-                INIT();
-                this->messageType = messageType;
-        }
+	ABSMessage(){
+			INIT();
+	}
+
+	ABSMessage(int messageType){
+			INIT();
+			this->messageType = messageType;
+	}
 
 	ABSMessage(unsigned char messageType, string source_host, int source_port, string dest_host,
 			int dest_port, OverlayID src_oid, OverlayID dst_oid) :
@@ -124,10 +129,12 @@ public:
 	{
 		sequence_no = sequence_no_generator++;
 		overlay_hops = 0;
+		ip_hops = 0;
+		latency = 0.0;
 		calculateOverlayTTL(GlobalData::network_size);
 
-		gettimeofday(&issue_time_stamp, NULL);
-		ping_latency = queue_delay = processing_delay = 0;
+		//gettimeofday(&issue_time_stamp, NULL);
+		/*ping_latency = queue_delay = processing_delay = 0;
 
 		in_queue_pop_time_stamp.tv_sec = in_queue_push_time_stamp.tv_sec = 0;
 		in_queue_pop_time_stamp.tv_usec = in_queue_push_time_stamp.tv_usec = 0;
@@ -139,7 +146,7 @@ public:
 		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
 
 		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
-		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;*/
 	}
 
 	virtual size_t getSize()
@@ -154,7 +161,7 @@ public:
 
 	void updateStatistics()
 	{
-		double iq_delay, oq_delay, pr_delay, pi_delay;
+		/*double iq_delay, oq_delay, pr_delay, pi_delay;
 		timeval iq_t, oq_t, pr_t, pi_t;
 
 		timersub(&in_queue_pop_time_stamp, &in_queue_push_time_stamp, &iq_t);
@@ -184,7 +191,7 @@ public:
 		processing_start_t.tv_usec = processing_end_t.tv_usec = 0;
 
 		ping_start_t.tv_sec = ping_end_t.tv_sec = 0;
-		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;
+		ping_start_t.tv_usec = ping_end_t.tv_usec = 0;*/
 	}
 
 	virtual char* serialize(int* serialize_length)
@@ -228,13 +235,14 @@ public:
 		offset += sizeof(char);
 		memcpy(buffer + offset, (char*) (&overlay_ttl), sizeof(char));
 		offset += sizeof(char);
+		memcpy(buffer + offset, (char*) (&ip_hops), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&latency), sizeof(double));
+		offset += sizeof(double);
 
-		memcpy(buffer + offset, (char*) (&issue_time_stamp), sizeof(timeval));
-		offset += sizeof(timeval);
-
-		memcpy(buffer + offset, (char*)&queue_delay, sizeof(double)); offset += sizeof(double);
+		/*memcpy(buffer + offset, (char*)&queue_delay, sizeof(double)); offset += sizeof(double);
 		memcpy(buffer + offset, (char*)&processing_delay, sizeof(double)); offset += sizeof(double);
-		memcpy(buffer + offset, (char*)&ping_latency, sizeof(double)); offset += sizeof(double);
+		memcpy(buffer + offset, (char*)&ping_latency, sizeof(double)); offset += sizeof(double);*/
 
 		int o_id, p_len, m_len;
 		o_id = dst_oid.GetOverlay_id();
@@ -312,12 +320,15 @@ public:
 		memcpy(&overlay_ttl, buffer + offset, sizeof(char));
 		offset += sizeof(char); //printf("offset = %d\n", offset);
 
-		memcpy(&issue_time_stamp, buffer + offset, sizeof(timeval));
-		offset += sizeof(timeval); //printf("offset = %d\n", offset);
+		memcpy(&ip_hops, buffer + offset, sizeof(int));
+		offset += sizeof(int);
 
-		memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double); //printf("offset = %d\n", offset);
+		memcpy(&latency, buffer + offset, sizeof(double));
+		offset += sizeof(double);
+
+		/*memcpy(&queue_delay, buffer + offset, sizeof(double)); offset += sizeof(double); //printf("offset = %d\n", offset);
 		memcpy(&processing_delay, buffer + offset, sizeof(double)); offset += sizeof(double); //printf("offset = %d\n", offset);
-		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double); //printf("offset = %d\n", offset);
+		memcpy(&ping_latency, buffer + offset, sizeof(double)); offset += sizeof(double); //printf("offset = %d\n", offset);*/
 
 		int o_id, p_len, m_len;
 
@@ -358,10 +369,13 @@ public:
 		printf("Destination Overlay ID: %d\n", dst_oid.GetOverlay_id());
 		printf("Overlay Hops %d\n", overlay_hops);
 		printf("Overlay TTL %d\n", overlay_ttl);
+		printf("IP Hops %d\n", ip_hops);
+		printf("Latency = %.6lf (ms)\n", latency);
+
 		//printf("Issue time stamp = %ld\n", issue_time_stamp);
 	}
 
-	timeval getIssueTimeStamp() const
+	/*timeval getIssueTimeStamp() const
 	{
 		return issue_time_stamp;
 	}
@@ -374,7 +388,7 @@ public:
 	void setIssueTimeStamp(timeval timestamp)
 	{
 		issue_time_stamp = timestamp;
-	}
+	}*/
 
 	string getDestHost()
 	{
@@ -429,6 +443,36 @@ public:
 	void incrementOverlayHops()
 	{
 		overlay_hops++;
+	}
+
+	void setIpHops(int hops)
+	{
+		ip_hops = hops;
+	}
+
+	int getIpHops() const
+	{
+		return ip_hops;
+	}
+
+	void incrementIpHops(int offset)
+	{
+		ip_hops += offset;
+	}
+
+	void setLatency(double latency)
+	{
+		this->latency = latency;
+	}
+
+	double getLatency() const
+	{
+		return latency;
+	}
+
+	void incrementLatency(double latency)
+	{
+		this->latency += latency;
 	}
 
 	string getSourceHost()
@@ -497,7 +541,7 @@ public:
 		//overlay_ttl = ceil(log2(n)) + 2;//(int) floor(log10(n) / log(2.0)) + 2;
 	}
 
-	timeval getInQueuePopTimeStamp() const
+	/*timeval getInQueuePopTimeStamp() const
 	{
 		return in_queue_pop_time_stamp;
 	}
@@ -605,7 +649,7 @@ public:
 	void setProcessingStartT()
 	{
 		gettimeofday(&processing_start_t, NULL);
-	}
+	}*/
 };
 
 int ABSMessage::sequence_no_generator;

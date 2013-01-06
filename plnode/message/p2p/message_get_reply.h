@@ -18,6 +18,8 @@ class MessageGET_REPLY: public ABSMessage
 {
 	int resolution_status;
 	int resolution_hops;
+	int resolution_ip_hops;
+	double resolution_latency;
 	int origin_seq_no;
 	HostAddress host_address;
 	string device_name;
@@ -43,9 +45,10 @@ public:
 	size_t getSize()
 	{
 		int ret = getBaseSize();
-		ret += sizeof(int) * 6
+		ret += sizeof(int) * 7
 				+ sizeof(char) * host_address.GetHostName().size()
-				+ sizeof(char) * device_name.size();
+				+ sizeof(char) * device_name.size()
+				+ sizeof(double);
 		return ret;
 	}
 
@@ -64,6 +67,11 @@ public:
 		offset += sizeof(int);
 		memcpy(buffer + offset, (char*) &resolution_hops, sizeof(int));
 		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &resolution_ip_hops, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &resolution_latency, sizeof(double));
+		offset += sizeof(double);
+
 		memcpy(buffer + offset, (char*) &origin_seq_no, sizeof(int));
 		offset += sizeof(int);
 
@@ -86,6 +94,7 @@ public:
 		int deviceNameLength = device_name.size();
 		memcpy(buffer + offset, (char*)&deviceNameLength, sizeof(int)); offset += sizeof(int);
 
+
 		const char* d_name_str = device_name.c_str();
 		for(int i = 0; i < deviceNameLength; i++)
 		{
@@ -106,8 +115,14 @@ public:
 		offset += sizeof(int);
 		memcpy(&resolution_hops, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		memcpy(&resolution_ip_hops, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&resolution_latency, buffer + offset, sizeof(double));
+		offset += sizeof(double);
+
 		memcpy(&origin_seq_no, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+
 
 		int hostLength = 0;
 		memcpy(&hostLength, buffer + offset, sizeof(int));
@@ -190,6 +205,26 @@ public:
 	void setOriginSeqNo(int origin_seq_no)
 	{
 		this->origin_seq_no = origin_seq_no;
+	}
+
+	int getResolutionIpHops() const
+	{
+		return resolution_ip_hops;
+	}
+
+	void setResolutionIpHops(int resolutionIpHops)
+	{
+		resolution_ip_hops = resolutionIpHops;
+	}
+
+	double getResolutionLatency() const
+	{
+		return resolution_latency;
+	}
+
+	void setResolutionLatency(double resolutionLatency)
+	{
+		resolution_latency = resolutionLatency;
 	}
 };
 

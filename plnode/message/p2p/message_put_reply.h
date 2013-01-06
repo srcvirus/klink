@@ -18,6 +18,8 @@ class MessagePUT_REPLY: public ABSMessage
 {
 	int resolution_status;
 	int resolution_hops;
+	int resolution_ip_hops;
+	double resolution_latency;
 	int origin_seq_no;
 	string device_name;
 
@@ -41,8 +43,9 @@ public:
 	size_t getSize()
 	{
 		size_t ret = getBaseSize();
-		ret += sizeof(int) * 4
-			+ sizeof(char) * device_name.size();
+		ret += sizeof(int) * 5
+			+ sizeof(char) * device_name.size()
+			+ sizeof(double);
 		return ret;
 	}
 
@@ -61,6 +64,11 @@ public:
 		offset += sizeof(int);
 		memcpy(buffer + offset, (char*) &resolution_hops, sizeof(int));
 		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &resolution_ip_hops, sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) &resolution_latency, sizeof(double));
+		offset += sizeof(double);
+
 		memcpy(buffer + offset, (char*) &origin_seq_no, sizeof(int));
 		offset += sizeof(int);
 
@@ -86,6 +94,11 @@ public:
 		offset += sizeof(int);
 		memcpy(&resolution_hops, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		memcpy(&resolution_ip_hops, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&resolution_latency, buffer + offset, sizeof(double));
+		offset += sizeof(double);
+
 		memcpy(&origin_seq_no, buffer + offset, sizeof(int));
 		offset += sizeof(int);
 
@@ -141,6 +154,26 @@ public:
 	void setOriginSeqNo(int origin_seq_no)
 	{
 		this->origin_seq_no = origin_seq_no;
+	}
+
+	int getResolutionIpHops() const
+	{
+		return resolution_ip_hops;
+	}
+
+	void setResolutionIpHops(int resolutionIpHops)
+	{
+		resolution_ip_hops = resolutionIpHops;
+	}
+
+	double getResolutionLatency() const
+	{
+		return resolution_latency;
+	}
+
+	void setResolutionLatency(double resolutionLatency)
+	{
+		resolution_latency = resolutionLatency;
 	}
 };
 

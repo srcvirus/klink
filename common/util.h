@@ -153,4 +153,32 @@ void timeval_subtract(timeval x, timeval y, double* time_sec)
 
 	*time_sec = (double)result.tv_sec + (double)result.tv_usec / 1000000.0;
 }
+
+pair <int, double> getCost(string ip_address)
+{
+
+	string command = "ping -c 1 ";
+	command += ip_address;
+	command += " | grep -E 'ttl=|time=' | cut -d' ' -f 6- ";
+
+	FILE* pipe = popen(command.c_str(), "r");
+
+	int line = 0;
+	char buffer[300];
+
+	fgets(buffer, sizeof(buffer), pipe);
+	char* ttl_str = strtok(buffer, " =");
+	int ttl = atoi(strtok(NULL, " ="));
+	char* time_str = strtok(NULL, " =");
+	double rtt = atof(strtok(NULL, " ="));
+
+	int max_ttl = 1;
+	while(max_ttl < ttl) max_ttl *= 2;
+	int ip_hops = max_ttl - ttl;
+
+	pair <int, double> ret(ip_hops, rtt / 2.0);
+
+	return ret;
+}
+
 #endif

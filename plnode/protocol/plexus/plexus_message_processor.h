@@ -47,10 +47,8 @@ public:
                 MessageProcessor::setup(routing_table, index_table, cache);
         }
 
-        bool processMessage(ABSMessage* message) {
-
-                message->setProcessingStartT();
-
+        bool processMessage(ABSMessage* message)
+        {
                 message->decrementOverlayTtl();
                 PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
                 Peer* container_peer = container_protocol->getContainerPeer();
@@ -58,7 +56,6 @@ public:
                 bool forward = plexus->setNextHop(message);
 
                 if (forward) {
-                		message->setProcessingEndT();
                         return true;
                 }
                 //PUT
@@ -67,8 +64,6 @@ public:
                         MessagePUT* putMsg = (MessagePUT*) message;
                         puts("Adding to index table");
                         index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
-                        putMsg->setProcessingEndT();
-                        putMsg->updateStatistics();
 
                         puts("PUT Successful");
 
@@ -77,11 +72,10 @@ public:
                                 putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getDstOid(),
                                 SUCCESS, putMsg->GetDeviceName());
 
-                        reply->setIssueTimeStamp(putMsg->getIssueTimeStamp());
+                        putMsg->message_print_dump();
                         reply->setResolutionHops(putMsg->getOverlayHops());
-                        reply->setQueueDelay(putMsg->getQueueDelay());
-                        reply->setProcessingDelay(putMsg->getProcessingDelay());
-                        reply->setPingLatency(putMsg->getPingLatency());
+                        reply->setResolutionIpHops(putMsg->getIpHops());
+                        reply->setResolutionLatency(putMsg->getLatency());
                         reply->setOriginSeqNo(putMsg->getSequenceNo());
 
                         plexus->addToOutgoingQueue(reply);
@@ -91,27 +85,20 @@ public:
                         MessageGET *msg = ((MessageGET*) message);
                         HostAddress hostAddress;
                         if (index_table->lookup(msg->GetDeviceName(), &hostAddress)) {
-                                msg->setProcessingEndT();
-                                msg->updateStatistics();
-
                                 puts("Got it :)");
                                 MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
                                         container_peer->getListenPortNumber(), msg->getSourceHost(),
                                         msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
                                         SUCCESS, hostAddress, msg->GetDeviceName());
 
-                                reply->setIssueTimeStamp(msg->getIssueTimeStamp());
                                 reply->setResolutionHops(msg->getOverlayHops());
-                                reply->setQueueDelay(msg->getQueueDelay());
-                                reply->setProcessingDelay(msg->getProcessingDelay());
-                                reply->setPingLatency(msg->getPingLatency());
+                                reply->setResolutionIpHops(msg->getIpHops());
+                                reply->setResolutionLatency(msg->getLatency());
                                 reply->setOriginSeqNo(msg->getSequenceNo());
 
                                 plexus->addToOutgoingQueue(reply);
                                 //send message
                         } else {
-                                msg->setProcessingEndT();
-                                msg->updateStatistics();
 
                                 puts("GET Failed");
                                 MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
@@ -119,24 +106,15 @@ public:
                                         msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
                                         ERROR_GET_FAILED, hostAddress, msg->GetDeviceName());
 
-                                reply->setIssueTimeStamp(msg->getIssueTimeStamp());
                                 reply->setResolutionHops(msg->getOverlayHops());
-                                reply->setQueueDelay(msg->getQueueDelay());
-                                reply->setProcessingDelay(msg->getProcessingDelay());
-                                reply->setPingLatency(msg->getPingLatency());
+                                reply->setResolutionIpHops(msg->getIpHops());
+                                reply->setResolutionLatency(msg->getLatency());
                                 reply->setOriginSeqNo(msg->getSequenceNo());
 
                                 plexus->addToOutgoingQueue(reply);
                         }
                 }//GET_REPLY
                 else if (message->getMessageType() == MSG_PLEXUS_GET_REPLY) {
-                		message->setProcessingEndT();
-                		message->updateStatistics();
-
-                        timeval end_t;
-                        gettimeofday(&end_t, NULL);
-                        double end = (double)(end_t.tv_sec) * 1000.0 + (double)(end_t.tv_usec) / 1000.0;
-
                         MessageGET_REPLY *msg = ((MessageGET_REPLY*) message);
                         OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
@@ -153,45 +131,31 @@ public:
                         MessageStateIndex msg_index(hash_name_to_get, msg->getOriginSeqNo());
 
                         //timeval start_t;
-                        double start = 0.0;
-                        string f_status = "s";
-                        if(!plexus->getUnresolvedGet().lookup(msg_index, &start)) f_status = "f";
-
+                        double start;
+                        plexus->getUnresolvedGet().lookup(msg_index, &start);
                         plexus->getUnresolvedGet().remove(msg_index);
 
                         //timeval total;
                         //timersub(&end_t, &start_t, &total);
                         //double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
-                        double total_t = end - start;
-
-                        double queue_delay = msg->getQueueDelay();
-                        double processing_delay = msg->getProcessingDelay();
-                        double ping_delay = msg->getPingLatency();
-
-                        double non_network_latency_t = queue_delay + processing_delay + ping_delay;
-//                        double latency = total_t - non_network_latency_t;
-                        double latency = total_t;
+                        double latency = msg->getResolutionLatency();
+                        int ip_hops = msg->getResolutionIpHops();
 
                         string status = "S";
                         if (msg->getStatus() == ERROR_GET_FAILED)
                                 status = "F";
 
-                        LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "idddddssisdd",
-                                msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
-                                total_t, status.c_str(), msg->getDeviceName().c_str(),
-                                msg->getSrcOid().GetOverlay_id(), f_status.c_str(), end, start);
+                        LogEntry *entry = new LogEntry(LOG_GET, key.c_str(), "iidssi",
+                                msg->getResolutionHops(), ip_hops, latency, status.c_str(), msg->getDeviceName().c_str(),
+                                msg->getSrcOid().GetOverlay_id());
+
                         printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
                         plexus->addToLogQueue(entry);
                         //cache->print();
                 } else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY) {
-                		message->setProcessingEndT();
-                		message->updateStatistics();
-
-                		timeval end_t;
-                		gettimeofday(&end_t, NULL);
-                		double end = (double)(end_t.tv_sec) * 1000.0 + (double)(end_t.tv_usec) / 1000.0;
 
                         MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
+                        msg->message_print_dump();
                         OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
                         HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
@@ -208,28 +172,16 @@ public:
                         MessageStateIndex msg_index(hash_name_to_publish, msg->getOriginSeqNo());
 
                         double start = 0.0;
-                        string f_status = "s";
-                        if(!plexus->getUnresolvedPut().lookup(msg_index, &start)) f_status = "f";
-
+                        plexus->getUnresolvedPut().lookup(msg_index, &start);
                         plexus->getUnresolvedPut().remove(msg_index);
 
-                        //timeval total;
-                        //timersub(&end_t, &start_t, &total);
-                        //double total_t =((double)total.tv_sec * 1000.0) + ((double)total.tv_usec / 1000.0);
-                        double total_t = end - start;
+                        double latency = msg->getResolutionLatency();
+                        int ip_hops = msg->getResolutionIpHops();
 
-                        double queue_delay = msg->getQueueDelay();
-                        double processing_delay = msg->getProcessingDelay();
-                        double ping_delay = msg->getPingLatency();
+                        LogEntry *entry = new LogEntry(LOG_PUT, key.c_str(), "iidsi",
+                                msg->getResolutionHops(), ip_hops, latency, msg->getDeviceName().c_str(),
+                                msg->getSrcOid().GetOverlay_id());
 
-                        double non_network_latency_t = queue_delay + processing_delay + ping_delay;
-                        //double latency = total_t - non_network_latency_t;
-                        double latency = total_t;
-
-                        LogEntry *entry = new LogEntry(LOG_PUT, key.c_str(), "idddddsisdd",
-                                msg->getResolutionHops(), latency, queue_delay, processing_delay, ping_delay,
-                                total_t, msg->getDeviceName().c_str(),
-                                msg->getSrcOid().GetOverlay_id(), f_status.c_str(), end, start);
                         printf("[Processing Thread:]\tNew log entry created: %s %s\n", entry->getKeyString().c_str(), entry->getValueString().c_str());
                         plexus->addToLogQueue(entry);
                         //cache->print();
@@ -252,7 +204,6 @@ public:
 
                         container_peer->populate_addressdb();
 
-                        container_peer->SetInitRcvd(true);
                         container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
                         container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
                         container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
@@ -262,6 +213,9 @@ public:
                         plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 
                         this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable(), container_protocol->getCache());
+
+                        container_peer->SetInitRcvd(true);
+
                 } else if (message->getMessageType() == MSG_PEER_CONFIG) {
                         PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
                         container_peer->setAlpha(pConfMsg->getAlpha());

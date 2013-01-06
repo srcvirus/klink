@@ -75,7 +75,7 @@ void send_init_message(BuildTree &tree, int name_count) {
                 printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
                 c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
-                sockaddr_in s_info = this_peer->lookup_address(address);
+                sockaddr_in s_info = (this_peer->lookup_address(address)).first;
                 /*if (s_info.ai_addr != NULL) {
                         puts("not null");
                 }*/
@@ -176,7 +176,7 @@ int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree)
                 printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
                 c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
-                sockaddr_in s_info = this_peer->lookup_address(address);
+                sockaddr_in s_info = (this_peer->lookup_address(address)).first;
                 /*if (s_info.ai_addr != NULL) {
                         puts("not null");
                 }*/

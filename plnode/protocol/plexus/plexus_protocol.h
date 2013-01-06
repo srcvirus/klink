@@ -355,7 +355,6 @@ public:
 
                 if (msgProcessor->processMessage(msg))
                 {
-                        msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
                 }
                 getContainerPeer()->incrementGet_generated();
@@ -394,7 +393,6 @@ public:
                 unresolved_put.add(msg_index, timestamp_t);
 
                 if (msgProcessor->processMessage(msg)) {
-                        msg->setIssueTimeStamp();
                         addToOutgoingQueue(msg);
                 }
                 getContainerPeer()->incrementPut_generated();
@@ -425,9 +423,6 @@ public:
 
         void addToIncomingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&incoming_queue_lock);
-
-                message->setInQueuePushTimeStamp();
-
                 incoming_message_queue.push(message);
                 incoming_queue_pushed++;
                 pthread_cond_broadcast(&cond_incoming_queue_empty);
@@ -450,7 +445,6 @@ public:
 
                 ABSMessage* ret = incoming_message_queue.front();
 
-                ret->setInQueuePopTimeStamp();
                 incoming_message_queue.pop();
                 incoming_queue_popped++;
                 pthread_mutex_unlock(&incoming_queue_lock);
@@ -459,8 +453,6 @@ public:
 
         void addToOutgoingQueue(ABSMessage* message) {
                 pthread_mutex_lock(&outgoing_queue_lock);
-
-                message->setOutQueuePushTimeStamp();
 
                 outgoing_message_queue.push(message);
                 outgoing_queue_pushed++;
@@ -486,7 +478,6 @@ public:
 
                 ABSMessage* ret = outgoing_message_queue.front();
 
-                ret->setOutQueuePopTimeStamp();
                 //printf("Got a messge from the outgoing queue");
                 outgoing_message_queue.pop();
                 outgoing_queue_popped++;

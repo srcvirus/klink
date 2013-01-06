@@ -175,27 +175,28 @@ void *forwarding_thread(void* args) {
                 message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
                 message->incrementOverlayHops();
 
-                if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT) {
-                        message->setPingStartT();
-                        int ip_hops = plexus->getIPHops(message->getDestHost().c_str());
-                        message->setPingEndT();
+                if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT)
+                {
+                	HostAddress ha(message->getDestHost(), message->getDestPort());
+                	pair <int, double> cost = (this_peer->lookup_address(ha)).second;
+                	int ip_hops = cost.first;
+                	double latency = cost.second;
+                	message->incrementIpHops(ip_hops);
+                	message->incrementLatency(latency);
+                	printf("Next hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n", ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops, latency);
+                	message->message_print_dump();
                 }
-
-                message->updateStatistics();
 
                 printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
                         message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
 
-                int retry = 0;
-                int error_code = 0;
+                int retry = 0, error_code = 0;
+
                 while (retry < this_peer->getNRetry()) {
                         error_code = plexus->send_message(message);
-                        if (error_code < 0) retry++;
+                        if (error_code < 0)
+                        	retry++;
                         else break;
-                        /*if (error_code == ERROR_CONNECTION_TIMEOUT)
-                                retry++;
-                        else
-                                break;*/
                 }
 
                 if (error_code >= 0) {
@@ -203,7 +204,8 @@ void *forwarding_thread(void* args) {
                                 this_peer->incrementGet_forwarded();
                         else if (message->getMessageType() == MSG_PLEXUS_PUT)
                                 this_peer->incrementPut_forwarded();
-                } else {
+                }
+                else {
                         if (message->getMessageType() == MSG_PLEXUS_GET)
                                 this_peer->incrementGet_Dropped();
                         else if (message->getMessageType() == MSG_PLEXUS_PUT)

@@ -10,6 +10,7 @@
 
 #include <pthread.h>
 #include <string.h>
+#include "../../common/util.h"
 #include "../protocol/protocol.h"
 #include "../ds/overlay_id.h"
 #include "../ds/ip_address.h"
@@ -74,8 +75,8 @@ class Peer {
         string log_server_user;
 
         Configuration* configuration;
-        LookupTable<HostAddress, sockaddr_in > address_db;
 
+        LookupTable <HostAddress, pair <sockaddr_in, pair <int, double> > > address_db;
 public:
 
 
@@ -218,11 +219,11 @@ public:
 
 			char str_port[12];
 			sprintf(str_port, "%d", h_address.GetHostPort());
+			pair <int, double> cost;
 
 			if(ip_address == NULL)
 			{
 				memset(&hints, 0, sizeof(addrinfo));
-
 				hints.ai_family = AF_UNSPEC;
 				hints.ai_socktype = SOCK_STREAM;
 				hints.ai_flags = AI_CANONNAME;
@@ -235,8 +236,12 @@ public:
 					printf("%s\n", gai_strerror(ret_code));
 					continue;
 				}
+				char ip[INET_ADDRSTRLEN + 1];
+				inet_ntop(AF_INET, &(((sockaddr_in*)(result->ai_addr))->sin_addr), ip, INET_ADDRSTRLEN);
+				string str_ip = string(ip);
+				cost = getCost(str_ip);
 
-				address_db.add(h_address, *((sockaddr_in*)(result->ai_addr)));
+				address_db.add(h_address, make_pair(*((sockaddr_in*)(result->ai_addr)), cost) );
 			}
 			else
 			{
@@ -244,11 +249,13 @@ public:
 				s_addr.sin_family = AF_INET;
 				inet_pton(AF_INET, ip_address, &(s_addr.sin_addr));
 				s_addr.sin_port = htons(h_address.GetHostPort());
-				address_db.add(h_address, s_addr);
+				string str_ip = string(ip_address);
+				cost = getCost(str_ip);
+				address_db.add(h_address, make_pair(s_addr, cost));
 			}
 
 			done++;
-			printf("[%d/%d] resolving address = %s:%s\n", done, total, str_h_addr, str_port);
+			printf("[%d/%d] resolving address = %s:%s, ip_hop = %d, latency = %.3lf (ms)\n", done, total, str_h_addr, str_port, cost.first, cost.second);
 
 			/*addrinfo* rp;
 			for(rp = result; rp != NULL; rp = result->ai_next)
@@ -265,10 +272,10 @@ public:
 		fclose(nodes_file_ptr);
 	}
 
-	sockaddr_in lookup_address(const HostAddress& h_address)
+	pair <sockaddr_in, pair <int, double> > lookup_address(const HostAddress& h_address)
 	{
-		sockaddr_in ret;
-		ret.sin_port = 0;
+		pair <sockaddr_in, pair <int, double> > ret;
+		ret.first.sin_port = 0;
 		bool found = address_db.lookup(h_address, &ret);
 		return ret;
 	}
