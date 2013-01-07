@@ -188,11 +188,6 @@ public:
                 else if (message->getMessageType() == MSG_PEER_INIT) {
                         PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
 
-                        container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
-                        container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
-                        container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
-                        container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
-                        container_protocol->getContainerPeer()->getK()));
 
                         container_peer->setNPeers(pInitMsg->getNPeers());
                         GlobalData::network_size = pInitMsg->getNPeers();
@@ -208,6 +203,12 @@ public:
                         container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
                         container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
                         container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
+
+                        container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
+                        container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
+                        container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
+                        		container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
+                        		container_protocol->getContainerPeer()->getK()));
 
                         plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 

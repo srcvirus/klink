@@ -35,7 +35,7 @@ public:
 		this->dll = dll;
 		this->hm = hm;
 		this->rt = rt;
-		this->myOID = myOID;
+		this->myOID = myOID; printf("\n[Cache] myOID = %s\n", myOID.toString());
 		this->cache_size = cache_size;
 	}
 
