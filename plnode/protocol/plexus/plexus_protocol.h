@@ -335,7 +335,9 @@ public:
                         if (currentMatchLength > maxLengthMatch)
                         {
                                 maxLengthMatch = currentMatchLength;
-                                if(cache->lookup(msg->getDstOid(), next_hop))
+                                /*if(cache->lookup(msg->getDstOid(), next_hop))
+                                	cache_hit = true;*/
+                                if(cache->lookup(id, next_hop))
                                 	cache_hit = true;
                                 //printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
                         }
