@@ -596,6 +596,9 @@ void *storage_stat_thread(void*)
 
 	while(true)
 	{
+		if(!this_peer->IsInitRcvd())
+			continue;
+
 		sleep(60);
 		if(get_cache_hit != p_protocol->getGetCacheHitCounter())
 		{
