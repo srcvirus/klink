@@ -18,242 +18,610 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
+#include "../../message/control/peer_initiate_get.h"
+#include "../../message/control/peer_initiate_put.h"
+
 #include "../../ds/host_address.h"
+#include "../../ds/message_state_index.h"
+
+#include "../../message/message.h"
+#include "../../logging/log.h"
+#include "../../logging/log_entry.h"
 
 using namespace std;
 
 class ABSProtocol;
 
+#define MAX_LOGS 3
+#define LOG_GET 0
+#define LOG_PUT 1
+#define LOG_STORAGE 2
+
 class PlexusProtocol : public ABSProtocol {
-    queue <ABSMessage*> incoming_message_queue;
-    queue <ABSMessage*> outgoing_message_queue;
+        Log *log[MAX_LOGS];
+        LookupTable <MessageStateIndex, double> unresolved_get, unresolved_put;
 
-    pthread_mutex_t incoming_queue_lock;
-    pthread_mutex_t outgoing_queue_lock;
+        queue<ABSMessage*> incoming_message_queue;
+        queue<ABSMessage*> outgoing_message_queue;
+        queue<LogEntry*> logging_queue;
+        
+        pthread_mutex_t incoming_queue_lock;
+        pthread_mutex_t outgoing_queue_lock;
+        pthread_mutex_t log_queue_lock;
+        pthread_mutex_t get_cache_hit_counter_lock;
+        pthread_mutex_t put_cache_hit_counter_lock;
 
-    pthread_cond_t cond_incoming_queue_empty;
-    pthread_cond_t cond_outgoing_queue_empty;
+        pthread_cond_t cond_incoming_queue_empty;
+        pthread_cond_t cond_outgoing_queue_empty;
+        pthread_cond_t cond_log_queue_empty;
 
+        int get_cache_hit_count, put_cache_hit_count;
 public:
+        int incoming_queue_pushed, incoming_queue_popped;
+        int outgoing_queue_pushed, outgoing_queue_popped;
+        int logging_queue_pushed, logging_queue_popped;
 
-    PlexusProtocol() :
-    ABSProtocol() {
-        //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
-        //this->index_table = new LookupTable<string, OverlayID > ();
-        //this->msgProcessor = new PlexusMessageProcessor();
-        pthread_mutex_init(&incoming_queue_lock, NULL);
-        pthread_mutex_init(&outgoing_queue_lock, NULL);
 
-        pthread_cond_init(&cond_incoming_queue_empty, NULL);
-        pthread_cond_init(&cond_outgoing_queue_empty, NULL);
-    }
+        PlexusProtocol() :
+        ABSProtocol() {
+                //this->routing_table = new LookupTable<OverlayID, HostAddress > ();
 
-    PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
-            LookupTable<string, HostAddress>* index_table,
-            Cache *cache,
-            MessageProcessor* msgProcessor,
-            Peer* container) :
-    ABSProtocol(routing_table, index_table, cache, msgProcessor, container) {
-        this->msgProcessor->setContainerProtocol(this);
+                //this->msgProcessor = new PlexusMessageProcessor();
+                pthread_mutex_init(&incoming_queue_lock, NULL);
+                pthread_mutex_init(&outgoing_queue_lock, NULL);
+                pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
 
-        pthread_mutex_init(&incoming_queue_lock, NULL);
-        pthread_mutex_init(&outgoing_queue_lock, NULL);
+                pthread_cond_init(&cond_incoming_queue_empty, NULL);
+                pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+                pthread_cond_init(&cond_log_queue_empty, NULL);
 
-        pthread_cond_init(&cond_incoming_queue_empty, NULL);
-        pthread_cond_init(&cond_outgoing_queue_empty, NULL);
-    }
-
-    void processMessage(ABSMessage *message) {
-        msgProcessor->processMessage(message);
-    }
-
-    void initiate_join() {
-    }
-
-    void process_join() {
-    }
-
-    bool setNextHop(ABSMessage* msg) {
-        int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
-        HostAddress next_hop;
-
-        msg->decrementOverlayTtl();
-        msg->incrementOverlayHops();
-
-        if (msg->getOverlayTtl() == 0)
-            return false;
-
-        Peer *container_peer = getContainerPeer();
-        currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
-
-        //cout << endl << "current node match : ";
-        //container_peer->getOverlayID().printBits();
-        //cout << " <> ";
-        //msg->getOID().printBits();
-        //cout << " = " << currentNodeMathLength << endl;
-
-        //search in the RT
-//        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
-        //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
-        routing_table->reset_iterator();
-        while (routing_table->hasMoreKey()) {
-            OverlayID oid = routing_table->getNextKey();
-            //cout << endl << "current match ";
-            //oid.printBits();
-            currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
-            //cout << " ==== " << currentMatchLength << endl;
-
-            if (currentMatchLength > maxLengthMatch) {
-                maxLengthMatch = currentMatchLength;
-                routing_table->lookup(oid, &next_hop);
-                //printf("next host %s, next port %d\n", next_hop.GetHostName().c_str(), next_hop.GetHostPort());
-            }
-        }
-        //search in the Cache
-        cache->reset_iterator();
-        while (cache->has_next()) {
-            DLLNode *node = cache->get_next();
-            OverlayID *id = node->key;
-            currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(*id);
-            if (currentMatchLength > maxLengthMatch) {
-                maxLengthMatch = currentMatchLength;
-                cache->lookup(msg->getDstOid(), next_hop);
-            }
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
+                logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
+                //this->msgProcessor->setContainerProtocol(this);
         }
 
-        //cout << endl << "max match : = " << maxLengthMatch << endl;
+        PlexusProtocol(LookupTable<OverlayID, HostAddress>* routing_table,
+                LookupTable<string, HostAddress>* index_table, Cache *cache,
+                MessageProcessor* msgProcessor, Peer* container) :
+        ABSProtocol(routing_table, index_table, cache, msgProcessor,
+        container) {
+                this->msgProcessor->setContainerProtocol(this);
 
-        if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
-            msg->setDestHost("localhost");
-            msg->setDestPort(container_peer->getListenPortNumber());
-            return false;
-        } else {
-            msg->setDestHost(next_hop.GetHostName().c_str());
-            msg->setDestPort(next_hop.GetHostPort());
-            return true;
+                pthread_mutex_init(&incoming_queue_lock, NULL);
+                pthread_mutex_init(&outgoing_queue_lock, NULL);
+                pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
+
+                pthread_cond_init(&cond_incoming_queue_empty, NULL);
+                pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+                pthread_cond_init(&cond_log_queue_empty, NULL);
+
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
+                logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
+                //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
-    }
 
-    void get(string name)
-    {
-    	int hash_name_to_get = atoi(name.c_str());
-    	int id = GlobalData::rm->decode(hash_name_to_get);
-    	MessageGET *msg = new MessageGET(container_peer->getHostName(),
-									   container_peer->getListenPortNumber(),
-									   "",
-									   -1,
-									   container_peer->getOverlayID(),
-									   OverlayID(id),
-									   name);
-        send_message(msg);
-    	//addToOutgoingQueue(msg);
-    }
+        PlexusProtocol(Peer* container, MessageProcessor* msgProcessor) :
+        ABSProtocol(container, msgProcessor) {
+                this->msgProcessor->setContainerProtocol(this);
 
-    void get_from_client(string name, HostAddress destination)
-    {
-    	int hash_name_to_get = atoi(name.c_str());
-		int id = GlobalData::rm->decode(hash_name_to_get);
-		MessageGET *msg = new MessageGET(container_peer->getHostName(),
-									   container_peer->getListenPortNumber(),
-									   destination.GetHostName(),
-									   destination.GetHostPort(),
-									   container_peer->getOverlayID(),
-									   OverlayID(id),
-									   name);
-		send_message(msg);
-    }
-    void put(string name, HostAddress hostAddress)
-    {
-    	int hash_name_to_publish = atoi(name.c_str());
-    	int id = GlobalData::rm->decode(hash_name_to_publish);
+                pthread_mutex_init(&incoming_queue_lock, NULL);
+                pthread_mutex_init(&outgoing_queue_lock, NULL);
+                pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
 
-    	MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
-									   container_peer->getListenPortNumber(),
-									   "",
-									   -1,
-									   container_peer->getOverlayID(),
-									   OverlayID(id),
-									   name,
-									   hostAddress);
-        send_message(msg);
-    	//addToOutgoingQueue(msg);
-    }
+                pthread_cond_init(&cond_incoming_queue_empty, NULL);
+                pthread_cond_init(&cond_outgoing_queue_empty, NULL);
+                pthread_cond_init(&cond_log_queue_empty, NULL);
 
-    void put_from_client(string name, HostAddress hostAddress, HostAddress destination)
-    {
-    	int hash_name_to_publish = atoi(name.c_str());
-	int id = GlobalData::rm->decode(hash_name_to_publish);
+                incoming_queue_pushed = incoming_queue_popped = 0;
+                outgoing_queue_pushed = outgoing_queue_popped = 0;
+                logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
+                //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+        }
 
-	MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
-				   container_peer->getListenPortNumber(),
-				   destination.GetHostName(),
-				   destination.GetHostPort(),
-				   container_peer->getOverlayID(),
-				   OverlayID(id),
-				   name,
-				   hostAddress);
-	send_message(msg);
-    }
+        void initLogs(int log_seq_no, const char* log_server_name, const char* log_server_user) {
+                log[LOG_GET] = new Log(log_seq_no, "get", log_server_name,
+                        log_server_user);
+                log[LOG_PUT] = new Log(log_seq_no, "put", log_server_name,
+                        log_server_user);
 
-    void rejoin() {
-    }
+                log[LOG_STORAGE] = new Log(log_seq_no, "storage", log_server_name, log_server_user);
 
-    void addToIncomingQueue(ABSMessage* message) {
-        pthread_mutex_lock(&incoming_queue_lock);
-        incoming_message_queue.push(message);
-        pthread_cond_signal(&cond_incoming_queue_empty);
-        pthread_mutex_unlock(&incoming_queue_lock);
-    }
+                log[LOG_GET]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
+                log[LOG_PUT]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
+                log[LOG_STORAGE]->setCheckPointRowCount(1);
 
-    bool isIncomingQueueEmpty() {
-        return incoming_message_queue.empty();
-    }
+                log[LOG_GET]->open("a");
+                log[LOG_PUT]->open("a");
+                log[LOG_STORAGE]->open("a");
+        }
 
-    ABSMessage* getIncomingQueueFront() {
-        pthread_mutex_lock(&incoming_queue_lock);
+        void processMessage(ABSMessage *message) {
+                msgProcessor->processMessage(message);
+        }
 
-        while (incoming_message_queue.empty())
-            pthread_cond_wait(&cond_incoming_queue_empty, &incoming_queue_lock);
+        void initiate_join() {
+        }
 
-        ABSMessage* ret = incoming_message_queue.front();
-        incoming_message_queue.pop();
-        pthread_mutex_unlock(&incoming_queue_lock);
-        return ret;
-    }
+        void process_join() {
+        }
+        
+        bool setNextHop2(ABSMessage* msg) {
+                printf("Setting next hop, Message type = %d\n", msg->getMessageType());
+                int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
+                HostAddress next_hop;
 
-    void addToOutgoingQueue(ABSMessage* message) {
-        pthread_mutex_lock(&outgoing_queue_lock);
-        outgoing_message_queue.push(message);
-        pthread_mutex_unlock(&outgoing_queue_lock);
-    }
+                switch (msg->getMessageType()) {
+                        case MSG_PEER_INIT:
+                        case MSG_PEER_CONFIG:
+                        case MSG_PEER_CHANGE_STATUS:
+                        case MSG_PEER_START:
+                        case MSG_START_GENERATE_NAME:
+                        case MSG_START_LOOKUP_NAME:
+                        case MSG_DYN_CHANGE_STATUS:
+                        case MSG_PLEXUS_GET_REPLY:
+                        case MSG_PEER_INITIATE_GET:
+                        case MSG_PEER_INITIATE_PUT:
+                        		puts("returning false");
+                                return false;
+                                break;
+                }
 
-    bool isOutgoingQueueEmpty() {
-        bool status;
-        pthread_mutex_lock(&outgoing_queue_lock);
-        status = outgoing_message_queue.empty();
-        pthread_cond_signal(&cond_outgoing_queue_empty);
-        pthread_mutex_unlock(&outgoing_queue_lock);
-        return status;
-    }
+                if (msg->getOverlayTtl() == 0)
+                        return false;
 
-    ABSMessage* getOutgoingQueueFront() {
-        pthread_mutex_lock(&outgoing_queue_lock);
+                currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
+                printf("Current match length = %d\n", currentNodeMathLength);
+                printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
+                msg->getDstOid().printBits();
+                putchar('\n');
 
-        while (outgoing_message_queue.empty())
-            pthread_cond_wait(&cond_outgoing_queue_empty, &outgoing_queue_lock);
+                //cout << endl << "current node match : ";
+                //container_peer->getOverlayID().printBits();
+                //cout << " <> ";
+                //msg->getOID().printBits();
+                //cout << " = " << currentNodeMathLength << endl;
 
-        ABSMessage* ret = outgoing_message_queue.front();
-        outgoing_message_queue.pop();
-        pthread_mutex_lock(&outgoing_queue_lock);
-        return ret;
-    }
+                //search in the RT
+                //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
+                //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
+                puts("creating iterator");
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
+                rtable_iterator.reset_iterator();
 
-    ~PlexusProtocol() {
-        pthread_mutex_destroy(&incoming_queue_lock);
-        pthread_mutex_destroy(&outgoing_queue_lock);
-        pthread_cond_destroy(&cond_incoming_queue_empty);
-        pthread_cond_destroy(&cond_outgoing_queue_empty);
-    }
+                puts("looking up in routing table");
+                OverlayID maxMatchOid;
+                //routing_table->reset_iterator();
+                while (rtable_iterator.hasMoreKey()) {
+                        OverlayID oid = rtable_iterator.getNextKey();
+                        printf("next key = %d My id = ", oid.GetOverlay_id());
+                        msg->getDstOid().printBits();
+                        putchar('\n');
+
+                        //cout << endl << "current match ";
+                        //oid.printBits();
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+                        //cout << " ==== " << currentMatchLength << endl;
+                        printf(">current match length = %d\n", currentMatchLength);
+
+                        if (currentMatchLength > maxLengthMatch) {
+                                maxLengthMatch = currentMatchLength;
+                                maxMatchOid = oid;
+
+                                /*printf("next host %s, next port %d\n",
+                                                next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
+                        }
+                }
+                routing_table->lookup(maxMatchOid, &next_hop);
+                //search in the Cache
+                /*cache->reset_iterator();
+                while (cache->has_next())
+                {
+                        DLLNode *node = cache->get_next();
+                        OverlayID id = node->key;
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+                        if (currentMatchLength > maxLengthMatch)
+                        {
+                                maxLengthMatch = currentMatchLength;
+                                cache->lookup(msg->getDstOid(), next_hop);
+                                printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                        }
+                }*/
+
+                cout << endl << "max match : = " << maxLengthMatch << endl;
+
+                if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+                        puts("returning false");
+                        //msg->setDestHost("localhost");
+                        //msg->setDestPort(container_peer->getListenPortNumber());
+                        return false;
+                } else {
+                        puts("returning true");
+                        msg->setDestHost(next_hop.GetHostName().c_str());
+                        msg->setDestPort(next_hop.GetHostPort());
+                        return true;
+                }
+        }
+
+        bool setNextHop(ABSMessage* msg) {
+                printf("Setting next hop, Message type = %d\n", msg->getMessageType());
+                int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
+                HostAddress next_hop("", -1);
+
+                switch (msg->getMessageType()) {
+                        case MSG_PEER_INIT:
+                        case MSG_PEER_CONFIG:
+                        case MSG_PEER_CHANGE_STATUS:
+                        case MSG_PEER_START:
+                        case MSG_START_GENERATE_NAME:
+                        case MSG_START_LOOKUP_NAME:
+                        case MSG_DYN_CHANGE_STATUS:
+                        case MSG_PLEXUS_GET_REPLY:
+                        case MSG_PLEXUS_PUT_REPLY:
+                        case MSG_PEER_INITIATE_GET:
+                        case MSG_PEER_INITIATE_PUT:
+                        		puts("returning false");
+                                return false;
+                                break;
+                }
+
+                if (msg->getOverlayTtl() == 0)
+                        return false;
+
+                currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
+                printf("Current match length = %d\n", currentNodeMathLength);
+                printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
+                msg->getDstOid().printBits();
+                putchar('\n');
+
+                //cout << endl << "current node match : ";
+                //container_peer->getOverlayID().printBits();
+                //cout << " <> ";
+                //msg->getOID().printBits();
+                //cout << " = " << currentNodeMathLength << endl;
+
+                //search in the RT
+                //        OverlayID::MAX_LENGTH = GlobalData::rm->rm->k;
+                //cout << "S OID M LEN " << OverlayID::MAX_LENGTH << endl;
+                //puts("creating iterator");
+                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(routing_table);
+                rtable_iterator.reset_iterator();
+
+                //puts("looking up in routing table");
+                OverlayID maxMatchOid;
+                //routing_table->reset_iterator();
+                while (rtable_iterator.hasMoreKey()) {
+                        //while (routing_table->hasMoreKey()) {
+                        //   OverlayID oid = routing_table->getNextKey();
+                        OverlayID oid = rtable_iterator.getNextKey();
+                        //printf("next key = %d My id = ", oid.GetOverlay_id());
+                        //msg->getDstOid().printBits();
+                        //putchar('\n');
+
+                        //cout << endl << "current match ";
+                        //oid.printBits();
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+                        //cout << " ==== " << currentMatchLength << endl;
+                        //printf(">current match length = %d\n", currentMatchLength);
+
+                        if (currentMatchLength > maxLengthMatch) {
+                                maxLengthMatch = currentMatchLength;
+                                maxMatchOid = oid;
+
+                                /*printf("next host %s, next port %d\n",
+                                                next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
+                        }
+                }
+                routing_table->lookup(maxMatchOid, &next_hop);
+                //search in the Cache
+                cache->reset_iterator();
+                bool cache_hit = false;
+
+                while (cache->has_next())
+                {
+                        DLLNode *node = cache->get_next();
+                        OverlayID id = node->key;
+                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+                        if (currentMatchLength > maxLengthMatch)
+                        {
+                                maxLengthMatch = currentMatchLength;
+                                if(cache->lookup(msg->getDstOid(), next_hop))
+                                	cache_hit = true;
+                                //printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                        }
+                }
+
+                if(cache_hit)
+                {
+                	if(msg->getMessageType() == MSG_PLEXUS_GET)
+                		incrementGetCacheHitCounter();
+                	else if(msg->getMessageType() == MSG_PLEXUS_PUT)
+                		incrementPutCacheHitCounter();
+                }
+
+                cout << endl << "max match : = " << maxLengthMatch << endl;
+
+                if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength) {
+                        //puts("returning false");
+                        //msg->setDestHost("localhost");
+                        //msg->setDestPort(container_peer->getListenPortNumber());
+                        return false;
+                } else {
+                        //puts("returning true");
+                        msg->setDestHost(next_hop.GetHostName().c_str());
+                        msg->setDestPort(next_hop.GetHostPort());
+                        return true;
+                }
+        }
+
+        void get(string name) {
+                int hash_name_to_get = atoi(name.c_str());
+                OverlayID destID(hash_name_to_get, getContainerPeer()->GetiCode());
+
+                printf("h_name = %d, oid = %d\n", hash_name_to_get, destID.GetOverlay_id());
+
+                MessageGET *msg = new MessageGET(container_peer->getHostName(),
+                        container_peer->getListenPortNumber(), "", -1,
+                        container_peer->getOverlayID(), destID, name);
+
+                /*printf("Constructed Get Message");
+                msg->message_print_dump();*/
+
+                MessageStateIndex msg_index(hash_name_to_get, msg->getSequenceNo());
+                timeval timestamp;
+                gettimeofday(&timestamp, NULL);
+                double timestamp_t = (double)(timestamp.tv_sec) * 1000.0 + (double)(timestamp.tv_usec) / 1000.0;
+                unresolved_get.add(msg_index, timestamp_t);
+
+                if (msgProcessor->processMessage(msg))
+                {
+                        addToOutgoingQueue(msg);
+                }
+                getContainerPeer()->incrementGet_generated();
+        }
+
+        void get_from_client(string name, HostAddress destination) {
+                int hash_name_to_get = atoi(name.c_str());
+                OverlayID destID(hash_name_to_get, getContainerPeer()->GetiCode());
+
+                cout << "id = " << hash_name_to_get << " oid = ";
+                destID.printBits();
+                cout << endl;
+
+                PeerInitiateGET *msg = new PeerInitiateGET(
+                        container_peer->getHostName(),
+                        container_peer->getListenPortNumber(),
+                        destination.GetHostName(), destination.GetHostPort(),
+                        container_peer->getOverlayID(), destID, name);
+                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+                //msg->message_print_dump();
+                send_message(msg);
+        }
+
+        void put(string name, HostAddress hostAddress) {
+                int hash_name_to_publish = atoi(name.c_str());
+                OverlayID destID(hash_name_to_publish, getContainerPeer()->GetiCode());
+
+                MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
+                        container_peer->getListenPortNumber(), "", -1,
+                        container_peer->getOverlayID(), destID, name, hostAddress);
+
+                MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
+                timeval timestamp;
+                gettimeofday(&timestamp, NULL);
+                double timestamp_t = (double)(timestamp.tv_sec) * 1000.0 + (double)(timestamp.tv_usec) / 1000.0;
+                unresolved_put.add(msg_index, timestamp_t);
+
+                if (msgProcessor->processMessage(msg)) {
+                        addToOutgoingQueue(msg);
+                }
+                getContainerPeer()->incrementPut_generated();
+        }
+
+        void put_from_client(string name, HostAddress hostAddress,
+                HostAddress destination) {
+                int hash_name_to_publish = atoi(name.c_str());
+                OverlayID destID(hash_name_to_publish, getContainerPeer()->GetiCode());
+
+                cout << "id = " << hash_name_to_publish << " oid = ";
+                destID.printBits();
+                cout << endl;
+
+                PeerInitiatePUT *msg = new PeerInitiatePUT(
+                        container_peer->getHostName(),
+                        container_peer->getListenPortNumber(),
+                        destination.GetHostName(), destination.GetHostPort(),
+                        container_peer->getOverlayID(), destID, name, hostAddress);
+                msg->calculateOverlayTTL(getContainerPeer()->getNPeers());
+
+                msg->message_print_dump();
+                send_message(msg);
+        }
+
+        void rejoin() {
+        }
+
+        void addToIncomingQueue(ABSMessage* message) {
+                pthread_mutex_lock(&incoming_queue_lock);
+                incoming_message_queue.push(message);
+                incoming_queue_pushed++;
+                pthread_cond_broadcast(&cond_incoming_queue_empty);
+                pthread_mutex_unlock(&incoming_queue_lock);
+        }
+
+        bool isIncomingQueueEmpty() {
+                bool status;
+                pthread_mutex_lock(&incoming_queue_lock);
+                status = incoming_message_queue.empty();
+                pthread_mutex_unlock(&incoming_queue_lock);
+                return status;
+        }
+
+        ABSMessage* getIncomingQueueFront() {
+                pthread_mutex_lock(&incoming_queue_lock);
+
+                while (incoming_message_queue.empty())
+                        pthread_cond_wait(&cond_incoming_queue_empty, &incoming_queue_lock);
+
+                ABSMessage* ret = incoming_message_queue.front();
+
+                incoming_message_queue.pop();
+                incoming_queue_popped++;
+                pthread_mutex_unlock(&incoming_queue_lock);
+                return ret;
+        }
+
+        void addToOutgoingQueue(ABSMessage* message) {
+                pthread_mutex_lock(&outgoing_queue_lock);
+
+                outgoing_message_queue.push(message);
+                outgoing_queue_pushed++;
+                pthread_cond_broadcast(&cond_outgoing_queue_empty);
+                pthread_mutex_unlock(&outgoing_queue_lock);
+        }
+
+        bool isOutgoingQueueEmpty() {
+                bool status;
+                pthread_mutex_lock(&outgoing_queue_lock);
+                status = outgoing_message_queue.empty();
+                pthread_mutex_unlock(&outgoing_queue_lock);
+                return status;
+        }
+
+        ABSMessage* getOutgoingQueueFront() {
+                pthread_mutex_lock(&outgoing_queue_lock);
+
+                while (outgoing_message_queue.empty()) {
+                        //printf("Waiting for a message in outgoing queue");
+                        pthread_cond_wait(&cond_outgoing_queue_empty, &outgoing_queue_lock);
+                }
+
+                ABSMessage* ret = outgoing_message_queue.front();
+
+                //printf("Got a messge from the outgoing queue");
+                outgoing_message_queue.pop();
+                outgoing_queue_popped++;
+                pthread_mutex_unlock(&outgoing_queue_lock);
+                return ret;
+        }
+
+        void addToLogQueue(LogEntry* log_entry) {
+                pthread_mutex_lock(&log_queue_lock);
+                logging_queue.push(log_entry);
+                logging_queue_pushed++;
+                pthread_cond_signal(&cond_log_queue_empty);
+                pthread_mutex_unlock(&log_queue_lock);
+        }
+
+        bool isLogQueueEmpty() {
+                bool status;
+                pthread_mutex_lock(&log_queue_lock);
+                status = logging_queue.empty();
+                pthread_mutex_unlock(&log_queue_lock);
+                return status;
+        }
+
+        LogEntry* getLoggingQueueFront() {
+                pthread_mutex_lock(&log_queue_lock);
+                while (logging_queue.empty()) {
+                        pthread_cond_wait(&cond_log_queue_empty, &log_queue_lock);
+                }
+                LogEntry* ret = logging_queue.front();
+                logging_queue.pop();
+                logging_queue_popped++;
+                pthread_mutex_unlock(&log_queue_lock);
+                return ret;
+        }
+
+        void incrementGetCacheHitCounter()
+        {
+        	pthread_mutex_lock(&get_cache_hit_counter_lock);
+        	get_cache_hit_count++;
+        	pthread_mutex_unlock(&get_cache_hit_counter_lock);
+        }
+
+        void incrementPutCacheHitCounter()
+        {
+        	pthread_mutex_lock(&put_cache_hit_counter_lock);
+        	put_cache_hit_count++;
+        	pthread_mutex_unlock(&put_cache_hit_counter_lock);
+        }
+
+        int getGetCacheHitCounter()
+        {
+        	int ret;
+        	pthread_mutex_lock(&get_cache_hit_counter_lock);
+			ret = get_cache_hit_count;
+			pthread_mutex_unlock(&get_cache_hit_counter_lock);
+			return ret;
+        }
+
+        int getPutCacheHitCounter()
+		{
+			int ret;
+			pthread_mutex_lock(&put_cache_hit_counter_lock);
+			ret = put_cache_hit_count;
+			pthread_mutex_unlock(&put_cache_hit_counter_lock);
+			return ret;
+		}
+
+        Log* getGetLog() {
+                return log[LOG_GET];
+        }
+
+        Log* getPutLog() {
+                return log[LOG_PUT];
+        }
+
+        Log* getLog(int type) {
+                if (type >= MAX_LOGS)
+                        return NULL;
+                return log[type];
+        }
+
+
+
+        ~PlexusProtocol() {
+                pthread_mutex_destroy(&incoming_queue_lock);
+                pthread_mutex_destroy(&outgoing_queue_lock);
+                pthread_mutex_destroy(&log_queue_lock);
+                pthread_mutex_destroy(&get_cache_hit_counter_lock);
+                pthread_mutex_destroy(&put_cache_hit_counter_lock);
+
+                pthread_cond_destroy(&cond_incoming_queue_empty);
+                pthread_cond_destroy(&cond_outgoing_queue_empty);
+                pthread_cond_destroy(&cond_log_queue_empty);
+        }
+
+		LookupTable<MessageStateIndex, double>& getUnresolvedGet()
+		{
+			return unresolved_get;
+		}
+
+		void setUnresolvedGet(const LookupTable<MessageStateIndex, double>& unresolvedGet)
+		{
+			unresolved_get = unresolvedGet;
+		}
+
+		LookupTable<MessageStateIndex, double>& getUnresolvedPut()
+		{
+			return unresolved_put;
+		}
+
+		void setUnresolvedPut(const LookupTable<MessageStateIndex, double>& unresolvedPut)
+		{
+			unresolved_put = unresolvedPut;
+		}
 };
 
 #endif	/* PLEXUS_PROTOCOL_H */

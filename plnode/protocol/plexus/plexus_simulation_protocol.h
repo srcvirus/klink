@@ -14,31 +14,39 @@ using namespace std;
 
 class ABSProtocol;
 
-class PlexusSimulationProtocol : public ABSProtocol {
+class PlexusSimulationProtocol: public ABSProtocol
+{
 public:
 
-    PlexusSimulationProtocol() :
-    ABSProtocol() {
-    }
+	PlexusSimulationProtocol() :
+			ABSProtocol()
+	{
+	}
 
-    virtual void initiate_join() {
-    }
+	virtual void initiate_join()
+	{
+	}
 
-    virtual void process_join() {
-    }
+	virtual void process_join()
+	{
+	}
 
-    virtual bool setNextHop(ABSMessage*) {
-        return false;
-    }
+	virtual bool setNextHop(ABSMessage*)
+	{
+		return false;
+	}
 
-    virtual void get(string name) {
-    }
+	virtual void get(string name)
+	{
+	}
 
-    virtual void put(string name, HostAddress my_address) {
-    }
+	virtual void put(string name, HostAddress my_address)
+	{
+	}
 
-    virtual void rejoin() {
-    }
+	virtual void rejoin()
+	{
+	}
 
 };
 

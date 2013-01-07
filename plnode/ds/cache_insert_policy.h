@@ -9,25 +9,37 @@
 #define	CACHE_INSERT_POLICY_H
 
 #include "overlay_id.h"
-#include "ip_address.h"
+#include "host_address.h"
 #include "double_linked_list.h"
 #include "lookup_table.h"
 
-class CacheInsertPolicy{
+class CacheInsertPolicy
+{
 protected:
-    DoublyLinkedList *dll;
-    LookupTable<OverlayID, DLLNode*> *hm;
+	DoublyLinkedList *dll;
+	LookupTable<OverlayID, DLLNode*> *hm;
+	LookupTable<OverlayID, HostAddress>* rt;
+	OverlayID myOID;
+	int *cache_size;
 public:
 
-    CacheInsertPolicy(){
-    }
-    
-    void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm){
-        this->dll = dll;
-        this->hm = hm;
-    }
-    
-    virtual void insert(OverlayID *key, IPAddress *value) = 0;
+	CacheInsertPolicy()
+	{
+
+	}
+
+	void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm,
+			LookupTable<OverlayID, HostAddress>* rt, OverlayID myOID,
+			int* cache_size)
+	{
+		this->dll = dll;
+		this->hm = hm;
+		this->rt = rt;
+		this->myOID = myOID; printf("\n[Cache] myOID = %s\n", myOID.toString());
+		this->cache_size = cache_size;
+	}
+
+	virtual void insert(OverlayID &key, HostAddress &value) = 0;
 };
 
 #endif	/* CACHE_INSERT_POLICY_H */

@@ -11,28 +11,30 @@
 #include "../message.h"
 #include <memory.h>
 
-class PeerConfigMessage:public ABSMessage
+class PeerConfigMessage: public ABSMessage
 {
 	int parameter_k;
 	double parameter_alpha;
 
 public:
-	PeerConfigMessage():ABSMessage()
+
+	PeerConfigMessage() :
+			ABSMessage()
 	{
 		messageType = MSG_PEER_CONFIG;
 	}
 
-	void setParameterK(int k)
+	void setK(int k)
 	{
 		parameter_k = k;
 	}
 
-	int getParameterK()
+	int getK()
 	{
 		return parameter_k;
 	}
 
-	void setParameterAlpha(double alpha)
+	void setAlpha(double alpha)
 	{
 		parameter_alpha = alpha;
 	}
@@ -42,17 +44,48 @@ public:
 		return parameter_alpha;
 	}
 
+	size_t getSize()
+	{
+		int ret = getBaseSize();
+		ret += sizeof(int);
+		ret += sizeof(double);
+		return ret;
+	}
+
 	virtual char* serialize(int* serialize_length)
 	{
-		char* buffer = new char[sizeof(PeerConfigMessage)];
-		memcpy(buffer, (char*)(this), sizeof(PeerConfigMessage));
-		*serialize_length = sizeof(PeerConfigMessage);
+		*serialize_length = getSize();
+
+		int offset = 0;
+		int parent_size = 0;
+
+		char* parent_buffer = ABSMessage::serialize(&parent_size);
+		char* buffer = new char[*serialize_length];
+
+		memcpy(buffer + offset, parent_buffer, parent_size);
+		offset += parent_size;
+		memcpy(buffer + offset, (char*) (&parameter_k), sizeof(int));
+		offset += sizeof(int);
+		memcpy(buffer + offset, (char*) (&parameter_alpha), sizeof(double));
+		offset += sizeof(double);
+
+		delete[] parent_buffer;
+
 		return buffer;
 	}
 
 	virtual ABSMessage* deserialize(char* buffer, int buffer_length)
 	{
-		memcpy(this, buffer, buffer_length);
+		int offset = 0;
+
+		ABSMessage::deserialize(buffer, buffer_length);
+		offset = getBaseSize();
+
+		memcpy(&parameter_k, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&parameter_alpha, buffer + offset, sizeof(double));
+		offset += sizeof(double);
+
 		return this;
 	}
 
@@ -66,6 +99,5 @@ public:
 		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
 	}
 };
-
 
 #endif /* PEER_CONFIG_MSG_H_ */

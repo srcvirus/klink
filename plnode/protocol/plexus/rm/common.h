@@ -28,7 +28,7 @@
 #endif
 
 /* we define the size of a long in bits here, to
-   speed up computations */
+ speed up computations */
 /* REMEMBER to change this as appropriate */
 #ifndef LONG_SIZE
 #define LONG_SIZE 32
@@ -45,7 +45,7 @@
 #endif
 
 /* some quick macros, just to access certain bits
-   in long ints */
+ in long ints */
 #define gbit(x,pos) ((x & (((long)1) << (LONG_MOD - pos))) ? 1 : 0)
 #define sbit(x,pos,val) (x = (val ? (x | (((long)1) << (LONG_MOD - pos))) : (x & (~(((long)1) << (LONG_MOD - pos))))));
 #endif

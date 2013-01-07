@@ -42,7 +42,15 @@ public:
 		return container_protocol;
 	}
 
-	virtual void processMessage(ABSMessage* message) = 0;
+	virtual bool processMessage(ABSMessage* message) = 0;
+
+	virtual ~MessageProcessor()
+	{
+		routing_table = NULL;
+		index_table = NULL;
+		cache = NULL;
+		container_protocol = NULL;
+	}
 };
 
 #endif	/* MESSAGE_PROCESSOR_H */

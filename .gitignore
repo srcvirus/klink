@@ -1,3 +1,4 @@
+.gitignore
 .cproject
 .meta*
 .project
@@ -5,4 +6,8 @@ Debug/*
 Release/*
 test/*
 *.o
+ihostlist
+config
+config_temp
+build_deploy.sh
 
