@@ -66,11 +66,12 @@ void *processing_thread(void*);
 void *controlling_thread(void*);
 void *web_thread(void*);
 void *logging_thread(void*);
+void *storage_stat_thread(void*);
 
 int main(int argc, char* argv[]) {
         system_init();
 
-        pthread_t listener, controller, web, logger;
+        pthread_t listener, controller, web, logger, storage_stat;
         pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
 
         ThreadParameter f_param[MAX_FORWARDING_THREAD], p_param[MAX_PROCESSOR_THREAD];
@@ -94,6 +95,7 @@ int main(int argc, char* argv[]) {
         pthread_create(&logger, NULL, logging_thread, NULL);
         pthread_create(&controller, NULL, controlling_thread, NULL);
         pthread_create(&web, NULL, web_thread, NULL);
+        pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
 
         pthread_join(listener, NULL);
 
@@ -103,6 +105,8 @@ int main(int argc, char* argv[]) {
         	pthread_join(processor[i], NULL);
         pthread_join(logger, NULL);
         pthread_join(controller, NULL);
+        pthread_join(storage_stat, NULL);
+
         pthread_join(web, NULL);
 
         cleanup();
@@ -519,7 +523,7 @@ static void *callback(enum mg_event event,
                         //delete[] content;
                         // Mark as processed
                 } else {
-                        char content[2048];
+                        char content[4096];
                         PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
                         //<meta http-equiv=\"refresh\" content=\"10\">
                         int content_length = snprintf(content, sizeof (content),
@@ -581,4 +585,55 @@ void *web_thread(void*) {
                         break;
         }
         puts(buffer);
+}
+
+void *storage_stat_thread(void*)
+{
+	printf("Starting a storage stat thread");
+	int get_cache_hit = 0, put_cache_hit = 0, cache_size = 0, index_size = 0;
+	bool loggable = false;
+	PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
+
+	while(true)
+	{
+		sleep(60);
+		if(get_cache_hit != p_protocol->getGetCacheHitCounter())
+		{
+			get_cache_hit = p_protocol->getGetCacheHitCounter();
+			loggable = true;
+		}
+
+		if(put_cache_hit != p_protocol->getPutCacheHitCounter())
+		{
+			put_cache_hit = p_protocol->getPutCacheHitCounter();
+			loggable = true;
+		}
+
+		if(cache_size != p_protocol->getCache()->getSize())
+		{
+			cache_size = p_protocol->getCache()->getSize();
+			loggable = true;
+		}
+
+		if(index_size != p_protocol->getIndexTable()->size())
+		{
+			index_size = p_protocol->getIndexTable()->size();
+			loggable = true;
+		}
+
+		if(loggable)
+		{
+			string key = this_peer->getHostName();
+			double get_hit = 0.0;
+			double put_hit = 0.0;
+
+			if(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded() != 0) put_hit = (double)put_cache_hit / (double)(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded());
+			if(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded() != 0) get_hit = (double)get_cache_hit / (double)(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded());
+
+			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddii", get_hit, put_hit, cache_size, index_size);
+
+			p_protocol->addToLogQueue(entry);
+		}
+		loggable = false;
+	}
 }

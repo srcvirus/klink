@@ -32,9 +32,10 @@ using namespace std;
 
 class ABSProtocol;
 
-#define MAX_LOGS 2
+#define MAX_LOGS 3
 #define LOG_GET 0
 #define LOG_PUT 1
+#define LOG_STORAGE 2
 
 class PlexusProtocol : public ABSProtocol {
         Log *log[MAX_LOGS];
@@ -44,18 +45,22 @@ class PlexusProtocol : public ABSProtocol {
         queue<ABSMessage*> outgoing_message_queue;
         queue<LogEntry*> logging_queue;
         
-
         pthread_mutex_t incoming_queue_lock;
         pthread_mutex_t outgoing_queue_lock;
         pthread_mutex_t log_queue_lock;
+        pthread_mutex_t get_cache_hit_counter_lock;
+        pthread_mutex_t put_cache_hit_counter_lock;
 
         pthread_cond_t cond_incoming_queue_empty;
         pthread_cond_t cond_outgoing_queue_empty;
         pthread_cond_t cond_log_queue_empty;
+
+        int get_cache_hit_count, put_cache_hit_count;
 public:
         int incoming_queue_pushed, incoming_queue_popped;
         int outgoing_queue_pushed, outgoing_queue_popped;
         int logging_queue_pushed, logging_queue_popped;
+
 
         PlexusProtocol() :
         ABSProtocol() {
@@ -65,6 +70,8 @@ public:
                 pthread_mutex_init(&incoming_queue_lock, NULL);
                 pthread_mutex_init(&outgoing_queue_lock, NULL);
                 pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
 
                 pthread_cond_init(&cond_incoming_queue_empty, NULL);
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
@@ -73,6 +80,7 @@ public:
                 incoming_queue_pushed = incoming_queue_popped = 0;
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
                 logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
                 //this->msgProcessor->setContainerProtocol(this);
         }
 
@@ -86,6 +94,8 @@ public:
                 pthread_mutex_init(&incoming_queue_lock, NULL);
                 pthread_mutex_init(&outgoing_queue_lock, NULL);
                 pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
 
                 pthread_cond_init(&cond_incoming_queue_empty, NULL);
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
@@ -94,6 +104,7 @@ public:
                 incoming_queue_pushed = incoming_queue_popped = 0;
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
                 logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -104,6 +115,8 @@ public:
                 pthread_mutex_init(&incoming_queue_lock, NULL);
                 pthread_mutex_init(&outgoing_queue_lock, NULL);
                 pthread_mutex_init(&log_queue_lock, NULL);
+                pthread_mutex_init(&get_cache_hit_counter_lock, NULL);
+                pthread_mutex_init(&put_cache_hit_counter_lock, NULL);
 
                 pthread_cond_init(&cond_incoming_queue_empty, NULL);
                 pthread_cond_init(&cond_outgoing_queue_empty, NULL);
@@ -111,6 +124,8 @@ public:
 
                 incoming_queue_pushed = incoming_queue_popped = 0;
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
+                logging_queue_pushed = logging_queue_popped = 0;
+                get_cache_hit_count = put_cache_hit_count = 0;
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -120,11 +135,15 @@ public:
                 log[LOG_PUT] = new Log(log_seq_no, "put", log_server_name,
                         log_server_user);
 
+                log[LOG_STORAGE] = new Log(log_seq_no, "storage", log_server_name, log_server_user);
+
                 log[LOG_GET]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
                 log[LOG_PUT]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
+                log[LOG_STORAGE]->setCheckPointRowCount(1);
 
                 log[LOG_GET]->open("a");
                 log[LOG_PUT]->open("a");
+                log[LOG_STORAGE]->open("a");
         }
 
         void processMessage(ABSMessage *message) {
@@ -306,6 +325,8 @@ public:
                 routing_table->lookup(maxMatchOid, &next_hop);
                 //search in the Cache
                 cache->reset_iterator();
+                bool cache_hit = false;
+
                 while (cache->has_next())
                 {
                         DLLNode *node = cache->get_next();
@@ -314,9 +335,18 @@ public:
                         if (currentMatchLength > maxLengthMatch)
                         {
                                 maxLengthMatch = currentMatchLength;
-                                cache->lookup(msg->getDstOid(), next_hop);
+                                if(cache->lookup(msg->getDstOid(), next_hop))
+                                	cache_hit = true;
                                 //printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
                         }
+                }
+
+                if(cache_hit)
+                {
+                	if(msg->getMessageType() == MSG_PLEXUS_GET)
+                		incrementGetCacheHitCounter();
+                	else if(msg->getMessageType() == MSG_PLEXUS_PUT)
+                		incrementPutCacheHitCounter();
                 }
 
                 cout << endl << "max match : = " << maxLengthMatch << endl;
@@ -513,6 +543,38 @@ public:
                 return ret;
         }
 
+        void incrementGetCacheHitCounter()
+        {
+        	pthread_mutex_lock(&get_cache_hit_counter_lock);
+        	get_cache_hit_count++;
+        	pthread_mutex_unlock(&get_cache_hit_counter_lock);
+        }
+
+        void incrementPutCacheHitCounter()
+        {
+        	pthread_mutex_lock(&put_cache_hit_counter_lock);
+        	put_cache_hit_count++;
+        	pthread_mutex_unlock(&put_cache_hit_counter_lock);
+        }
+
+        int getGetCacheHitCounter()
+        {
+        	int ret;
+        	pthread_mutex_lock(&get_cache_hit_counter_lock);
+			ret = get_cache_hit_count;
+			pthread_mutex_unlock(&get_cache_hit_counter_lock);
+			return ret;
+        }
+
+        int getPutCacheHitCounter()
+		{
+			int ret;
+			pthread_mutex_lock(&put_cache_hit_counter_lock);
+			ret = put_cache_hit_count;
+			pthread_mutex_unlock(&put_cache_hit_counter_lock);
+			return ret;
+		}
+
         Log* getGetLog() {
                 return log[LOG_GET];
         }
@@ -533,6 +595,8 @@ public:
                 pthread_mutex_destroy(&incoming_queue_lock);
                 pthread_mutex_destroy(&outgoing_queue_lock);
                 pthread_mutex_destroy(&log_queue_lock);
+                pthread_mutex_destroy(&get_cache_hit_counter_lock);
+                pthread_mutex_destroy(&put_cache_hit_counter_lock);
 
                 pthread_cond_destroy(&cond_incoming_queue_empty);
                 pthread_cond_destroy(&cond_outgoing_queue_empty);
