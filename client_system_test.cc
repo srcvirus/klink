@@ -107,7 +107,8 @@ void send_init_message(BuildTree &tree, int name_count) {
                 pInit->setDestPort(address.GetHostPort());
                 pInit->setDstOid(tree.getOverlayID(i));
                 pInit->setNPeers(n);
-                pInit->setK(10);
+                pInit->setK(this_peer->getConfiguration()->getK());
+                pInit->setAlpha(this_peer->getConfiguration()->getAlpha());
                 pInit->setRoutingTable(tree.getRoutingTablePtr(i));
                 pInit->setRunSequenceNo(seq_no);
                 pInit->setLogServerName(log_server);
