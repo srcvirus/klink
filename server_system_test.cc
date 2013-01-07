@@ -590,9 +590,11 @@ void *web_thread(void*) {
 void *storage_stat_thread(void*)
 {
 	printf("Starting a storage stat thread");
-	int get_cache_hit = 0, put_cache_hit = 0, cache_size = 0, index_size = 0;
+	int cache_size = 0, index_size = 0;
+	double get_hit = 0.0, put_hit = 0.0;
 	bool loggable = false;
 	PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
+	const double EPS = 1e-3;
 
 	while(true)
 	{
@@ -600,16 +602,26 @@ void *storage_stat_thread(void*)
 			continue;
 
 		sleep(60);
-		if(get_cache_hit != p_protocol->getGetCacheHitCounter())
+
+		double temp_get_hit = 0.0;
+		if(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded() != 0)
+			temp_get_hit = (double)p_protocol->getGetCacheHitCounter() / (double)(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded());
+
+		double temp_put_hit = 0;
+		if(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded() != 0)
+			temp_put_hit = (double)p_protocol->getPutCacheHitCounter() / (double)(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded());
+
+		if(fabs(get_hit - temp_get_hit) > EPS)
 		{
-			get_cache_hit = p_protocol->getGetCacheHitCounter();
+			get_hit = temp_get_hit;
 			loggable = true;
 		}
 
-		if(put_cache_hit != p_protocol->getPutCacheHitCounter())
+		if(fabs(put_hit - temp_put_hit) > EPS)
 		{
-			put_cache_hit = p_protocol->getPutCacheHitCounter();
+			put_hit = temp_put_hit;
 			loggable = true;
+
 		}
 
 		if(cache_size != p_protocol->getCache()->getSize())
@@ -627,14 +639,7 @@ void *storage_stat_thread(void*)
 		if(loggable)
 		{
 			string key = this_peer->getHostName();
-			double get_hit = 0.0;
-			double put_hit = 0.0;
-
-			if(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded() != 0) put_hit = (double)put_cache_hit / (double)(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded());
-			if(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded() != 0) get_hit = (double)get_cache_hit / (double)(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded());
-
 			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddii", get_hit, put_hit, cache_size, index_size);
-
 			p_protocol->addToLogQueue(entry);
 		}
 		loggable = false;
