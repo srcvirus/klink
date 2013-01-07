@@ -195,7 +195,8 @@ public:
                         container_peer->setLogServerName(pInitMsg->getLogServerName());
                         container_peer->setLogServerUser(pInitMsg->getLogServerUser());
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
-
+                        container_peer->setK(pInitMsg->getK());
+                        container_peer->setAlpha(pInitMsg->getAlpha());
                         container_peer->populate_addressdb();
 
                         container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
