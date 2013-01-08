@@ -272,6 +272,9 @@ public:
                         dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
                 plexus->addToOutgoingQueue(msg);
             }
+        } else if (message->getMessageType() == MSG_PEER_FORCE_LOG) {
+            LogEntry* entry = new LogEntry(ALL_LOGS, "flush", "");
+            plexus->addToLogQueue(entry);
         } else {
             puts("unknown message type in processMessage");
             exit(1);
