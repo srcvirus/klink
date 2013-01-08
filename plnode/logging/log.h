@@ -16,8 +16,6 @@
 
 using namespace std;
 
-#define LOG_GET		0
-#define LOG_PUT		1
 
 class Log
 {

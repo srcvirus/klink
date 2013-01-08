@@ -36,6 +36,7 @@ class ABSProtocol;
 #define LOG_GET 0
 #define LOG_PUT 1
 #define LOG_STORAGE 2
+#define ALL_LOGS 3
 
 class PlexusProtocol : public ABSProtocol {
         Log *log[MAX_LOGS];
@@ -270,6 +271,7 @@ public:
                         case MSG_PLEXUS_PUT_REPLY:
                         case MSG_PEER_INITIATE_GET:
                         case MSG_PEER_INITIATE_PUT:
+                        case MSG_PEER_FORCE_LOG:
                         		puts("returning false");
                                 return false;
                                 break;

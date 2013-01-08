@@ -14,7 +14,7 @@ class LogForceMessage: public ABSMessage
 {
 public:
 
-	LogForceMessage()
+	LogForceMessage():ABSMessage(MSG_PEER_FORCE_LOG)
 	{
 	}
 

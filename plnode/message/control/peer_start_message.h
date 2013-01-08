@@ -9,7 +9,7 @@ class PeerStartMessage: public ABSMessage
 {
 public:
 
-	PeerStartMessage()
+	PeerStartMessage():ABSMessage(MSG_PEER_START)
 	{
 	}
 

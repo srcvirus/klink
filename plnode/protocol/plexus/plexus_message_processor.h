@@ -245,7 +245,8 @@ public:
                 }
                 else if(message->getMessageType() == MSG_PEER_FORCE_LOG)
                 {
-                	plexus->flushAllLog();
+                	LogEntry* entry = new LogEntry(ALL_LOGS, "flush", "");
+                	plexus->addToLogQueue(entry);
                 }
                 else {
                         puts("unknown message type in processMessage");

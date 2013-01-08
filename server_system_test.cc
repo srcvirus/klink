@@ -496,6 +496,11 @@ void *logging_thread(void*) {
                 //printf("[Logging Thread]\twaiting for a log entry to pop\n");
                 entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
                 //printf("[Logging Thread]\tpulled a log entry from the queue\n");
+                if(entry->getType() == ALL_LOGS)
+                {
+                	((PlexusProtocol*)plexus)->flushAllLog();
+                	continue;
+                }
 
                 Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
                 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
@@ -594,7 +599,7 @@ void *web_thread(void*) {
 void *storage_stat_thread(void*)
 {
 	printf("Starting a storage stat thread");
-	int cache_size = 0, index_size = 0;
+	int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
 	double get_hit = 0.0, put_hit = 0.0;
 	bool loggable = false;
 	PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
@@ -640,10 +645,22 @@ void *storage_stat_thread(void*)
 			loggable = true;
 		}
 
+		if(get_process_count != (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded()))
+		{
+			get_process_count = this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded();
+			loggable = true;
+		}
+
+		if(put_process_count != (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded()))
+		{
+			put_process_count = this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded();
+			loggable = true;
+		}
+
 		if(loggable)
 		{
 			string key = this_peer->getHostName();
-			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddii", get_hit, put_hit, cache_size, index_size);
+			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddiiii", get_hit, put_hit, cache_size, index_size, get_process_count, put_process_count);
 			p_protocol->addToLogQueue(entry);
 		}
 		loggable = false;
