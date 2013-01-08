@@ -24,6 +24,7 @@
 #include "plnode/message/p2p/message_put_reply.h"
 #include "plnode/message/control/peer_start_gen_name_message.h"
 #include "plnode/message/control/peer_start_lookup_name_message.h"
+#include "plnode/message/control/log_force_message.h"
 
 #include "plnode/ds/thread_parameter.h"
 
@@ -350,6 +351,10 @@ void *listener_thread(void* args) {
                                                                 rcvd_message = new PeerDynChangeStatusMessage();
                                                                 rcvd_message->deserialize(buffer, buffer_length);
                                                                 break;
+                                                        case MSG_PEER_FORCE_LOG:
+                                                        	rcvd_message = new LogForceMessage();
+                                                        	rcvd_message->deserialize(buffer, buffer_length);
+                                                        	break;
                                                         default:
                                                                 puts("reached default case");
                                                                 exit(1);
@@ -357,11 +362,10 @@ void *listener_thread(void* args) {
 
                                                 if (rcvd_message != NULL) {
                                                         ((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-                                                        printf(
-                                                                "[Listening thread]\t Added a %d message to the incoming queue\n",
+                                                        printf("[Listening thread]\t Added a %d message to the incoming queue\n",
                                                                 rcvd_message->getMessageType());
                                                 } else {
-                                                        puts("received message is null");
+                                                        puts("Received Message is NULL");
                                                         exit(1);
                                                 }
 

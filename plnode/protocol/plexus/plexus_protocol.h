@@ -591,7 +591,14 @@ public:
                 return log[type];
         }
 
-
+        void flushAllLog()
+        {
+        	int i;
+        	for(i = 0; i < MAX_LOGS; i++)
+        	{
+        		log[i]->flush();
+        	}
+        }
 
         ~PlexusProtocol() {
                 pthread_mutex_destroy(&incoming_queue_lock);

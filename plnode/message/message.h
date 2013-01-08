@@ -25,11 +25,16 @@ using namespace std;
 #define MSG_PEER_INIT					4
 #define MSG_PEER_INITIATE_GET			5
 #define MSG_PEER_INITIATE_PUT			6
+#define MSG_PEER_FORCE_LOG				7
+
 #define MSG_DYN_CHANGE_STATUS			11
 #define MSG_DYN_CONFIG					12
+
 #define MSG_LOOKUP_CHANGE_STATUS		21
-#define MSG_START_GENERATE_NAME				31
-#define MSG_START_LOOKUP_NAME				32
+
+#define MSG_START_GENERATE_NAME			31
+#define MSG_START_LOOKUP_NAME			32
+
 #define	MSG_PLEXUS_PUT					41
 #define MSG_PLEXUS_GET					42
 #define MSG_PLEXUS_GET_REPLY			43

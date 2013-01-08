@@ -129,6 +129,7 @@ public:
 
 	int open(const char* mode = "w");
 	int write(const char* key, const char* value);
+	void flush();
 	void ftpUploadLog();
 	void ftpUploadArchive();
 	bool sshUploadLog();
@@ -321,6 +322,19 @@ int Log::write(const char* key, const char* value)
 	}
 
 	return ret;
+}
+
+void Log::flush()
+{
+	fflush(log_file_ptr);
+	fclose(log_file_ptr);
+	printf("[Logging Thread:]\tlog flushed to the disk\n");
+
+	log_file_ptr = NULL;
+
+	this->sshUploadLog();
+	this->archiveCurrentLog();
+	this->open("w+");
 }
 
 void Log::archiveCurrentLog()
