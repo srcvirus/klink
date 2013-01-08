@@ -1,11 +1,11 @@
-node_file=nodes
+node_file=ihostlist
 monitors_file=imonitorlist
 seq_file=seq
 log_server_name=cn101.cs.uwaterloo.ca
 log_server_user=pweb
-k=100
+k=5
 alpha=0.9
 timeout=5.5
 name_count=10000
 retry=10
-check_point_row=10
+check_point_row=20

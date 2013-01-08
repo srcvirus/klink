@@ -11,6 +11,7 @@
 #include "plnode/message/control/peer_init_message.h"
 #include "plnode/message/control/peer_start_gen_name_message.h"
 #include "plnode/message/control/peer_start_lookup_name_message.h"
+#include "plnode/message/control/log_force_message.h"
 #include "plnode/message/p2p/message_put.h"
 #include <stdlib.h>
 #include "plnode/ds/GlobalData.h"
@@ -325,8 +326,14 @@ int main(int argc, char* argv[]) {
                         PeerStartLookupNameMessage *msg = new PeerStartLookupNameMessage();
                         send_message_to_all_peers(msg, tree);
                         delete msg;
-                } else
-                        puts("invalid command");
+                }
+                else if(strcmp(command, "force") == 0 || strcmp(command, "flush") == 0)
+				{
+                	LogForceMessage *msg = new LogForceMessage();
+                	send_message_to_all_peers(msg, tree);
+                	delete msg;
+				}
+                else puts("invalid command");
         }
 
         /*string name_to_publish = "1378410";

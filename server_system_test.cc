@@ -24,6 +24,7 @@
 #include "plnode/message/p2p/message_put_reply.h"
 #include "plnode/message/control/peer_start_gen_name_message.h"
 #include "plnode/message/control/peer_start_lookup_name_message.h"
+#include "plnode/message/control/log_force_message.h"
 
 #include "plnode/ds/thread_parameter.h"
 
@@ -349,6 +350,10 @@ void *listener_thread(void* args) {
                                 rcvd_message = new PeerDynChangeStatusMessage();
                                 rcvd_message->deserialize(buffer, buffer_length);
                                 break;
+                            case MSG_PEER_FORCE_LOG:
+                              	rcvd_message = new LogForceMessage();
+                                rcvd_message->deserialize(buffer, buffer_length);
+                                break;
                             case MSG_CACHE_ME:
                                 rcvd_message = new MessageCacheMe();
                                 rcvd_message->deserialize(buffer, buffer_length);
@@ -356,6 +361,7 @@ void *listener_thread(void* args) {
                             default:
                                 puts("reached default case");
                                 exit(1);
+
                         }
 
                         if (rcvd_message != NULL) {
@@ -491,9 +497,20 @@ void *logging_thread(void*) {
             continue;
         }
 
+<<<<<<< HEAD
         //printf("[Logging Thread]\twaiting for a log entry to pop\n");
         entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
         //printf("[Logging Thread]\tpulled a log entry from the queue\n");
+=======
+                //printf("[Logging Thread]\twaiting for a log entry to pop\n");
+                entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
+                //printf("[Logging Thread]\tpulled a log entry from the queue\n");
+                if(entry->getType() == ALL_LOGS)
+                {
+                	((PlexusProtocol*)plexus)->flushAllLog();
+                	continue;
+                }
+>>>>>>> dcd273bd387c5ed775ec6c856689acc84a5bdf65
 
         Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
         log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
@@ -589,6 +606,7 @@ void *web_thread(void*) {
     puts(buffer);
 }
 
+<<<<<<< HEAD
 void *storage_stat_thread(void*) {
     printf("Starting a storage stat thread");
     int get_cache_hit = 0, put_cache_hit = 0, cache_size = 0, index_size = 0;
@@ -634,4 +652,75 @@ void *storage_stat_thread(void*) {
         }
         loggable = false;
     }
+=======
+void *storage_stat_thread(void*)
+{
+	printf("Starting a storage stat thread");
+	int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
+	double get_hit = 0.0, put_hit = 0.0;
+	bool loggable = false;
+	PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
+	const double EPS = 1e-3;
+
+	while(true)
+	{
+		if(!this_peer->IsInitRcvd())
+			continue;
+
+		sleep(60);
+
+		double temp_get_hit = 0.0;
+		if(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded() != 0)
+			temp_get_hit = (double)p_protocol->getGetCacheHitCounter() / (double)(this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded());
+
+		double temp_put_hit = 0;
+		if(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded() != 0)
+			temp_put_hit = (double)p_protocol->getPutCacheHitCounter() / (double)(this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded());
+
+		if(fabs(get_hit - temp_get_hit) > EPS)
+		{
+			get_hit = temp_get_hit;
+			loggable = true;
+		}
+
+		if(fabs(put_hit - temp_put_hit) > EPS)
+		{
+			put_hit = temp_put_hit;
+			loggable = true;
+
+		}
+
+		if(cache_size != p_protocol->getCache()->getSize())
+		{
+			cache_size = p_protocol->getCache()->getSize();
+			loggable = true;
+		}
+
+		if(index_size != p_protocol->getIndexTable()->size())
+		{
+			index_size = p_protocol->getIndexTable()->size();
+			loggable = true;
+		}
+
+		if(get_process_count != (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded()))
+		{
+			get_process_count = this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded();
+			loggable = true;
+		}
+
+		if(put_process_count != (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded()))
+		{
+			put_process_count = this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded();
+			loggable = true;
+		}
+
+		if(loggable)
+		{
+			string key = this_peer->getHostName();
+			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddiiii", get_hit, put_hit, cache_size, index_size, get_process_count, put_process_count);
+			p_protocol->addToLogQueue(entry);
+		}
+		loggable = false;
+	}
+>>>>>>> dcd273bd387c5ed775ec6c856689acc84a5bdf65
 }

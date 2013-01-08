@@ -1,21 +1,26 @@
-#ifndef PEER_START_MESSAGE_H
-#define PEER_START_MESSAGE_H
+/*
+ * log_force_message.h
+ *
+ *  Created on: Jan 8, 2013
+ *      Author: sr2chowd
+ */
+
+#ifndef LOG_FORCE_MESSAGE_H_
+#define LOG_FORCE_MESSAGE_H_
 
 #include "../message.h"
 
-#include <cstring>
-
-class PeerStartMessage: public ABSMessage
+class LogForceMessage: public ABSMessage
 {
 public:
 
-	PeerStartMessage():ABSMessage(MSG_PEER_START)
+	LogForceMessage():ABSMessage(MSG_PEER_FORCE_LOG)
 	{
 	}
 
-	PeerStartMessage(string source_host, int source_port, string dest_host,
+	LogForceMessage(string source_host, int source_port, string dest_host,
 			int dest_port, OverlayID src_oid, OverlayID dst_id) :
-			ABSMessage(MSG_PEER_START, source_host, source_port, dest_host,
+			ABSMessage(MSG_PEER_FORCE_LOG, source_host, source_port, dest_host,
 					dest_port, src_oid, dst_id)
 	{
 	}
@@ -41,4 +46,5 @@ public:
 	}
 };
 
-#endif
+
+#endif /* LOG_FORCE_MESSAGE_H_ */

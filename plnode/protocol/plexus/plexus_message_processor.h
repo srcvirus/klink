@@ -24,6 +24,7 @@
 #include "../../message/control/peer_change_status_message.h"
 #include "../../message/control/peer_start_gen_name_message.h"
 #include "../../message/control/peer_dyn_change_status_message.h"
+#include "../../message/control/log_force_message.h"
 
 #include "../protocol.h"
 #include "../plexus/plexus_protocol.h"
@@ -274,6 +275,7 @@ public:
         } else {
             puts("unknown message type in processMessage");
             exit(1);
+
 
         }
 
