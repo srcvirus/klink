@@ -35,6 +35,8 @@ class Configuration
 	double timeout;
 	int n_retry;
 	string cache_storage;
+	string cache_type;
+
 	map <string, string> config_map;
 
 	bool isNumeric(string str)
@@ -139,6 +141,10 @@ public:
 			{
 				cache_storage = value;
 			}
+			else if(strcmp(key, "cache_type") == 0)
+			{
+				cache_type = value;
+			}
 		}
 		fclose(config_file_ptr);
 	}
@@ -211,6 +217,11 @@ public:
 	string getCacheStorage() const
 	{
 		return cache_storage;
+	}
+
+	string getCacheType() const
+	{
+		return cache_type;
 	}
 
 	int getInt(string key)

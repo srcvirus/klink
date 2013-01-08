@@ -74,6 +74,9 @@ class Peer {
         string log_server_name;
         string log_server_user;
 
+        string cache_storage;	//end_point or path
+        string cache_type;		//reactive or proactive
+
         Configuration* configuration;
 
         LookupTable <HostAddress, pair <sockaddr_in, pair <int, double> > > address_db;
@@ -132,6 +135,8 @@ public:
 		n_retry = configuration->getNRetry();
 		timeout_sec = (int) configuration->getTimeout();
 		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
+		cache_storage = configuration->getCacheStorage();
+		cache_type = configuration->getCacheType();
 		/*log_server_name = configuration->getLogServerHostName();
 		log_server_user = configuration->getLogServerUserName();*/
 
@@ -698,6 +703,25 @@ public:
                 return start_lookup_name_rcvd;
         }
 
+		string getCacheStorage() const
+		{
+			return cache_storage;
+		}
+
+		void setCacheStorage(const string& cacheStorage)
+		{
+			cache_storage = cacheStorage;
+		}
+
+		string getCacheType() const
+		{
+			return cache_type;
+		}
+
+		void setCacheType(const string& cacheType)
+		{
+			cache_type = cacheType;
+		}
 };
 
 #endif /* PEER_H_ */
