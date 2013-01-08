@@ -67,16 +67,17 @@ public:
                         index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 
                         puts("PUT Successful");
+                        MessagePUT_REPLY *reply;
 
-                        MessagePUT_REPLY *reply = new MessagePUT_REPLY(container_peer->getHostName(),
-                                container_peer->getListenPortNumber(), putMsg->getSourceHost(),
-                                putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getDstOid(),
-                                SUCCESS, putMsg->GetDeviceName());
+						reply = new MessagePUT_REPLY(container_peer->getHostName(),
+										container_peer->getListenPortNumber(), putMsg->getSourceHost(),
+										putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getSrcOid(),
+										SUCCESS, putMsg->GetDeviceName());
 
-                        reply->setResolutionHops(putMsg->getOverlayHops());
-                        reply->setResolutionIpHops(putMsg->getIpHops());
-                        reply->setResolutionLatency(putMsg->getLatency());
-                        reply->setOriginSeqNo(putMsg->getSequenceNo());
+						reply->setResolutionHops(putMsg->getOverlayHops());
+								reply->setResolutionIpHops(putMsg->getIpHops());
+								reply->setResolutionLatency(putMsg->getLatency());
+								reply->setOriginSeqNo(putMsg->getSequenceNo());
 
                         plexus->addToOutgoingQueue(reply);
                 }//GET
@@ -155,7 +156,7 @@ public:
                 } else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY) {
 
                         MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
-                        msg->message_print_dump();
+                        //msg->message_print_dump();
                         OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
                         HostAddress ha(msg->getSourceHost(), msg->getSourcePort());

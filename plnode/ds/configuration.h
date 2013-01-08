@@ -34,7 +34,7 @@ class Configuration
 	int check_point_row;
 	double timeout;
 	int n_retry;
-
+	string cache_storage;
 	map <string, string> config_map;
 
 	bool isNumeric(string str)
@@ -135,6 +135,10 @@ public:
 			{
 				n_retry = atoi(value);
 			}
+			else if(strcmp(key, "cache_storage") == 0)
+			{
+				cache_storage = value;
+			}
 		}
 		fclose(config_file_ptr);
 	}
@@ -204,7 +208,10 @@ public:
 		return seq_file_path;
 	}
 
-
+	string getCacheStorage() const
+	{
+		return cache_storage;
+	}
 
 	int getInt(string key)
 	{
