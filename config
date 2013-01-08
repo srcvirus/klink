@@ -9,3 +9,5 @@ timeout=5.5
 name_count=10000
 retry=10
 check_point_row=20
+cache_storage=end_point
+cache_type=proactive

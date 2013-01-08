@@ -189,101 +189,104 @@ public:
             plexus->addToLogQueue(entry);
             //cache->print();
         }//INIT Message
-        else if (message->getMessageType() == MSG_PEER_INIT) {
-            PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
+                else if (message->getMessageType() == MSG_PEER_INIT) {
+                        PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
 
 
-            container_peer->setNPeers(pInitMsg->getNPeers());
-            GlobalData::network_size = pInitMsg->getNPeers();
-            container_peer->setOverlayID(pInitMsg->getDstOid());
-            container_peer->setLogServerName(pInitMsg->getLogServerName());
-            container_peer->setLogServerUser(pInitMsg->getLogServerUser());
-            container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
-            container_peer->setK(pInitMsg->getK());
-            container_peer->setAlpha(pInitMsg->getAlpha());
-            container_peer->populate_addressdb();
+                        container_peer->setNPeers(pInitMsg->getNPeers());
+                        GlobalData::network_size = pInitMsg->getNPeers();
+                        container_peer->setOverlayID(pInitMsg->getDstOid());
+                        container_peer->setLogServerName(pInitMsg->getLogServerName());
+                        container_peer->setLogServerUser(pInitMsg->getLogServerUser());
+                        container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
+                        container_peer->setK(pInitMsg->getK());
+                        container_peer->setAlpha(pInitMsg->getAlpha());
+                        container_peer->populate_addressdb();
 
-            container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
-            container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
-            container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
-            container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
-            container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
+                        container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
+                        container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
+                        container_peer->setLookup_name_range_start(pInitMsg->getLookup_name_range_start());
+                        container_peer->setLookup_name_range_end(pInitMsg->getLookup_name_range_end());
+                        container_peer->SetWebserverPort(pInitMsg->getWebserverPort());
 
-            container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
-            container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
-            container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
-                    container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
-                    container_protocol->getContainerPeer()->getK()));
+                        container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
+                        container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
+                        container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
+                                container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
+                                container_protocol->getContainerPeer()->getK()));
 
-            plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
+                        plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 
-            this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable(), container_protocol->getCache());
+                        this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable(), container_protocol->getCache());
 
-            container_peer->SetInitRcvd(true);
+                        container_peer->SetInitRcvd(true);
 
-            /////////////////send cache_me message to all nbr/////
-            LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
-            rtable_iterator.reset_iterator();
-            while (rtable_iterator.hasMoreKey()) {
-                OverlayID dst_oid = rtable_iterator.getNextKey();
-                HostAddress dst_ha;
-                container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
-                MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
-                        dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
-                msg->setOverlayTtl(2);
-                plexus->addToOutgoingQueue(msg);
-            }
+                        /////////////////send cache_me message to all nbr/////
+                        if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
+                                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
+                                rtable_iterator.reset_iterator();
+                                while (rtable_iterator.hasMoreKey()) {
+                                        OverlayID dst_oid = rtable_iterator.getNextKey();
+                                        HostAddress dst_ha;
+                                        container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
+                                        MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
+                                                dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
+                                        msg->setOverlayTtl(2);
+                                        plexus->addToOutgoingQueue(msg);
+                                }
+                        }
 
-        } else if (message->getMessageType() == MSG_PEER_CONFIG) {
-            PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
-            container_peer->setAlpha(pConfMsg->getAlpha());
-            container_peer->setK(pConfMsg->getK());
-        } else if (message->getMessageType() == MSG_PEER_INITIATE_GET) {
-            PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
-            printf("Processing peer init get msg, oid = %d\n",
-                    pInitGet->getDstOid().GetOverlay_id());
-            container_protocol->get(pInitGet->getDeviceName());
-        } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
-            PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
-            container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
-        } else if (message->getMessageType() == MSG_PEER_START) {
-            container_peer->setStatus(PEER_RUNNING);
-        } else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS) {
-            PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
-            container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
-        } else if (message->getMessageType() == MSG_START_GENERATE_NAME) {
-            container_peer->SetStart_gen_name_rcvd(true);
-        } else if (message->getMessageType() == MSG_START_LOOKUP_NAME) {
-            container_peer->SetStart_lookup__name_rcvd(true);
-        } else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS) {
-            PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*) message;
-            container_peer->SetDyn_status(dcsMsg->getDynStatus());
-        } else if (message->getMessageType() == MSG_CACHE_ME) {
-            MessageCacheMe* cache_msg = (MessageCacheMe*) message;
-            OverlayID oid = cache_msg->getSrcOid();
-            HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
-            cache->add(oid, ha);
-            /////////////////send cache_me message to all nbr/////
-            LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
-            rtable_iterator.reset_iterator();
-            while (rtable_iterator.hasMoreKey()) {
-                OverlayID dst_oid = rtable_iterator.getNextKey();
-                HostAddress dst_ha;
-                container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
-                MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
-                        dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
-                plexus->addToOutgoingQueue(msg);
-            }
-        } else if (message->getMessageType() == MSG_PEER_FORCE_LOG) {
-            LogEntry* entry = new LogEntry(ALL_LOGS, "flush", "");
-            plexus->addToLogQueue(entry);
-        } else {
-            puts("unknown message type in processMessage");
-            exit(1);
+                } else if (message->getMessageType() == MSG_PEER_CONFIG) {
+                        PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
+                        container_peer->setAlpha(pConfMsg->getAlpha());
+                        container_peer->setK(pConfMsg->getK());
+                } else if (message->getMessageType() == MSG_PEER_INITIATE_GET) {
+                        PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
+                        printf("Processing peer init get msg, oid = %d\n",
+                                pInitGet->getDstOid().GetOverlay_id());
+                        container_protocol->get(pInitGet->getDeviceName());
+                } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
+                        PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
+                        container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
+                } else if (message->getMessageType() == MSG_PEER_START) {
+                        container_peer->setStatus(PEER_RUNNING);
+                } else if (message->getMessageType() == MSG_PEER_CHANGE_STATUS) {
+                        PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
+                        container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
+                } else if (message->getMessageType() == MSG_START_GENERATE_NAME) {
+                        container_peer->SetStart_gen_name_rcvd(true);
+                } else if (message->getMessageType() == MSG_START_LOOKUP_NAME) {
+                        container_peer->SetStart_lookup__name_rcvd(true);
+                } else if (message->getMessageType() == MSG_DYN_CHANGE_STATUS) {
+                        PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*) message;
+                        container_peer->SetDyn_status(dcsMsg->getDynStatus());
+                } else if (message->getMessageType() == MSG_CACHE_ME) {
+                        if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
+                                MessageCacheMe* cache_msg = (MessageCacheMe*) message;
+                                OverlayID oid = cache_msg->getSrcOid();
+                                HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
+                                cache->add(oid, ha);
+                                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
+                                rtable_iterator.reset_iterator();
+                                while (rtable_iterator.hasMoreKey()) {
+                                        OverlayID dst_oid = rtable_iterator.getNextKey();
+                                        HostAddress dst_ha;
+                                        container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
+                                        MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
+                                                dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
+                                        plexus->addToOutgoingQueue(msg);
+                                }
+                        }
+                } else if (message->getMessageType() == MSG_PEER_FORCE_LOG) {
+                        LogEntry* entry = new LogEntry(ALL_LOGS, "flush", "");
+                        plexus->addToLogQueue(entry);
+                } else {
+                        puts("unknown message type in processMessage");
+                        exit(1);
+                }
+
+                return false;
         }
-
-        return false;
-    }
 
 };
 
