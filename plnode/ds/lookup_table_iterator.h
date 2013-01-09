@@ -16,7 +16,6 @@ class LookupTableIterator
 {
 	LookupTable<KeyType, ValueType>* table_ptr;
 	typename map<KeyType, ValueType>::iterator table_iterator;
-	pthread_rwlock_t iterator_read_lock;
 
 public:
 
@@ -25,7 +24,7 @@ public:
 		table_ptr = NULL;
 	}
 	
-        LookupTableIterator(LookupTable<KeyType, ValueType>* ptr)
+    LookupTableIterator(LookupTable<KeyType, ValueType>* ptr)
 	{
 		table_ptr = ptr;
 		table_iterator = table_ptr->begin();

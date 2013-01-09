@@ -53,8 +53,6 @@ int fd_max;
 fd_set connection_pool;
 fd_set read_connection_fds;
 
-
-
 ServerSocket* s_socket = NULL;
 
 struct mg_context *ctx;
@@ -224,9 +222,19 @@ void *listener_thread(void* args) {
 
     int buffer_length;
     char* buffer;
+    queue <ABSMessage*> received_before_init_queue;
 
     while (true) {
         read_connection_fds = connection_pool;
+        if(this_peer->IsInitRcvd() && !received_before_init_queue.empty())
+        {
+        	while(!received_before_init_queue.empty())
+        	{
+        		((PlexusProtocol*)plexus)->addToIncomingQueue(received_before_init_queue.front());
+        		received_before_init_queue.pop();
+        	}
+        }
+
         int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
         if (n_select < 0) {
@@ -364,11 +372,21 @@ void *listener_thread(void* args) {
 
                         }
 
-                        if (rcvd_message != NULL) {
-                            ((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-                            printf(
-                                    "[Listening thread]\t Added a %d message to the incoming queue\n",
-                                    rcvd_message->getMessageType());
+                        if (rcvd_message != NULL)
+                        {
+                        	if(this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
+                        	{
+                        		puts("INIT already received");
+                        		((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
+                        		printf("[Listening thread]\t Added a %d message to the incoming queue\n",
+                        		                                    rcvd_message->getMessageType());
+                        	}
+                        	else
+                        	{
+                        		puts("Received a message before receiving INIT message");
+                        		received_before_init_queue.push(rcvd_message);
+                        	}
+
                         } else {
                             puts("received message is null");
                             exit(1);

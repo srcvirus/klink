@@ -52,13 +52,24 @@ public:
         bool processMessage(ABSMessage* message)
         {
                 message->decrementOverlayTtl();
+
                 PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
                 Peer* container_peer = container_protocol->getContainerPeer();
 
                 bool forward = plexus->setNextHop(message);
 
-                if (forward) {
-                        return true;
+                if (forward)
+                {
+                	if(container_peer->getCacheStorage() == "path")
+                	{
+						if(message->getMessageType() == MSG_PLEXUS_GET_REPLY || message->getMessageType() == MSG_PLEXUS_PUT_REPLY)
+						{
+							OverlayID id(message->getSrcOid().GetOverlay_id(), message->getSrcOid().GetPrefix_length(), message->getSrcOid().MAX_LENGTH);
+							HostAddress ha(message->getSourceHost(), message->getSourcePort());
+							cache->add(id, ha);
+						}
+                	}
+                	return true;
                 }
                 //PUT
                 if (message->getMessageType() == MSG_PLEXUS_PUT) {
@@ -67,7 +78,7 @@ public:
                         puts("Adding to index table");
                         index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 
-                        puts("PUT Successful");
+                        //puts("PUT Successful");
                         MessagePUT_REPLY *reply;
 
 						reply = new MessagePUT_REPLY(container_peer->getHostName(),
@@ -80,7 +91,10 @@ public:
 								reply->setResolutionLatency(putMsg->getLatency());
 								reply->setOriginSeqNo(putMsg->getSequenceNo());
 
-
+						if(container_peer->getCacheStorage() == "path")
+						{
+							plexus->setNextHop(reply);
+						}
                         plexus->addToOutgoingQueue(reply);
                 }//GET
                 else if (message->getMessageType() == MSG_PLEXUS_GET) {
@@ -91,7 +105,7 @@ public:
                                 puts("Got it :)");
                                 MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
                                         container_peer->getListenPortNumber(), msg->getSourceHost(),
-                                        msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
+                                        msg->getSourcePort(), container_peer->getOverlayID(), msg->getSrcOid(),
                                         SUCCESS, hostAddress, msg->GetDeviceName());
 
                                 reply->setResolutionHops(msg->getOverlayHops());
@@ -99,8 +113,11 @@ public:
                                 reply->setResolutionLatency(msg->getLatency());
                                 reply->setOriginSeqNo(msg->getSequenceNo());
 
+                                if(container_peer->getCacheStorage() == "path")
+                                {
+                                	plexus->setNextHop(reply);
+                                }
                                 plexus->addToOutgoingQueue(reply);
-                                //send message
                         } else {
 
                                 puts("GET Failed");
@@ -158,7 +175,7 @@ public:
         } else if (message->getMessageType() == MSG_PLEXUS_PUT_REPLY) {
 
             MessagePUT_REPLY *msg = (MessagePUT_REPLY*) message;
-            msg->message_print_dump();
+            //msg->message_print_dump();
             OverlayID srcID(msg->getSrcOid().GetOverlay_id(), msg->getSrcOid().GetPrefix_length(), msg->getSrcOid().MAX_LENGTH);
 
             HostAddress ha(msg->getSourceHost(), msg->getSourcePort());
@@ -222,13 +239,14 @@ public:
                         container_peer->SetInitRcvd(true);
 
                         /////////////////send cache_me message to all nbr/////
+
                         if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
                                 LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
                                 rtable_iterator.reset_iterator();
                                 while (rtable_iterator.hasMoreKey()) {
                                         OverlayID dst_oid = rtable_iterator.getNextKey();
                                         HostAddress dst_ha;
-                                        container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
+                                        container_protocol->getRoutingTable()->lookup(dst_oid, &dst_ha);
                                         MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
                                                 dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
                                         msg->setOverlayTtl(2);
@@ -261,22 +279,27 @@ public:
                         PeerDynChangeStatusMessage* dcsMsg = (PeerDynChangeStatusMessage*) message;
                         container_peer->SetDyn_status(dcsMsg->getDynStatus());
                 } else if (message->getMessageType() == MSG_CACHE_ME) {
-                        if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
-                                MessageCacheMe* cache_msg = (MessageCacheMe*) message;
-                                OverlayID oid = cache_msg->getSrcOid();
-                                HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
-                                cache->add(oid, ha);
-                                LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
-                                rtable_iterator.reset_iterator();
-                                while (rtable_iterator.hasMoreKey()) {
-                                        OverlayID dst_oid = rtable_iterator.getNextKey();
-                                        HostAddress dst_ha;
-                                        container_protocol->getRoutingTable()->add(dst_oid, dst_ha);
-                                        MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
-                                                dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
-                                        plexus->addToOutgoingQueue(msg);
-                                }
-                        }
+					if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
+						MessageCacheMe* cache_msg = (MessageCacheMe*) message;
+						OverlayID oid = cache_msg->getSrcOid();
+						HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
+						cache->add(oid, ha);
+
+						if(message->getOverlayTtl() > 0)
+						{
+							LookupTableIterator<OverlayID, HostAddress> rtable_iterator(container_protocol->getRoutingTable());
+							rtable_iterator.reset_iterator();
+							while (rtable_iterator.hasMoreKey()) {
+									OverlayID dst_oid = rtable_iterator.getNextKey();
+									HostAddress dst_ha;
+									container_protocol->getRoutingTable()->lookup(dst_oid, &dst_ha);
+									MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
+											dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
+									msg->setOverlayTtl(message->getOverlayTtl());
+									plexus->addToOutgoingQueue(msg);
+							}
+						}
+					}
                 } else if (message->getMessageType() == MSG_PEER_FORCE_LOG) {
                         LogEntry* entry = new LogEntry(ALL_LOGS, "flush", "");
                         plexus->addToLogQueue(entry);

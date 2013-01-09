@@ -13,6 +13,7 @@
 #include <queue>
 #include "../protocol.h"
 #include "../../ds/cache.h"
+#include "../../ds/cache_iterator.h"
 #include "../../message/message_processor.h"
 //#include "plexus_message_processor.h"
 #include "../../message/p2p/message_get.h"
@@ -170,14 +171,19 @@ public:
                         case MSG_START_GENERATE_NAME:
                         case MSG_START_LOOKUP_NAME:
                         case MSG_DYN_CHANGE_STATUS:
-                        case MSG_PLEXUS_GET_REPLY:
-                        case MSG_PLEXUS_PUT_REPLY:
                         case MSG_PEER_INITIATE_GET:
                         case MSG_PEER_INITIATE_PUT:
                         case MSG_PEER_FORCE_LOG:
+                        case MSG_CACHE_ME:
                         		puts("returning false");
                                 return false;
                                 break;
+                }
+
+                if(container_peer->getCacheStorage() == "end_point")
+                {
+                	if(msg->getMessageType() == MSG_PLEXUS_GET_REPLY || msg->getMessageType() == MSG_PLEXUS_PUT_REPLY)
+                		return false;
                 }
 
                 if (msg->getOverlayTtl() == 0)
@@ -229,12 +235,13 @@ public:
                 }
                 routing_table->lookup(maxMatchOid, &next_hop);
                 //search in the Cache
-                cache->reset_iterator();
+                CacheIterator cache_iterator(cache);
+                cache_iterator.reset_iterator();
                 bool cache_hit = false;
 
-                while (cache->has_next())
+                while (cache_iterator.hasMore())
                 {
-                        DLLNode *node = cache->get_next();
+                        DLLNode *node = cache_iterator.getNext();
                         OverlayID id = node->key;
                         currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
                         if (currentMatchLength > maxLengthMatch)

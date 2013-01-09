@@ -160,7 +160,7 @@ pair <int, double> getCost(string ip_address)
 	string command = "ping -c 1 ";
 	command += ip_address;
 	command += " | grep -E 'ttl=|time=' | cut -d' ' -f 6- ";
-	puts(command.c_str());
+	//puts(command.c_str());
 
 	int total_retry = 3;
 	int n_retry = 0;
@@ -175,7 +175,7 @@ pair <int, double> getCost(string ip_address)
 		char buffer[300];
 
 		fgets(buffer, sizeof(buffer), pipe);
-		puts(buffer);
+		//puts(buffer);
 		if( strlen(buffer) <= 0) { n_retry++; continue; }
 
 		char* ttl_str = strtok(buffer, " =");
