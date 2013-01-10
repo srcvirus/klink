@@ -285,7 +285,9 @@ public:
 						MessageCacheMe* cache_msg = (MessageCacheMe*) message;
 						OverlayID oid = cache_msg->getSrcOid();
 						HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
-						cache->add(oid, ha);
+						//cache->add(oid, ha);
+						if(!(oid == container_peer->getOverlayID()))
+							container_protocol->getRoutingTable()->add(oid, ha);
 
 						message->message_print_dump();
 
