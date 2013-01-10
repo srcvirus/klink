@@ -30,7 +30,7 @@ public:
 	int size;
 	DLLNode *current;
 
-	pthread_mutex_t cache_lock;
+	pthread_rwlock_t cache_lock;
 
 //	Cache()
 //	{
@@ -53,7 +53,7 @@ public:
 		this->capacity = capacity;
 		size = 0;
 		current = dll->getHead();
-		pthread_mutex_init(&cache_lock, NULL);
+		pthread_rwlock_init(&cache_lock, NULL);
 	}
 
 	/*void reset_iterator()
@@ -80,8 +80,7 @@ public:
 
 	void add(OverlayID &key, HostAddress &value)
 	{
-		pthread_mutex_lock(&cache_lock);
-
+		pthread_rwlock_wrlock(&cache_lock);
 		if (size == capacity && !crPolicy->processHit(key))
 		{
 			crPolicy->evict();
@@ -92,61 +91,62 @@ public:
 		printf("Cache size %d\n", size);
 		puts(toString());
 		puts("*******************************************************");
-		pthread_mutex_unlock(&cache_lock);
+		pthread_rwlock_unlock(&cache_lock);
 	}
 
 	bool lookup(OverlayID key, HostAddress &hostAddress)
 	{
-		pthread_mutex_lock(&cache_lock);
+		pthread_rwlock_wrlock(&cache_lock);
 		DLLNode *node;// = new DLLNode();
 		if (hm->lookup(key, &node))
 		{
 			crPolicy->processHit(key);
 			hostAddress = node->value;
-			pthread_mutex_unlock(&cache_lock);
+			pthread_rwlock_unlock(&cache_lock);
 			return true;
 		}
-		pthread_mutex_unlock(&cache_lock);
+		pthread_rwlock_unlock(&cache_lock);
 		return false;
 	}
 
 	void print()
 	{
-		pthread_mutex_lock(&cache_lock);
+		//pthread_rwlock_rdlock(&cache_lock);
 		cout << size << endl;
 		dll->printNodesForward();
-		pthread_mutex_unlock(&cache_lock);
+		//pthread_rwlock_unlock(&cache_lock);
 	}
         
 	int getStringSize(){
 		int ret;
-		pthread_mutex_lock(&cache_lock);
+		//pthread_rwlock_rdlock(&cache_lock);
 		ret = dll->getStringSize();
-		pthread_mutex_unlock(&cache_lock);
+		//pthread_rwlock_unlock(&cache_lock);
 		return ret;
 	}
 
 	char* toString(){
 		char* ret;
-		pthread_mutex_lock(&cache_lock);
+		//pthread_rwlock_rdlock(&cache_lock);
 		ret = dll->toString();
-		pthread_mutex_unlock(&cache_lock);
+		//pthread_rwlock_unlock(&cache_lock);
 		return ret;
 	}
 
 	void setSize(int size)
 	{
-		pthread_mutex_lock(&cache_lock);
+		pthread_rwlock_wrlock(&cache_lock);
 		this->size = size;
-		pthread_mutex_unlock(&cache_lock);
+		pthread_rwlock_unlock(&cache_lock);
 	}
 
 	int getSize()
 	{
 		int ret;
-		pthread_mutex_lock(&cache_lock);
+		pthread_rwlock_rdlock(&cache_lock);
 		ret = size;
-		pthread_mutex_unlock(&cache_lock);
+		pthread_rwlock_unlock(&cache_lock);
+		return size;
 	}
 
 	DoublyLinkedList* getDLL() const
@@ -155,7 +155,7 @@ public:
 	}
 	~Cache()
 	{
-		pthread_mutex_destroy(&cache_lock);
+		pthread_rwlock_destroy(&cache_lock);
 	}
 };
 

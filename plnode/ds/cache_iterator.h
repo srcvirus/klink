@@ -36,10 +36,7 @@ public:
 
 	bool hasMore()
 	{
-		if (current == NULL)
-			return false;
-
-		return current->next != NULL;
+		return current != NULL;
 	}
 
 	DLLNode* getNext()
@@ -47,8 +44,9 @@ public:
 		if (current == NULL)
 			return NULL;
 
+		DLLNode* ret = current;
 		current = current->next;
-		return current->prev;
+		return ret;
 	}
 };
 

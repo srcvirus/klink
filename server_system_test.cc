@@ -52,7 +52,7 @@ ABSCode *iCode;
 int fd_max;
 fd_set connection_pool;
 fd_set read_connection_fds;
-
+queue <ABSMessage*> received_before_init_queue;
 ServerSocket* s_socket = NULL;
 
 struct mg_context *ctx;
@@ -67,12 +67,14 @@ void *controlling_thread(void*);
 void *web_thread(void*);
 void *logging_thread(void*);
 void *storage_stat_thread(void*);
+void *pending_message_process_thread(void*);
 
 int main(int argc, char* argv[]) {
     system_init();
 
     pthread_t listener, controller, web, logger, storage_stat;
     pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
+    pthread_t pending_msg_processor;
 
     ThreadParameter f_param[MAX_FORWARDING_THREAD], p_param[MAX_PROCESSOR_THREAD];
 
@@ -96,6 +98,7 @@ int main(int argc, char* argv[]) {
     pthread_create(&controller, NULL, controlling_thread, NULL);
     pthread_create(&web, NULL, web_thread, NULL);
     pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
+    pthread_create(&pending_msg_processor, NULL, pending_message_process_thread, NULL);
 
     pthread_join(listener, NULL);
 
@@ -222,18 +225,10 @@ void *listener_thread(void* args) {
 
     int buffer_length;
     char* buffer;
-    queue <ABSMessage*> received_before_init_queue;
+
 
     while (true) {
         read_connection_fds = connection_pool;
-        if(this_peer->IsInitRcvd() && !received_before_init_queue.empty())
-        {
-        	while(!received_before_init_queue.empty())
-        	{
-        		((PlexusProtocol*)plexus)->addToIncomingQueue(received_before_init_queue.front());
-        		received_before_init_queue.pop();
-        	}
-        }
 
         int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
 
@@ -677,4 +672,19 @@ void *storage_stat_thread(void*) {
         loggable = false;
     }
 
+}
+
+void *pending_message_process_thread(void*)
+{
+	puts("Starting a Pending Message Processing Thread");
+
+	while(!this_peer->IsInitRcvd() || received_before_init_queue.empty());
+
+	while(!received_before_init_queue.empty())
+	{
+		((PlexusProtocol*)plexus)->addToIncomingQueue(received_before_init_queue.front());
+		received_before_init_queue.pop();
+	}
+
+	puts("All Pending Messages Processd");
 }

@@ -280,10 +280,14 @@ public:
                         container_peer->SetDyn_status(dcsMsg->getDynStatus());
                 } else if (message->getMessageType() == MSG_CACHE_ME) {
 					if (strcmp(container_peer->getCacheType().c_str(), "proactive") == 0) {
+						printf("Cache me received from %s:%d\n", message->getSourceHost().c_str(), message->getSourcePort());
+
 						MessageCacheMe* cache_msg = (MessageCacheMe*) message;
 						OverlayID oid = cache_msg->getSrcOid();
 						HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
 						cache->add(oid, ha);
+
+						message->message_print_dump();
 
 						if(message->getOverlayTtl() > 0)
 						{
@@ -293,8 +297,9 @@ public:
 									OverlayID dst_oid = rtable_iterator.getNextKey();
 									HostAddress dst_ha;
 									container_protocol->getRoutingTable()->lookup(dst_oid, &dst_ha);
-									MessageCacheMe *msg = new MessageCacheMe(container_peer->getHostName(), container_peer->getListenPortNumber(),
-											dst_ha.GetHostName(), dst_ha.GetHostPort(), container_peer->getOverlayID(), dst_oid);
+
+									MessageCacheMe *msg = new MessageCacheMe(message->getSourceHost(), message->getSourcePort(),
+											dst_ha.GetHostName(), dst_ha.GetHostPort(), message->getSrcOid(), dst_oid);
 									msg->setOverlayTtl(message->getOverlayTtl());
 									plexus->addToOutgoingQueue(msg);
 							}

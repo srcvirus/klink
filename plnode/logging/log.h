@@ -20,6 +20,9 @@ using namespace std;
 class Log
 {
 	string log_type;
+	string cache_type;
+	string cache_storage;
+	string K;
 	string host_name;
 	string monitor_host_name;
 	string monitor_user_name;
@@ -42,7 +45,7 @@ public:
 	Log(const char* seq_file, const char* type, const char* monitor_host,
 			const char* monitor_user, const char* hostname = NULL);
 
-	Log(int seq_no, const char* type, const char* monitor_host,
+	Log(int seq_no, const char* type, const char* cache_type, const char* cache_storage, int K, const char* monitor_host,
 				const char* monitor_user, const char* hostname = NULL);
 
 	void setLogType(const string& type)
@@ -151,6 +154,12 @@ void Log::setLogFileName(const char* name = NULL)
 		log_file_name += host_name;
 		log_file_name += "_";
 		log_file_name += log_type;
+		log_file_name += "_";
+		log_file_name += cache_type;
+		log_file_name += "_";
+		log_file_name += cache_storage;
+		log_file_name += "_k";
+		log_file_name += K;
 		log_file_name += ".txt";
 	}
 }
@@ -240,7 +249,7 @@ Log::Log(const char* seq_file, const char* type, const char* monitor_host,
 	log_file_ptr = NULL;
 }
 
-Log::Log(int seq_no, const char* type, const char* monitor_host,
+Log::Log(int seq_no, const char* type, const char* cache_type, const char* cache_storage, int K, const char* monitor_host,
 		const char* monitor_user, const char* hostname)
 {
 	log_sequence_no = seq_no;
@@ -254,6 +263,13 @@ Log::Log(int seq_no, const char* type, const char* monitor_host,
 		gethostname(h_name, 100);
 		host_name = h_name;
 	}
+
+	this->cache_storage = cache_storage;
+	this->cache_type = cache_type;
+
+	char i_str[12];
+	sprintf(i_str, "%d", K);
+	this->K = string(i_str);
 
 	this->setLogFileName(NULL);
 	this->setArchiveName(NULL);

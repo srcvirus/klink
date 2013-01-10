@@ -132,12 +132,18 @@ public:
         }
 
         void initLogs(int log_seq_no, const char* log_server_name, const char* log_server_user) {
-                log[LOG_GET] = new Log(log_seq_no, "get", log_server_name,
+                log[LOG_GET] = new Log(log_seq_no, "get",
+                		container_peer->getCacheType().c_str(), container_peer->getCacheStorage().c_str(), container_peer->getK(),
+                		log_server_name,
                         log_server_user);
-                log[LOG_PUT] = new Log(log_seq_no, "put", log_server_name,
+                log[LOG_PUT] = new Log(log_seq_no, "put",
+                		container_peer->getCacheType().c_str(), container_peer->getCacheStorage().c_str(), container_peer->getK(),
+                		log_server_name,
                         log_server_user);
 
-                log[LOG_STORAGE] = new Log(log_seq_no, "storage", log_server_name, log_server_user);
+                log[LOG_STORAGE] = new Log(log_seq_no, "storage",
+                		container_peer->getCacheType().c_str(), container_peer->getCacheStorage().c_str(), container_peer->getK(),
+                		log_server_name, log_server_user);
 
                 log[LOG_GET]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
                 log[LOG_PUT]->setCheckPointRowCount(container_peer->getConfiguration()->getCheckPointRow());
@@ -238,6 +244,7 @@ public:
                 CacheIterator cache_iterator(cache);
                 cache_iterator.reset_iterator();
                 bool cache_hit = false;
+                printf("**********************************\n%s\n**********************************\n", cache->toString());
 
                 while (cache_iterator.hasMore())
                 {
@@ -251,8 +258,9 @@ public:
                                 	cache_hit = true;*/
                                 if(cache->lookup(id, next_hop))
                                 	cache_hit = true;
-                                //printf("next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
+                                //printf("[From Cache] -> next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
                         }
+                        printf("[From Cache] -> oid = %s\n", id.toString());
                 }
 
                 if(cache_hit)
