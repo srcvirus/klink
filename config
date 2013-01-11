@@ -10,4 +10,4 @@ name_count=10000
 retry=10
 check_point_row=50
 cache_storage=path
-cache_type=reactive
+cache_type=proactive

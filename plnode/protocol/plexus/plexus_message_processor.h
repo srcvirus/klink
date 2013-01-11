@@ -286,8 +286,9 @@ public:
 						MessageCacheMe* cache_msg = (MessageCacheMe*) message;
 						OverlayID oid = cache_msg->getSrcOid();
 						HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
+						HostAddress dummy;
 						//cache->add(oid, ha);
-						if(!(oid == container_peer->getOverlayID()))
+						if(!(oid == container_peer->getOverlayID()) && !plexus->getRoutingTable()->lookup(oid, &dummy))
 							plexus->getProactiveCache()->add(oid, ha);
 
 						message->message_print_dump();
