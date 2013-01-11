@@ -363,8 +363,8 @@ void *listener_thread(void* args) {
                                 break;
                             default:
                                 puts("reached default case");
-                                exit(1);
-
+                                //exit(1);
+                                continue;
                         }
 
                         if (rcvd_message != NULL)
@@ -391,7 +391,6 @@ void *listener_thread(void* args) {
                     } else if (buffer_length < 0) {
                         printf("buffer_length < 0: %d\n", buffer_length);
                         exit(1);
-
                     }
                 }
             }
@@ -612,7 +611,7 @@ void *web_thread(void*) {
 }
 
 void *storage_stat_thread(void*) {
-    printf("Starting a storage stat thread");
+    puts("Starting a storage stat thread");
     int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
     double get_hit = 0.0, put_hit = 0.0;
     bool loggable = false;
@@ -686,5 +685,5 @@ void *pending_message_process_thread(void*)
 		received_before_init_queue.pop();
 	}
 
-	puts("All Pending Messages Processd");
+	puts("All Pending Messages Processed");
 }
