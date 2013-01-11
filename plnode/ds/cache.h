@@ -41,13 +41,13 @@ public:
 //	}
 
 	Cache(CacheInsertPolicy *cinPolicy, CacheReplacePolicy *crPolicy,
-			LookupTable<OverlayID, HostAddress>* rt, OverlayID oid,
-			int capacity)
+			LookupTable<OverlayID, HostAddress>* rt, LookupTable <OverlayID, HostAddress>* pc,
+			OverlayID oid, int capacity)
 	{
 		dll = new DoublyLinkedList();
 		hm = new LookupTable<OverlayID, DLLNode*>();
 		this->cinPolicy = cinPolicy;
-		this->cinPolicy->setup(dll, hm, rt, oid, &size);
+		this->cinPolicy->setup(dll, hm, rt, pc, oid, &size);
 		this->crPolicy = crPolicy;
 		this->crPolicy->setup(dll, hm);
 		this->capacity = capacity;

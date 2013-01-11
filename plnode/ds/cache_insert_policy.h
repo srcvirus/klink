@@ -19,6 +19,7 @@ protected:
 	DoublyLinkedList *dll;
 	LookupTable<OverlayID, DLLNode*> *hm;
 	LookupTable<OverlayID, HostAddress>* rt;
+	LookupTable<OverlayID, HostAddress> *pc;
 	OverlayID myOID;
 	int *cache_size;
 public:
@@ -29,12 +30,15 @@ public:
 	}
 
 	void setup(DoublyLinkedList *dll, LookupTable<OverlayID, DLLNode*> *hm,
-			LookupTable<OverlayID, HostAddress>* rt, OverlayID myOID,
+			LookupTable<OverlayID, HostAddress>* rt,
+			LookupTable<OverlayID, HostAddress> *pc,
+			OverlayID myOID,
 			int* cache_size)
 	{
 		this->dll = dll;
 		this->hm = hm;
 		this->rt = rt;
+		this->pc = pc;
 		this->myOID = myOID; printf("\n[Cache] myOID = %s\n", myOID.toString());
 		this->cache_size = cache_size;
 	}

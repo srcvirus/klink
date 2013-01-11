@@ -546,7 +546,7 @@ static void *callback(enum mg_event event,
             //delete[] content;
             // Mark as processed
         } else {
-            char content[4096];
+            char content[8192];
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
             int content_length = snprintf(content, sizeof (content),

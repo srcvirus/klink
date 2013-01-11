@@ -42,6 +42,7 @@ class ABSProtocol;
 class PlexusProtocol : public ABSProtocol {
         Log *log[MAX_LOGS];
         LookupTable <MessageStateIndex, double> unresolved_get, unresolved_put;
+        LookupTable <OverlayID, HostAddress>* proactive_cache;
 
         queue<ABSMessage*> incoming_message_queue;
         queue<ABSMessage*> outgoing_message_queue;
@@ -83,6 +84,8 @@ public:
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
                 logging_queue_pushed = logging_queue_popped = 0;
                 get_cache_hit_count = put_cache_hit_count = 0;
+
+                proactive_cache = new LookupTable <OverlayID, HostAddress>();
                 //this->msgProcessor->setContainerProtocol(this);
         }
 
@@ -107,6 +110,8 @@ public:
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
                 logging_queue_pushed = logging_queue_popped = 0;
                 get_cache_hit_count = put_cache_hit_count = 0;
+
+                proactive_cache = new LookupTable <OverlayID, HostAddress>();
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
         }
 
@@ -128,7 +133,17 @@ public:
                 outgoing_queue_pushed = outgoing_queue_popped = 0;
                 logging_queue_pushed = logging_queue_popped = 0;
                 get_cache_hit_count = put_cache_hit_count = 0;
+
+                proactive_cache = new LookupTable <OverlayID, HostAddress>();
                 //initLogs(container->getLogServerName().c_str(), container->getLogServerUser().c_str());
+        }
+
+        void reset_counters()
+        {
+        	incoming_queue_pushed = incoming_queue_popped = 0;
+			outgoing_queue_pushed = outgoing_queue_popped = 0;
+			logging_queue_pushed = logging_queue_popped = 0;
+			get_cache_hit_count = put_cache_hit_count = 0;
         }
 
         void initLogs(int log_seq_no, const char* log_server_name, const char* log_server_user) {
@@ -240,10 +255,44 @@ public:
                         }
                 }
                 routing_table->lookup(maxMatchOid, &next_hop);
+
+                //search in proactive cache
+                LookupTableIterator<OverlayID, HostAddress> pcache_iterator(proactive_cache);
+                pcache_iterator.reset_iterator();
+
+				//puts("looking up in routing table");
+				//OverlayID maxMatchOid;
+				//routing_table->reset_iterator();
+                bool cache_hit = false;
+
+				while (pcache_iterator.hasMoreKey()) {
+						//while (routing_table->hasMoreKey()) {
+						//   OverlayID oid = routing_table->getNextKey();
+						OverlayID oid = pcache_iterator.getNextKey();
+						//printf("next key = %d My id = ", oid.GetOverlay_id());
+						//msg->getDstOid().printBits();
+						//putchar('\n');
+
+						//cout << endl << "current match ";
+						//oid.printBits();
+						currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+						//cout << " ==== " << currentMatchLength << endl;
+						//printf(">current match length = %d\n", currentMatchLength);
+
+						if (currentMatchLength > maxLengthMatch) {
+								maxLengthMatch = currentMatchLength;
+								maxMatchOid = oid;
+								cache_hit = true;
+								/*printf("next host %s, next port %d\n",
+												next_hop.GetHostName().c_str(), next_hop.GetHostPort());*/
+						}
+				}
+				if(cache_hit) proactive_cache->lookup(maxMatchOid, &next_hop);
+
                 //search in the Cache
                 CacheIterator cache_iterator(cache);
                 cache_iterator.reset_iterator();
-                bool cache_hit = false;
+
                 printf("**********************************\n%s\n**********************************\n", cache->toString());
 
                 while (cache_iterator.hasMore())
@@ -550,6 +599,16 @@ public:
 		void setUnresolvedPut(const LookupTable<MessageStateIndex, double>& unresolvedPut)
 		{
 			unresolved_put = unresolvedPut;
+		}
+
+		LookupTable <OverlayID, HostAddress>* getProactiveCache()
+		{
+			return proactive_cache;
+		}
+
+		void setProactiveCache(LookupTable <OverlayID, HostAddress>* p_cache)
+		{
+			this->proactive_cache = p_cache;
 		}
 };
 
