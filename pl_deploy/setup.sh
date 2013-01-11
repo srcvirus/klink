@@ -15,12 +15,12 @@ echo $nodecount >> nodes
 for machine in `cat pssh_nodes`
 do
 	ip=`host $machine | egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | cut -d' ' -f 4`
-	echo "$machine 20000 $ip" >> nodes
+	echo "$machine 30000 $ip" >> nodes
 done
 
-#scp pssh_nodes ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
-#ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
-#scp -i ~/.ssh/id_rsa ../config ../imonitorlist nodes uwaterloo_pweb@plink.cs.uwaterloo.ca:~/
+scp pssh_nodes ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
+scp -i ~/.ssh/id_rsa ../config ../imonitorlist nodes uwaterloo_pweb@plink.cs.uwaterloo.ca:~/
 
 #for machine in `cat pssh_nodes`
 #do
