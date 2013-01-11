@@ -546,12 +546,13 @@ static void *callback(enum mg_event event,
             //delete[] content;
             // Mark as processed
         } else {
-            char content[8192];
+            char content[16384];
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
             int content_length = snprintf(content, sizeof (content),
                     "<html><head></head><body>"\
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
+                                "<strong>Proactive Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"\
                                 "Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
@@ -565,6 +566,9 @@ static void *callback(enum mg_event event,
 
                     this_peer->getProtocol()->getRoutingTable()->size(),
                     printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
+
+                    ((PlexusProtocol*)plexus)->getProactiveCache()->size(),
+                    printRoutingTable2String(*(((PlexusProtocol*)plexus)->getProactiveCache())),
 
                     this_peer->getProtocol()->getCache()->getSize(),
                     this_peer->getProtocol()->getCache()->toString(),
