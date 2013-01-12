@@ -13,7 +13,7 @@ public:
         void insert(OverlayID &key, HostAddress &value) {
                 DLLNode *n;
                 HostAddress ha;
-                if (hm->lookup(key, &n) || rt->lookup(key, &ha) || key.GetOverlay_id() == myOID.GetOverlay_id()) {
+                if (pc->lookup(key, &ha) || hm->lookup(key, &n) || rt->lookup(key, &ha) || key.GetOverlay_id() == myOID.GetOverlay_id()) {
 //                        puts("cache->insert called");
 //                        exit(45);
 

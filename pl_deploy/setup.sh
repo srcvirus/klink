@@ -15,7 +15,7 @@ echo $nodecount >> nodes
 for machine in `cat pssh_nodes`
 do
 	ip=`host $machine | egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | cut -d' ' -f 4`
-	echo "$machine 20000 $ip" >> nodes
+	echo "$machine 55231 $ip" >> nodes
 done
 
 scp pssh_nodes ../config ../imonitorlist ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy

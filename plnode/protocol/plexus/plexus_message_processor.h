@@ -229,12 +229,13 @@ public:
                         container_protocol->setRoutingTable(&pInitMsg->getRoutingTable());
                         container_protocol->setIndexTable(new LookupTable<string, HostAddress > ());
                         container_protocol->setCache(new Cache(new CacheInsertEndpoint(), new CacheReplaceLRU(),
-                                container_protocol->getRoutingTable(), container_protocol->getContainerPeer()->getOverlayID(),
+                                container_protocol->getRoutingTable(), plexus->getProactiveCache(), container_protocol->getContainerPeer()->getOverlayID(),
                                 container_protocol->getContainerPeer()->getK()));
 
                         plexus->initLogs(container_peer->getRunSequenceNo(), container_peer->getLogServerName().c_str(), container_peer->getLogServerUser().c_str());
 
                         this->setup(container_protocol->getRoutingTable(), container_protocol->getIndexTable(), container_protocol->getCache());
+                        plexus->reset_counters();
 
                         container_peer->SetInitRcvd(true);
 
@@ -285,7 +286,10 @@ public:
 						MessageCacheMe* cache_msg = (MessageCacheMe*) message;
 						OverlayID oid = cache_msg->getSrcOid();
 						HostAddress ha(cache_msg->getSourceHost(), cache_msg->getSourcePort());
-						cache->add(oid, ha);
+						HostAddress dummy;
+						//cache->add(oid, ha);
+						if(!(oid == container_peer->getOverlayID()) && !plexus->getRoutingTable()->lookup(oid, &dummy))
+							plexus->getProactiveCache()->add(oid, ha);
 
 						message->message_print_dump();
 

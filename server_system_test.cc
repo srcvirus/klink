@@ -363,8 +363,8 @@ void *listener_thread(void* args) {
                                 break;
                             default:
                                 puts("reached default case");
-                                exit(1);
-
+                                //exit(1);
+                                continue;
                         }
 
                         if (rcvd_message != NULL)
@@ -391,7 +391,6 @@ void *listener_thread(void* args) {
                     } else if (buffer_length < 0) {
                         printf("buffer_length < 0: %d\n", buffer_length);
                         exit(1);
-
                     }
                 }
             }
@@ -547,12 +546,13 @@ static void *callback(enum mg_event event,
             //delete[] content;
             // Mark as processed
         } else {
-            char content[4096];
+            char content[16384];
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
             int content_length = snprintf(content, sizeof (content),
                     "<html><head></head><body>"\
                                 "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
+                                "<strong>Proactive Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Cache</strong><br/>size = %d<br/>%s<br/>"\
                                 "<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"\
                                 "Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
@@ -566,6 +566,9 @@ static void *callback(enum mg_event event,
 
                     this_peer->getProtocol()->getRoutingTable()->size(),
                     printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
+
+                    ((PlexusProtocol*)plexus)->getProactiveCache()->size(),
+                    printRoutingTable2String(*(((PlexusProtocol*)plexus)->getProactiveCache())),
 
                     this_peer->getProtocol()->getCache()->getSize(),
                     this_peer->getProtocol()->getCache()->toString(),
@@ -612,7 +615,7 @@ void *web_thread(void*) {
 }
 
 void *storage_stat_thread(void*) {
-    printf("Starting a storage stat thread");
+    puts("Starting a storage stat thread");
     int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
     double get_hit = 0.0, put_hit = 0.0;
     bool loggable = false;
@@ -686,5 +689,5 @@ void *pending_message_process_thread(void*)
 		received_before_init_queue.pop();
 	}
 
-	puts("All Pending Messages Processd");
+	puts("All Pending Messages Processed");
 }
