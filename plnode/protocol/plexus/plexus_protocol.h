@@ -213,7 +213,7 @@ public:
                 if(msg->getMessageType() == MSG_PLEXUS_GET){
                         MessageGET *get_msg = (MessageGET*)msg;
                         HostAddress h;
-                        if(index_table->lookup(get_msg->GetDeviceName(), h)){
+                        if(index_table->lookup(get_msg->GetDeviceName(), &h)){
                                 return false;
                         }
                 }
