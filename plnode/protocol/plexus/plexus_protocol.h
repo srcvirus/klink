@@ -210,6 +210,13 @@ public:
                 if (msg->getOverlayTtl() == 0)
                         return false;
 
+                if(msg->getMessageType() == MSG_PLEXUS_GET){
+                        MessageGET *get_msg = (MessageGET*)msg;
+                        HostAddress h;
+                        if(index_table->lookup(get_msg->GetDeviceName(), h)){
+                                return false;
+                        }
+                }
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
                 printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
