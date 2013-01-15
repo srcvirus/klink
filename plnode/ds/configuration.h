@@ -27,6 +27,7 @@ class Configuration
 	string log_server_user_name;
 
 	string seq_file_path;
+	string input_file_path;
 
 	int K;
 	double alpha;
@@ -145,6 +146,10 @@ public:
 			{
 				cache_type = value;
 			}
+			else if(strcmp(key, "input") == 0 || strcmp(key, "input_file") == 0)
+			{
+				input_file_path = value;
+			}
 		}
 		fclose(config_file_ptr);
 	}
@@ -222,6 +227,11 @@ public:
 	string getCacheType() const
 	{
 		return cache_type;
+	}
+
+	string getInputFilePath() const
+	{
+		return input_file_path;
 	}
 
 	int getInt(string key)

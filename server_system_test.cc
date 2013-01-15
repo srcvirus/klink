@@ -390,7 +390,8 @@ void *listener_thread(void* args) {
                         delete[] buffer;
                     } else if (buffer_length < 0) {
                         printf("buffer_length < 0: %d\n", buffer_length);
-                        exit(1);
+                        //exit(1);
+                        continue;
                     }
                 }
             }
@@ -437,9 +438,35 @@ void *controlling_thread(void* args) {
 
     //sleep(20);
     //vector <int> putId, getId, idsp, idsg;
+
     bool publish_name_done = false, lookup_name_done = false;
     char buffer[33];
     while (!publish_name_done || !lookup_name_done) {
+
+    	while(!this_peer->IsInitRcvd());
+
+    	int total_pub_names = this_peer->getPublish_name_range_end() - this_peer->getPublish_name_range_start() + 1;
+		int total_lkp_names = this_peer->getLookup_name_range_end() - this_peer->getLookup_name_range_start() + 1;
+
+		char str_end[12], str_total[12];
+		char command[100];
+
+		sprintf(command, "head -%d %s | tail -%d > %s.tmp", this_peer->getPublish_name_range_end() + 1, this_peer->getConfiguration()->getInputFilePath().c_str()
+				, total_pub_names, this_peer->getConfiguration()->getInputFilePath().c_str());
+
+		FILE* pipe = popen(command, "r");
+		sleep(5);
+		fclose(pipe);
+
+		vector <unsigned int> names;
+		char filename[100];
+		sprintf(filename, "%s.tmp", this_peer->getConfiguration()->getInputFilePath().c_str());
+
+		unsigned int name;
+		FILE* name_file = fopen(filename, "r");
+		while(fscanf(name_file, "%u", &name) != EOF) names.push_back(name);
+		fclose(name_file);
+
         if (this_peer->IsStart_gen_name_rcvd() && !publish_name_done) {
 
             //getId.clear(), putId.clear();
@@ -448,13 +475,15 @@ void *controlling_thread(void* args) {
                     this_peer->getPublish_name_range_start(),
                     this_peer->getPublish_name_range_end());
 
+
+
             sleep(15);
 
             for (int i = this_peer->getPublish_name_range_start();
                     i <= this_peer->getPublish_name_range_end(); i++) {
                 HostAddress ha("dummyhost", i);
                 //itoa(i, buffer, 10);
-                sprintf(buffer, "%d", i);
+                sprintf(buffer, "%u", names[i - this_peer->getPublish_name_range_start()]);
                 printf("[Controlling Thread]\tPublishing name: %d\n", i);
 
                 //putId.push_back(OverlayID(i, iCode).GetOverlay_id());
@@ -476,7 +505,7 @@ void *controlling_thread(void* args) {
                     i <= this_peer->getLookup_name_range_end(); i++) {
                 HostAddress ha("dummyhost", i);
                 //itoa(i, buffer, 10);
-                sprintf(buffer, "%d", i);
+                sprintf(buffer, "%u", names[i - this_peer->getPublish_name_range_start()]);
                 printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
                 //getId.push_back(OverlayID(i, iCode).GetOverlay_id());

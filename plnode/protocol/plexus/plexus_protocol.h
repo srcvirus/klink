@@ -300,7 +300,7 @@ public:
                 CacheIterator cache_iterator(cache);
                 cache_iterator.reset_iterator();
 
-                printf("**********************************\n%s\n**********************************\n", cache->toString());
+                //printf("**********************************\n%s\n**********************************\n", cache->toString());
 
                 while (cache_iterator.hasMore())
                 {
