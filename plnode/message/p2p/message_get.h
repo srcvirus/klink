@@ -24,11 +24,12 @@ public:
 
 	MessageGET(string source_host, int source_port, string dest_host,
 			int dest_port, OverlayID src_oid, OverlayID dst_id,
+			OverlayID target_oid,
 			string &deviceName) :
 			ABSMessage(MSG_PLEXUS_GET, source_host, source_port, dest_host,
 					dest_port, src_oid, dst_id), deviceName(deviceName)
 	{
-		;
+		this->target_oid = target_oid;
 	}
 
 	size_t getSize()

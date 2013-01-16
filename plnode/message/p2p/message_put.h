@@ -24,13 +24,13 @@ public:
 	}
 
 	MessagePUT(string source_host, int source_port, string dest_host,
-			int dest_port, OverlayID src_oid, OverlayID dst_id,
+			int dest_port, OverlayID src_oid, OverlayID dst_id, OverlayID target_oid,
 			string &deviceName, HostAddress &hostAddress) :
 			ABSMessage(MSG_PLEXUS_PUT, source_host, source_port, dest_host,
 					dest_port, src_oid, dst_id), deviceName(deviceName), hostAddress(
 					hostAddress)
 	{
-		;
+		this->target_oid = target_oid;
 	}
 
 	size_t getSize()

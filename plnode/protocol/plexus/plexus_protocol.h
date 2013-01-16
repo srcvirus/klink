@@ -343,19 +343,20 @@ public:
                         //puts("returning true");
                         msg->setDestHost(next_hop.GetHostName().c_str());
                         msg->setDestPort(next_hop.GetHostPort());
+                        msg->setDstOid(next_oid);
                         return true;
                 }
         }
 
         void get(string name) {
                 int hash_name_to_get = atoi(name.c_str());
-                OverlayID destID(hash_name_to_get, getContainerPeer()->GetiCode());
+                OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 
-                printf("h_name = %d, oid = %d\n", hash_name_to_get, destID.GetOverlay_id());
+                //printf("h_name = %d, oid = %d\n", hash_name_to_get, targetID.GetOverlay_id());
 
                 MessageGET *msg = new MessageGET(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,
-                        container_peer->getOverlayID(), destID, name);
+                        container_peer->getOverlayID(), OverlayID(), targetID, name);
 
                 /*printf("Constructed Get Message");
                 msg->message_print_dump();*/
@@ -393,11 +394,11 @@ public:
 
         void put(string name, HostAddress hostAddress) {
                 int hash_name_to_publish = atoi(name.c_str());
-                OverlayID destID(hash_name_to_publish, getContainerPeer()->GetiCode());
+                OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
 
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,
-                        container_peer->getOverlayID(), destID, name, hostAddress);
+                        container_peer->getOverlayID(), OverlayID(), targetID, name, hostAddress);
 
                 MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
                 timeval timestamp;

@@ -51,6 +51,7 @@ ABSProtocol *protocol_arr[N_PEERS];
 ABSCode *iCode;
 Configuration* configuration;
 string this_host_name;
+bool all_init_received = false;
 
 int listen_port_number;
 int fd_max;
@@ -119,9 +120,9 @@ int main(int argc, char* argv[])
 		pthread_join(processor[i], NULL);
 	pthread_join(logger, NULL);
 	pthread_join(controller, NULL);
-	pthread_join(storage_stat, NULL);
+	//pthread_join(storage_stat, NULL);
 
-	pthread_join(web, NULL);
+	//pthread_join(web, NULL);
 
 	cleanup();
 }
@@ -195,22 +196,7 @@ void *forwarding_thread(void* args)
 	while (true)
 	{
 		message = PlexusSimulationProtocol::getOutgoingQueueFront();
-//		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
-
-/*		if (message->getMessageType() == MSG_PLEXUS_GET
-				|| message->getMessageType() == MSG_PLEXUS_PUT)
-		{
-			HostAddress ha(message->getDestHost(), message->getDestPort());
-			//pair<int, double> cost = (this_peer->lookup_address(ha)).second;
-			//int ip_hops = cost.first;
-			//double latency = cost.second;
-			message->incrementIpHops(ip_hops);
-			message->incrementLatency(latency);
-			printf("Next hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",
-					ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops,
-					latency);
-		}*/
 
 		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n",
 				t_param.getThreadId(), message->getMessageType(),
@@ -335,6 +321,7 @@ void *listener_thread(void* args)
 							rcvd_message->message_print_dump();
 							++last_init_received;
 							peer_db.add(rcvd_message->getDstOid(), last_init_received);
+							if(last_init_received == N_PEERS - 1) all_init_received = true;
 							break;
 
 						case MSG_PLEXUS_GET:
@@ -459,17 +446,13 @@ void *processing_thread(void* args)
 	ABSMessage* message = NULL;
 	while (true)
 	{
-		//                if (!this_peer->IsInitRcvd())
-		//                        continue;
-
 		message = PlexusSimulationProtocol::getIncomingQueueFront();
-//		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
 		printf("[Processing Thread %d]\tpulled a %d type message from the incoming queue\n",
 				t_param.getThreadId(), message->getMessageType());
 
-		int peer_index;
-		//find out for which peer this message is ?!
+		int peer_index = -1;
+		peer_db.lookup(message->getDstOid(), &peer_index);
 
 		bool forward = peer_arr[peer_index]->getProtocol()->getMessageProcessor()->processMessage(message);
 
@@ -609,11 +592,11 @@ void *logging_thread(void*)
 	LogEntry *entry;
 	while (true)
 	{
-		if (!this_peer->IsInitRcvd())
+		/*if (!this_peer->IsInitRcvd())
 		{
 			//puts("[Logging Thread]\tnot init received");
 			continue;
-		}
+		}*/
 
 		//printf("[Logging Thread]\twaiting for a log entry to pop\n");
 		entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
