@@ -40,6 +40,7 @@ class ABSProtocol;
 #define ALL_LOGS 3
 
 class PlexusProtocol : public ABSProtocol {
+protected:
         Log *log[MAX_LOGS];
         LookupTable <MessageStateIndex, double> unresolved_get, unresolved_put;
         LookupTable <OverlayID, HostAddress>* proactive_cache;
@@ -183,6 +184,7 @@ public:
                 printf("Setting next hop, Message type = %d\n", msg->getMessageType());
                 int maxLengthMatch = 0, currentMatchLength = 0, currentNodeMathLength = 0;
                 HostAddress next_hop("", -1);
+                OverlayID next_oid;
 
                 switch (msg->getMessageType()) {
                         case MSG_PEER_INIT:
@@ -262,6 +264,7 @@ public:
                         }
                 }
                 routing_table->lookup(maxMatchOid, &next_hop);
+                next_oid = maxMatchOid;
 
                 //search in proactive cache
                 LookupTableIterator<OverlayID, HostAddress> pcache_iterator(proactive_cache);
@@ -295,6 +298,7 @@ public:
 						}
 				}
 				if(cache_hit) proactive_cache->lookup(maxMatchOid, &next_hop);
+				next_oid = maxMatchOid;
 
                 //search in the Cache
                 CacheIterator cache_iterator(cache);
@@ -314,6 +318,7 @@ public:
                                 	cache_hit = true;*/
                                 if(cache->lookup(id, next_hop))
                                 	cache_hit = true;
+                                next_oid = id;
                                 //printf("[From Cache] -> next host %s, next port %d\n",next_hop.GetHostName().c_str(), next_hop.GetHostPort());
                         }
                         printf("[From Cache] -> oid = %s\n", id.toString());

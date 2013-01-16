@@ -143,6 +143,30 @@ public:
 		initListenSocket(configuration->getNodesFilePath().c_str());
 	}
 
+	Peer(Configuration* config)
+	{
+		INIT();
+		this->configuration = config;
+		alpha = configuration->getAlpha();
+		k = configuration->getK();
+		n_retry = configuration->getNRetry();
+		timeout_sec = (int) configuration->getTimeout();
+		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
+		cache_storage = configuration->getCacheStorage();
+		cache_type = configuration->getCacheType();
+	}
+
+	void reconfigure()
+	{
+		alpha = configuration->getAlpha();
+		k = configuration->getK();
+		n_retry = configuration->getNRetry();
+		timeout_sec = (int) configuration->getTimeout();
+		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
+		cache_storage = configuration->getCacheStorage();
+		cache_type = configuration->getCacheType();
+	}
+
 	void initListenSocket(const char* hosts_file)
 	{
 		listen_port_number = -1;

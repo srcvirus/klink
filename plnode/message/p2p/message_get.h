@@ -14,6 +14,7 @@
 
 class MessageGET: public ABSMessage
 {
+	OverlayID target_oid;
 	string deviceName;
 
 public:
@@ -33,7 +34,7 @@ public:
 	size_t getSize()
 	{
 		int ret = getBaseSize();
-		ret += sizeof(int);
+		ret += sizeof(int) * 4;
 		ret += sizeof(char) * deviceName.size();
 	}
 
@@ -89,6 +90,16 @@ public:
 
 		 memcpy(buffer + offset, (char*) (&src_oid), sizeof (OverlayID));
 		 offset += sizeof (OverlayID);*/
+		int o_id = target_oid.GetOverlay_id();
+		int p_len = target_oid.GetPrefix_length();
+		int m_len = target_oid.MAX_LENGTH;
+
+		memcpy(buffer + offset, (char*) &o_id, sizeof (int));
+		offset += sizeof (int);
+		memcpy(buffer + offset, (char*) &p_len, sizeof (int));
+		offset += sizeof (int);
+		memcpy(buffer + offset, (char*) &m_len, sizeof (int));
+		offset += sizeof (int);
 
 		int deviceNameLength = deviceName.size();
 		memcpy(buffer + offset, (char*) (&deviceNameLength), sizeof(int));
@@ -151,6 +162,18 @@ public:
 
 		 memcpy(&src_oid, buffer + offset, sizeof (OverlayID));
 		 offset += sizeof (OverlayID); //printf("offset = %d\n", offset);*/
+		int o_id, p_len, m_len;
+
+		memcpy(&o_id, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+		memcpy(&p_len, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+		memcpy(&m_len, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+
+		target_oid.SetOverlay_id(o_id);
+		target_oid.SetPrefix_length(p_len);
+		target_oid.MAX_LENGTH = m_len;
 
 		memcpy(&deviceNameLength, buffer + offset, sizeof(int));
 		offset += sizeof(int);
