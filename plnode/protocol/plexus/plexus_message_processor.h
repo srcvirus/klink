@@ -218,7 +218,7 @@ public:
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
                         container_peer->setK(pInitMsg->getK());
                         container_peer->setAlpha(pInitMsg->getAlpha());
-                        container_peer->populate_addressdb();
+                        //container_peer->populate_addressdb();
 
                         container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
                         container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());
@@ -273,6 +273,7 @@ public:
                         PeerChangeStatusMessage* changeStatusMSG = (PeerChangeStatusMessage*) message;
                         container_protocol->getContainerPeer()->setStatus(changeStatusMSG->getPeer_status());
                 } else if (message->getMessageType() == MSG_START_GENERATE_NAME) {
+                		puts("Gen name start");
                         container_peer->SetStart_gen_name_rcvd(true);
                 } else if (message->getMessageType() == MSG_START_LOOKUP_NAME) {
                         container_peer->SetStart_lookup__name_rcvd(true);

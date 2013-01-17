@@ -175,6 +175,8 @@ int send_message_to_all_peers(ABSMessage* msg, BuildTree &tree)
                 puts("----------------------------------------");
 
                 HostAddress address = tree.getHostAddress(i);
+                msg->setDstOid(tree.getOverlayID(i));
+
                 printf("%s %d\n", address.GetHostName().c_str(), address.GetHostPort());
 
                 c_socket = new ClientSocket(address.GetHostName(), address.GetHostPort());
