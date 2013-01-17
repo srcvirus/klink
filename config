@@ -1,4 +1,4 @@
-node_file=nodes
+node_file=simhostlist
 monitors_file=imonitorlist
 seq_file=seq
 log_server_name=cn101.cs.uwaterloo.ca
@@ -6,9 +6,10 @@ log_server_user=pweb
 k=20
 alpha=0.9
 timeout=5.5
-name_count=512969
+name_count=1000
+#512969
 retry=10
 check_point_row=100
 cache_storage=path
 cache_type=reactive
-input=e.db.0
+input=s.db.0
