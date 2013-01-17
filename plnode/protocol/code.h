@@ -17,21 +17,13 @@ public:
         virtual ~ABSCode() {
         };
 
-        virtual long encode(long message) {
-                return message;
-        }
+        virtual long encode(long message)=0;
 
-        virtual long decode(long codeword) {
-                return codeword;
-        }
+        virtual long decode(long codeword)=0;
 
-        virtual int K() {
-                return 20;
-        };
+        virtual int K()=0;
 
-        virtual int N() {
-                K();
-        };
+        virtual int N()=0;
 };
 
 #endif /* CODE_H_ */
