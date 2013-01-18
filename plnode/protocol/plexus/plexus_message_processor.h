@@ -83,8 +83,8 @@ public:
 
 						reply = new MessagePUT_REPLY(container_peer->getHostName(),
 										container_peer->getListenPortNumber(), putMsg->getSourceHost(),
-										putMsg->getSourcePort(), container_peer->getOverlayID(), putMsg->getSrcOid(),
-										SUCCESS, putMsg->GetDeviceName());
+										putMsg->getSourcePort(), container_peer->getOverlayID(), OverlayID(),
+										SUCCESS, putMsg->getSrcOid(), putMsg->GetDeviceName());
 
 						reply->setResolutionHops(putMsg->getOverlayHops());
 								reply->setResolutionIpHops(putMsg->getIpHops());
@@ -105,8 +105,8 @@ public:
                                 puts("Got it :)");
                                 MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
                                         container_peer->getListenPortNumber(), msg->getSourceHost(),
-                                        msg->getSourcePort(), container_peer->getOverlayID(), msg->getSrcOid(),
-                                        SUCCESS, hostAddress, msg->GetDeviceName());
+                                        msg->getSourcePort(), container_peer->getOverlayID(), OverlayID(),
+                                        SUCCESS, msg->getSrcOid(), hostAddress, msg->GetDeviceName());
 
                                 reply->setResolutionHops(msg->getOverlayHops());
                                 reply->setResolutionIpHops(msg->getIpHops());
@@ -123,8 +123,8 @@ public:
                                 puts("GET Failed");
                                 MessageGET_REPLY *reply = new MessageGET_REPLY(container_peer->getHostName(),
                                         container_peer->getListenPortNumber(), msg->getSourceHost(),
-                                        msg->getSourcePort(), container_peer->getOverlayID(), msg->getDstOid(),
-                                        ERROR_GET_FAILED, hostAddress, msg->GetDeviceName());
+                                        msg->getSourcePort(), container_peer->getOverlayID(), OverlayID(),
+                                        ERROR_GET_FAILED, msg->getSrcOid(), hostAddress, msg->GetDeviceName());
 
                                 reply->setResolutionHops(msg->getOverlayHops());
                                 reply->setResolutionIpHops(msg->getIpHops());
@@ -218,7 +218,7 @@ public:
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
                         container_peer->setK(pInitMsg->getK());
                         container_peer->setAlpha(pInitMsg->getAlpha());
-                        //container_peer->populate_addressdb();
+                        container_peer->populate_addressdb();
 
                         container_peer->setPublish_name_range_start(pInitMsg->getPublish_name_range_start());
                         container_peer->setPublish_name_range_end(pInitMsg->getPublish_name_range_end());

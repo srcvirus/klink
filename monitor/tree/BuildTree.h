@@ -165,6 +165,8 @@ void BuildTree::execute() {
                         rtArray[i] = LookupTable<OverlayID, HostAddress>();
                         //toggle each bit (upto prefix length) and find the nbr
                         OverlayID replica = idArray[i];
+                        printf("Prefix Length = %d\n", idArray[i].GetPrefix_length());
+
                         for (int j = 0; j < idArray[i].GetPrefix_length(); j++)
                         {
                                 OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(

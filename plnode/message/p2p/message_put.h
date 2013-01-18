@@ -160,6 +160,16 @@ public:
 		return deviceName;
 	}
 
+	OverlayID getTargetOid()
+	{
+		return target_oid;
+	}
+
+	void setTargetOid(OverlayID oid)
+	{
+		target_oid = oid;
+	}
+
 	virtual void message_print_dump()
 	{
 		puts(

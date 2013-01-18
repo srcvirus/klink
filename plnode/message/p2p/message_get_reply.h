@@ -21,6 +21,7 @@ class MessageGET_REPLY: public ABSMessage
 	int resolution_ip_hops;
 	double resolution_latency;
 	int origin_seq_no;
+	OverlayID target_oid;
 	HostAddress host_address;
 	string device_name;
 
@@ -33,6 +34,7 @@ public:
 
 	MessageGET_REPLY(string source_host, int source_port, string dest_host,
 			int dest_port, OverlayID src_oid, OverlayID dst_id, int status,
+			OverlayID target_oid,
 			HostAddress h_address, string device_name) :
 			ABSMessage(MSG_PLEXUS_GET_REPLY, source_host, source_port,
 					dest_host, dest_port, src_oid, dst_id)
@@ -40,12 +42,13 @@ public:
 		resolution_status = status;
 		host_address = h_address;
 		this->device_name = device_name;
+		this->target_oid = target_oid;
 	}
 
 	size_t getSize()
 	{
 		int ret = getBaseSize();
-		ret += sizeof(int) * 7
+		ret += sizeof(int) * 10
 				+ sizeof(char) * host_address.GetHostName().size()
 				+ sizeof(char) * device_name.size()
 				+ sizeof(double);
@@ -74,6 +77,17 @@ public:
 
 		memcpy(buffer + offset, (char*) &origin_seq_no, sizeof(int));
 		offset += sizeof(int);
+
+		int o_id = target_oid.GetOverlay_id();
+		int p_len = target_oid.GetPrefix_length();
+		int m_len = target_oid.MAX_LENGTH;
+
+		memcpy(buffer + offset, (char*) &o_id, sizeof (int));
+		offset += sizeof (int);
+		memcpy(buffer + offset, (char*) &p_len, sizeof (int));
+		offset += sizeof (int);
+		memcpy(buffer + offset, (char*) &m_len, sizeof (int));
+		offset += sizeof (int);
 
 		int destHostLength = host_address.GetHostName().size();
 		memcpy(buffer + offset, (char*) &destHostLength, sizeof(int));
@@ -122,7 +136,18 @@ public:
 
 		memcpy(&origin_seq_no, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		int o_id, p_len, m_len;
 
+		memcpy(&o_id, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+		memcpy(&p_len, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+		memcpy(&m_len, buffer + offset, sizeof (int));
+		offset += sizeof (int); //printf("offset = %d\n", offset);
+
+		target_oid.SetOverlay_id(o_id);
+		target_oid.SetPrefix_length(p_len);
+		target_oid.MAX_LENGTH = m_len;
 
 		int hostLength = 0;
 		memcpy(&hostLength, buffer + offset, sizeof(int));
@@ -225,6 +250,16 @@ public:
 	void setResolutionLatency(double resolutionLatency)
 	{
 		resolution_latency = resolutionLatency;
+	}
+
+	OverlayID getTargetOid()
+	{
+		return target_oid;
+	}
+
+	void setTargetOid(OverlayID oid)
+	{
+		target_oid = oid;
 	}
 };
 

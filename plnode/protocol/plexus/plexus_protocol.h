@@ -19,6 +19,8 @@
 #include "../../message/p2p/message_get.h"
 #include "../../message/p2p/message_put.h"
 #include "../../message/p2p/message_get_reply.h"
+#include "../../message/p2p/message_put_reply.h"
+
 #include "../../message/control/peer_initiate_get.h"
 #include "../../message/control/peer_initiate_put.h"
 
@@ -203,6 +205,24 @@ public:
                                 break;
                 }
 
+                OverlayID target_oid;
+
+                switch(msg->getMessageType())
+                {
+                case MSG_PLEXUS_GET:
+                	target_oid = ((MessageGET*)msg)->getTargetOid();
+                	break;
+                case MSG_PLEXUS_GET_REPLY:
+                	target_oid = ((MessageGET_REPLY*)msg)->getTargetOid();
+                	break;
+                case MSG_PLEXUS_PUT:
+                	target_oid = ((MessagePUT*)msg)->getTargetOid();
+                	break;
+                case MSG_PLEXUS_PUT_REPLY:
+                	target_oid = ((MessagePUT_REPLY*)msg)->getTargetOid();
+                	break;
+                }
+
                 if(container_peer->getCacheStorage() == "end_point")
                 {
                 	if(msg->getMessageType() == MSG_PLEXUS_GET_REPLY || msg->getMessageType() == MSG_PLEXUS_PUT_REPLY)
@@ -222,7 +242,7 @@ public:
                 currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
                 printf("Current match length = %d\n", currentNodeMathLength);
                 printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
-                msg->getDstOid().printBits();
+                target_oid.printBits();
                 putchar('\n');
 
                 //cout << endl << "current node match : ";
@@ -251,7 +271,7 @@ public:
 
                         //cout << endl << "current match ";
                         //oid.printBits();
-                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+                        currentMatchLength = target_oid.GetMatchedPrefixLength(oid);
                         //cout << " ==== " << currentMatchLength << endl;
                         //printf(">current match length = %d\n", currentMatchLength);
 
@@ -285,7 +305,7 @@ public:
 
 						//cout << endl << "current match ";
 						//oid.printBits();
-						currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(oid);
+						currentMatchLength = target_oid.GetMatchedPrefixLength(oid);
 						//cout << " ==== " << currentMatchLength << endl;
 						//printf(">current match length = %d\n", currentMatchLength);
 
@@ -310,7 +330,7 @@ public:
                 {
                         DLLNode *node = cache_iterator.getNext();
                         OverlayID id = node->key;
-                        currentMatchLength = msg->getDstOid().GetMatchedPrefixLength(id);
+                        currentMatchLength = target_oid.GetMatchedPrefixLength(id);
                         if (currentMatchLength > maxLengthMatch)
                         {
                                 maxLengthMatch = currentMatchLength;

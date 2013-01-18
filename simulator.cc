@@ -11,6 +11,7 @@
 
 #include "plnode/protocol/protocol.h"
 #include "plnode/protocol/plexus/plexus_simulation_protocol.h"
+#include "plnode/protocol/plexus/plexus_sim_message_processor.h"
 #include "plnode/protocol/code.h"
 
 #include "plnode/message/message.h"
@@ -29,6 +30,8 @@
 
 #include "webinterface/mongoose.h"
 #include "plnode/protocol/plexus/golay/GolayCode.h"
+#include "plnode/protocol/null_code.h"
+
 #include "plnode/message/p2p/message_cache_me.h"
 
 #include <cstdlib>
@@ -160,14 +163,13 @@ void system_init()
 		peer_arr[i]->setListenPortNumber(listen_port_number);
 
 		/* creating the message processor for plexus */
-		PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+		PlexusSimMessageProcessor* msg_processor = new PlexusSimMessageProcessor();
 
 		/* creating the plexus protocol object */
 		protocol_arr[i] = new PlexusSimulationProtocol(peer_arr[i], msg_processor);
-//		protocol_arr[i] = new PlexusProtocol(peer_arr[i], msg_processor);
 
 		/* setting the protocol of the peer */
-		peer_arr[i]->SetiCode(new GolayCode());
+		peer_arr[i]->SetiCode(new NullCode(30));
 		peer_arr[i]->setProtocol(protocol_arr[i]);
 	}
 
@@ -523,7 +525,8 @@ void *controlling_thread(void* args)
 	while (fscanf(name_file, "%u", &name) != EOF)
 		names.push_back(name);
 	fclose(name_file);
-	puts("Data Loading complete\nWatiting for everyone to receive gen_name");
+	puts("Data Loading complete\nWatiting "
+			"for everyone to receive gen_name");
 	all_gen_name_rcvd = false;
 	while (!all_gen_name_rcvd)
 	{
@@ -531,7 +534,7 @@ void *controlling_thread(void* args)
 		int cnt = 0;
 		for (int i = 0; i < N_PEERS; i++)
 		{
-			if (!peer_arr[i]->IsStart_gen_name())
+			if (!peer_arr[i]->IsStart_gen_name_rcvd())
 			{
 				all_gen_name_rcvd = false;
 			}
@@ -540,6 +543,7 @@ void *controlling_thread(void* args)
 		//printf("%d\n", cnt);
 	}
 	puts("Everyone received gen_name\nPublising name");
+	sleep(5);
 
 	for (int k = 0; k < N_PEERS; k++)
 	{
@@ -548,8 +552,6 @@ void *controlling_thread(void* args)
 		//publish names
 		printf("[Controlling Thread]\tPublishing name in range %d %d\n", this_peer->getPublish_name_range_start(),
 				this_peer->getPublish_name_range_end());
-
-		sleep(15);
 
 		for (int i = this_peer->getPublish_name_range_start(); i <= this_peer->getPublish_name_range_end(); i++)
 		{
