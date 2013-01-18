@@ -17,6 +17,7 @@
 #include "plnode/ds/GlobalData.h"
 #include "plnode/protocol/plexus/plexus_protocol.h"
 #include "plnode/protocol/plexus/golay/GolayCode.h"
+#include "plnode/protocol/null_code.h"
 
 Peer* this_peer;
 vector <string> log_servers;
@@ -239,7 +240,7 @@ int main(int argc, char* argv[]) {
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
         //ABSCode *iCode = new ReedMuller(2, 4);
-        ABSCode *iCode = new GolayCode();
+        ABSCode *iCode = new NullCode(30);
         this_peer->SetiCode(iCode);
 
         Configuration config(GlobalData::config_file_name);

@@ -1,12 +1,12 @@
 /* 
- * File:   plexus_message_processor.h
+ * File:   plexus_sim_message_processor.h
  * Author: mfbari
  *
- * Created on November 29, 2012, 2:45 PM
+ * Created on January 17, 2012, 7:09 PM
  */
 
-#ifndef PLEXUS_MESSAGE_PROCESSOR_H
-#define	PLEXUS_MESSAGE_PROCESSOR_H
+#ifndef PLEXUS_SIM_MESSAGE_PROCESSOR_H
+#define	PLEXUS_SIM_MESSAGE_PROCESSOR_H
 
 #include "../../message/message_processor.h"
 
@@ -41,7 +41,7 @@
 
 #include "../../logging/log_entry.h"
 
-class PlexusMessageProcessor : public MessageProcessor {
+class PlexusSimMessageProcessor : public MessageProcessor {
 public:
 
         void setup(LookupTable<OverlayID, HostAddress>* routing_table,
@@ -53,7 +53,7 @@ public:
         {
                 message->decrementOverlayTtl();
 
-                PlexusProtocol* plexus = (PlexusProtocol*) container_protocol;
+                PlexusSimulationProtocol* plexus = (PlexusSimulationProtocol*) container_protocol;
                 Peer* container_peer = container_protocol->getContainerPeer();
 
                 bool forward = plexus->setNextHop(message);
