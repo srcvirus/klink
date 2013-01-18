@@ -79,7 +79,7 @@ int BuildTree::GetIndexOfLongestMatchedPrefix(OverlayID id) {
         return maxIndex;
 }
 
-void BuildTree::execute() {
+void BuildTree::execute(bool null_code=false) {
         //open host list file
         ifstream hostListFile(fileName.c_str());
         string line;
@@ -165,7 +165,7 @@ void BuildTree::execute() {
                         rtArray[i] = LookupTable<OverlayID, HostAddress>();
                         //toggle each bit (upto prefix length) and find the nbr
                         OverlayID replica = idArray[i];
-                        for (int j = 0; j < idArray[i].GetPrefix_length(); j++)
+                        for (int j = 0; j < (nullcode)?idArray[i].GetPrefix_length():idArray[i].MAX_LENGTH; j++)
                         {
                                 OverlayID nbrPattern = idArray[i].ToggleBitAtPosition(
                                                 idArray[i].MAX_LENGTH - j - 1);
