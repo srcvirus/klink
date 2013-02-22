@@ -680,8 +680,7 @@ static void *interface_callback(enum mg_event event,
                     "Content-Type: text/html\r\n"
                     "Content-Length: %d\r\n" // Always set Content-Length
                     "\r\n"
-                    "%s",
-                    content_length, content);
+                    "%s", content_length, content);
         }
     }
     return NULL;
