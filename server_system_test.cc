@@ -29,6 +29,7 @@
 #include "plnode/ds/thread_parameter.h"
 
 #include "webinterface/mongoose.h"
+
 #include "plnode/protocol/plexus/golay/GolayCode.h"
 #include "plnode/message/p2p/message_cache_me.h"
 
@@ -65,6 +66,7 @@ void *forwarding_thread(void*);
 void *processing_thread(void*);
 void *controlling_thread(void*);
 void *web_thread(void*);
+void *web_interface_thread(void*);
 void *logging_thread(void*);
 void *storage_stat_thread(void*);
 void *pending_message_process_thread(void*);
@@ -72,7 +74,7 @@ void *pending_message_process_thread(void*);
 int main(int argc, char* argv[]) {
     system_init();
 
-    pthread_t listener, controller, web, logger, storage_stat;
+    pthread_t listener, controller, web, web_interface, logger, storage_stat;
     pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
     pthread_t pending_msg_processor;
 
@@ -97,6 +99,7 @@ int main(int argc, char* argv[]) {
     pthread_create(&logger, NULL, logging_thread, NULL);
     pthread_create(&controller, NULL, controlling_thread, NULL);
     pthread_create(&web, NULL, web_thread, NULL);
+    pthread_create(&web_interface, NULL, web_interface_thread, NULL);
     pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
     pthread_create(&pending_msg_processor, NULL, pending_message_process_thread, NULL);
 
@@ -111,6 +114,7 @@ int main(int argc, char* argv[]) {
     pthread_join(storage_stat, NULL);
 
     pthread_join(web, NULL);
+    pthread_join(web_interface, NULL);
 
     cleanup();
 }
@@ -643,6 +647,60 @@ void *web_thread(void*) {
     puts(buffer);
 }
 
+static void *interface_callback(enum mg_event event,
+        struct mg_connection * conn) {
+    const struct mg_request_info *request_info = mg_get_request_info(conn);
+
+    if (event == MG_NEW_REQUEST) {
+        if (!this_peer->IsInitRcvd()) {
+            char content[1024];
+            int content_length = snprintf(content, sizeof (content),
+                    "Peer Status Report<br/><br/> \
+                        peer oid %s<br/>\
+                        INIT not received",
+                    this_peer->getOverlayID().toString());
+            mg_printf(conn,
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: %d\r\n" // Always set Content-Length
+                    "\r\n"
+                    "%s",
+                    content_length, content);
+            //delete[] content;
+            // Mark as processed
+        } else {
+            char content[16384];
+            PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
+            //<meta http-equiv=\"refresh\" content=\"10\">
+            int content_length = snprintf(content, sizeof (content),
+                    "<html><head></head><body>Query String = %s</body></html>", request_info->query_string);
+            //printf("html content: %d::%s\n", content_length, content);
+            mg_printf(conn,
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: %d\r\n" // Always set Content-Length
+                    "\r\n"
+                    "%s",
+                    content_length, content);
+        }
+    }
+    return NULL;
+}
+
+void *web_interface_thread(void*) {
+    printf("Starting a web interface thread on port ");
+    char buffer[33];
+    int port = 20005;
+    while (true) {
+        sprintf(buffer, "%d", port++);
+        const char *options[] = {"listening_ports", buffer, NULL};
+        ctx = mg_start(&interface_callback, NULL, options);
+        if (ctx != NULL)
+            break;
+    }
+    puts(buffer);
+}
+
 void *storage_stat_thread(void*) {
     puts("Starting a storage stat thread");
     int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
@@ -720,3 +778,5 @@ void *pending_message_process_thread(void*)
 
 	puts("All Pending Messages Processed");
 }
+
+
