@@ -29,6 +29,7 @@
 #include "plnode/ds/thread_parameter.h"
 
 #include "webinterface/mongoose.h"
+#include <sstream>
 
 #include "plnode/protocol/plexus/golay/GolayCode.h"
 #include "plnode/message/p2p/message_cache_me.h"
@@ -647,6 +648,30 @@ void *web_thread(void*) {
     puts(buffer);
 }
 
+template <class T>
+inline std::string toString (const T& t)
+{
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
+
+string ipToString(long ip)
+{
+    string res;
+    long workIp, a, b, c, d;
+    workIp = ip;
+    d = workIp % 0x100;
+    workIp = workIp >> 8;
+    c = workIp % 0x100;
+    workIp = workIp >> 8;
+    b = workIp % 0x100;
+    workIp = workIp >> 8;
+    a = workIp;
+    res = toString(a)+"."+toString(b)+"."+toString(c)+"."+toString(d);
+    return res;
+}
+
 static void *interface_callback(enum mg_event event,
         struct mg_connection * conn) {
     const struct mg_request_info *request_info = mg_get_request_info(conn);
@@ -673,7 +698,8 @@ static void *interface_callback(enum mg_event event,
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
             int content_length = snprintf(content, sizeof (content),
-                    "<html><head></head><body>Query String = %s</body></html>", request_info->query_string);
+                    "<html><head></head><body>Query String: %s<br /> Client IP:Port: %s:%d</body></html>", request_info->query_string, 
+			ipToString(request_info->remote_ip).c_str(), request_info->remote_port);
             //printf("html content: %d::%s\n", content_length, content);
             mg_printf(conn,
                     "HTTP/1.1 200 OK\r\n"
