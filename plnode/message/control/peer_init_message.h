@@ -38,7 +38,7 @@ class PeerInitMessage: public ABSMessage
     int run_sequence_no;
     string log_server_name;
     string log_server_user;
-
+	string peer_name;
 public:
 	PeerInitMessage()
 	{
@@ -82,14 +82,24 @@ public:
 		return alpha;
 	}
 
+	string get_peer_name()
+	{
+		return peer_name;
+	}
+
+	void set_peer_name(string name)
+	{
+		peer_name = name;
+	}
+
 	size_t getSize()
 	{
 		size_t ret = getBaseSize();
-		ret += sizeof(int) * 4;
+		ret += sizeof(int) * 5;
 		ret += sizeof(double);
 		ret += sizeof(int) * 4;
 		ret += sizeof(int) * 3;
-		ret += sizeof(char) * (log_server_name.size() + log_server_user.size());
+		ret += sizeof(char) * (log_server_name.size() + log_server_user.size() + peer_name.size());
 
 		LookupTableIterator<OverlayID, HostAddress> r_iterator(&routing_table);
 		r_iterator.reset_iterator();
@@ -141,6 +151,14 @@ public:
 		memcpy(buffer + offset, (char*)&run_sequence_no, sizeof(int));
 		offset += sizeof(int);
 
+		int peer_name_length = peer_name.size();
+		memcpy(buffer + offset, (char*)(&peer_name_length), sizeof(int));
+		offset += sizeof(int);
+
+		const char* str_peer_name = peer_name.c_str();		
+		memcpy(buffer + offset, str_peer_name, peer_name_length);
+		offset += peer_name_length;
+
 		int logServerNameLength = log_server_name.size();
 		memcpy(buffer + offset, (char*)&logServerNameLength, sizeof(int));
 		offset += sizeof(int);
@@ -191,6 +209,7 @@ public:
 			memcpy(buffer + offset, (char*) (&hostport), sizeof(int));
 			offset += sizeof(int);
 		}
+		printf("INIT serialized\n");
 		return buffer;
 	}
 
@@ -227,10 +246,22 @@ public:
 
 		memcpy(&run_sequence_no, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+		
+		int peer_name_length;
+		memcpy(&peer_name_length, buffer + offset, sizeof(int));
+		offset += sizeof(int);
+
+		char* p_name = new char[peer_name_length + 1];
+		memcpy(p_name, buffer + offset, peer_name_length);
+		offset += peer_name_length;
+		p_name[peer_name_length] = '\0';
+		peer_name = string(p_name);
+		delete[] p_name;
 
 		int logNameLength, logUserLength;
 		memcpy(&logNameLength, buffer + offset, sizeof(int));
 		offset += sizeof(int);
+
 		char* str_lg_name = new char[logNameLength + 1];
 		memcpy(str_lg_name, buffer + offset, logNameLength);
 		offset += logNameLength;
@@ -309,6 +340,7 @@ public:
 					key.GetOverlay_id(), value.GetHostName().c_str(),
 					value.GetHostPort());
 		}
+		printf("Peer Name = %s\n", peer_name.c_str());
 		printf("N Peers = %d\n", n_peers);
 		printf("Alpha = %.4lf\n", alpha);
 		printf("K = %d\n", k);

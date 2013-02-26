@@ -28,6 +28,8 @@ class Peer {
         int n_peers;
 
         int peer_id;
+	string peer_name;
+
         int code_word;
         OverlayID overlay_id;
         int status;
@@ -154,6 +156,16 @@ public:
 		timeout_micro_sec = (int) ((configuration->getTimeout() - (double) timeout_sec) * 1000000);
 		cache_storage = configuration->getCacheStorage();
 		cache_type = configuration->getCacheType();
+	}
+
+	string get_peer_name()
+	{
+		return peer_name;
+	}
+
+	void set_peer_name(string name)
+	{
+		peer_name = name;	
 	}
 
 	void reconfigure()

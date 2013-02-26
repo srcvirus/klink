@@ -213,6 +213,7 @@ public:
                         container_peer->setNPeers(pInitMsg->getNPeers());
                         GlobalData::network_size = pInitMsg->getNPeers();
                         container_peer->setOverlayID(pInitMsg->getDstOid());
+			container_peer->set_peer_name(pInitMsg->get_peer_name());
                         container_peer->setLogServerName(pInitMsg->getLogServerName());
                         container_peer->setLogServerUser(pInitMsg->getLogServerUser());
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
