@@ -154,12 +154,12 @@ public:
             bool exists = plexus->getUnresolvedGet().lookup(msg_index, &requester);
             plexus->getUnresolvedGet().remove(msg_index);
 		
-	    if(exists)
-	    {
-		message->setDestHost(requester.GetHostName());
-		message->setDestPort(requester.GetHostPort());
-		plexus->send_message(message);
-	    }
+			if(exists)
+			{
+				message->setDestHost(requester.GetHostName().c_str());
+				message->setDestPort(requester.GetHostPort());
+				plexus->send_message(message);
+			}
 	    
             //timeval total;
             //timersub(&end_t, &start_t, &total);
@@ -270,12 +270,11 @@ public:
                         PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
                         printf("Processing peer init get msg, oid = %d\n",
                                 pInitGet->getDstOid().GetOverlay_id());
-			int hash_name_to_get = urlHash(pInitGet->getDeviceName());
+                        int hash_name_to_get = urlHash(pInitGet->getDeviceName());
 
-			MessageStateIndex index(hash_name_to_get, pInitGet->getSequenceNo());
-			container_protocol->getUnresolvedGet().add(index, HostAddress(pInitGet->getSourceHost(), pInitGet->getSourcePort()));
+						MessageStateIndex index(hash_name_to_get, pInitGet->getSequenceNo());
+						plexus->getUnresolvedGet().add(index, HostAddress(pInitGet->getSourceHost(), pInitGet->getSourcePort()));
                         container_protocol->get(pInitGet->getDeviceName());
-
                 } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
                         PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
                         container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
