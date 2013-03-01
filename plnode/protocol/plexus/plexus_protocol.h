@@ -44,7 +44,9 @@ class ABSProtocol;
 class PlexusProtocol : public ABSProtocol {
 protected:
         Log *log[MAX_LOGS];
-        LookupTable <MessageStateIndex, double> unresolved_get, unresolved_put;
+        LookupTable <MessageStateIndex, double> unresolved_put;
+	LookupTable <MessageStateIndex, HostAddress> unresolved_get;
+
         LookupTable <OverlayID, HostAddress>* proactive_cache;
 
         queue<ABSMessage*> incoming_message_queue;
@@ -369,7 +371,7 @@ public:
         }
 
         void get(string name) {
-                int hash_name_to_get = atoi(name.c_str());
+                int hash_name_to_get = urlHash(name);//atoi(name.c_str());
                 OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 
                 //printf("h_name = %d, oid = %d\n", hash_name_to_get, targetID.GetOverlay_id());
@@ -380,12 +382,6 @@ public:
 
                 /*printf("Constructed Get Message");
                 msg->message_print_dump();*/
-
-                MessageStateIndex msg_index(hash_name_to_get, msg->getSequenceNo());
-                timeval timestamp;
-                gettimeofday(&timestamp, NULL);
-                double timestamp_t = (double)(timestamp.tv_sec) * 1000.0 + (double)(timestamp.tv_usec) / 1000.0;
-                unresolved_get.add(msg_index, timestamp_t);
 
                 if (msgProcessor->processMessage(msg))
                 {
@@ -413,7 +409,7 @@ public:
         }
 
         void put(string name, HostAddress hostAddress) {
-                int hash_name_to_publish = atoi(name.c_str());
+                int hash_name_to_publish = urlHash(name);
                 OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
 
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
@@ -615,12 +611,12 @@ public:
                 pthread_cond_destroy(&cond_log_queue_empty);
         }
 
-		LookupTable<MessageStateIndex, double>& getUnresolvedGet()
+		LookupTable<MessageStateIndex, HostAddress>& getUnresolvedGet()
 		{
 			return unresolved_get;
 		}
 
-		void setUnresolvedGet(const LookupTable<MessageStateIndex, double>& unresolvedGet)
+		void setUnresolvedGet(const LookupTable<MessageStateIndex, HostAddress>& unresolvedGet)
 		{
 			unresolved_get = unresolvedGet;
 		}
