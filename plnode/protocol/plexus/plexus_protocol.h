@@ -413,12 +413,21 @@ public:
         }
 
         void put(string name, HostAddress hostAddress) {
-                int hash_name_to_publish = atoi(name.c_str());
+
+		reverse(name.begin(), name.end());
+		string device_name, ha_name;
+		ha_name = strtok(name.c_str(), ".");
+		reverse(ha_name.begin(), ha_name.end());
+
+		device_name = strtok(NULL, "");
+		reverse(device_name.begin(), device_name.end());
+	
+                int hash_name_to_publish = atoi(ha_name.c_str());
                 OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
 
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,
-                        container_peer->getOverlayID(), OverlayID(), targetID, name, hostAddress);
+                        container_peer->getOverlayID(), OverlayID(), targetID, ha_name, device_name, hostAddress);
 
                 MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
                 timeval timestamp;

@@ -700,6 +700,23 @@ static void *interface_callback(enum mg_event event,
             int content_length = snprintf(content, sizeof (content),
                     "<html><head></head><body>Query String: %s<br /> Client IP:Port: %s:%d</body></html>", request_info->query_string, 
 			ipToString(request_info->remote_ip).c_str(), request_info->remote_port);
+		string method = strtok(request_info->query_string, "&");
+		string data = strtok(NULL, "");
+
+		char str_method[method.size()];
+		strcpy(str_method, method.c_str());
+
+		strtok(str_method, "=");
+		string method_name = strtok(NULL, "");
+		
+		if(strcmp(method_name.c_str(), "put") || strcmp(method_name.c_str(), "PUT")) {
+		}
+		else if (strcmp(method_name.c_str(), "getall") || strcmp(method_name.c_str(), "GETALL")) {
+		}
+		else {
+			printf("web_interface: %s is not a valid method\n", method_name.c_str());
+		}
+
             //printf("html content: %d::%s\n", content_length, content);
             mg_printf(conn,
                     "HTTP/1.1 200 OK\r\n"
