@@ -17,7 +17,6 @@ class MessagePUT: public ABSMessage
 {
 	OverlayID target_oid;
 	string deviceName;
-	string homeAgentName;
 	HostAddress hostAddress;
 public:
 	MessagePUT()
@@ -25,11 +24,11 @@ public:
 	}
 
 	MessagePUT(string source_host, int source_port, string dest_host,
-			int dest_port, OverlayID src_oid, OverlayID dst_id, OverlayID target_oid,
-			string& homeAgentName, string &deviceName, HostAddress &hostAddress) :
+			int dest_port, OverlayID src_oid, OverlayID dst_id, OverlayID target_oid, 
+			string &deviceName, HostAddress &hostAddress) :
 			ABSMessage(MSG_PLEXUS_PUT, source_host, source_port, dest_host,
 					dest_port, src_oid, dst_id), deviceName(deviceName), hostAddress(
-					hostAddress), homeAgentName(homeAgentName)
+					hostAddress)
 	{
 		this->target_oid = target_oid;
 	}
@@ -39,7 +38,6 @@ public:
 		size_t ret = getBaseSize();
 		ret += sizeof(int) * 4 + sizeof(char) * deviceName.size();
 		ret += sizeof(int) * 2 + sizeof(char) * hostAddress.GetHostName().size();
-		ret += sizeof(int) + sizeof(char) * homeAgentName.size();
 		return ret;
 	}
 
@@ -66,13 +64,7 @@ public:
 		memcpy(buffer + offset, (char*) &m_len, sizeof (int));
 		offset += sizeof (int);
 		
-		int homeAgentNameLength = homeAgentName.size();
-		memcpy(buffer + offset, (char*)&homeAgentNameLength, sizeof(int));
-		offset += sizeof(int);
-
-		memcpy(buffer + offset, homeAgentName.c_str(), homeAgentNameLength);
-		offset += homeAgentNameLength;
-
+		
 		int deviceNameLength = deviceName.size();
 		memcpy(buffer + offset, (char*) (&deviceNameLength), sizeof(int));
 		offset += sizeof(int);
@@ -119,14 +111,6 @@ public:
 		target_oid.SetPrefix_length(p_len);
 		target_oid.MAX_LENGTH = m_len;
 		
-		int homeAgentNameLength = 0;
-		memcpy(&homeAgentNameLength, buffer + offset, sizeof(int));
-		offset += sizeof(int);
-
-		char* str_haname = new char[homeAgentNameLength + 1];
-		memcpy(str_haname, buffer + offset, homeAgentNameLength);
-		offset += homeAgentNameLength;
-		homeAgentName = str_haname;
 
 		memcpy(&deviceNameLength, buffer + offset, sizeof(int));
 		offset += sizeof(int);
@@ -188,22 +172,11 @@ public:
 		target_oid = oid;
 	}
 
-	string GetHomeAgentName() const
-	{
-		return homeAgentName;
-	}
-
-	void SetHomeAgentName(string& homeAgentName)
-	{
-		this->homeAgentName = homeAgentName;
-	}
-
 	virtual void message_print_dump()
 	{
 		puts(
 				"------------------------------<PUT Message>------------------------------");
 		ABSMessage::message_print_dump();
-		printf("Home Agent Name %s\n", homeAgentName.c_str());
 		printf("Device Name %s\n", deviceName.c_str());
 		printf("Host Address %s:%d\n", hostAddress.GetHostName().c_str(),
 				hostAddress.GetHostPort());

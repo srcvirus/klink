@@ -82,7 +82,6 @@ class Peer {
         Configuration* configuration;
 
         LookupTable <HostAddress, pair <sockaddr_in, pair <int, double> > > address_db;
-	LookupTable <string, HostAddress> name_db;
 public:
 
 
@@ -91,7 +90,6 @@ public:
 		char hostname[100];
 		hostname[0] = '\0';
 		gethostname(hostname, 100);
-		name_db.clear();
 		//getdomainname(domain_name, 100);
 		//struct hostent* host_info;
 		//host_info = gethostbyname(hostname);
@@ -760,10 +758,6 @@ public:
 		{
 			cache_type = cacheType;
 		}
-	void addNameToDB(string name, HostAddress ha)
-	{
-		name_db.add(name, ha);
-	}
 };
 
 #endif /* PEER_H_ */
