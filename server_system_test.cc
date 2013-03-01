@@ -731,11 +731,11 @@ static void *interface_callback(enum mg_event event,
 			char str_data[data.size() + 1];
 			strcpy(str_data, data.c_str());
 			
-			strtok(str_date, "=&");
+			strtok(str_data, "=&");
 			string device_name = string(strtok(NULL, "=&"));			
 
 			strtok(NULL, "=&");
-			int port_number = atoi(string(strtok(NULL, "=&")));
+			int port_number = atoi(strtok(NULL, "=&"));
 			
 			this_peer->getProtocol()->put(device_name, HostAddress(ip_address, port_number));
 		}
