@@ -719,13 +719,25 @@ static void *interface_callback(enum mg_event event,
 		string method = strtok(request_info->query_string, "&");
 		string data = strtok(NULL, "");
 
-		char str_method[method.size()];
+		char str_method[method.size() + 1];
 		strcpy(str_method, method.c_str());
 
 		strtok(str_method, "=");
 		string method_name = strtok(NULL, "");
 		
 		if(strcmp(method_name.c_str(), "put") || strcmp(method_name.c_str(), "PUT")) {
+			string ip_address = ipToString(request_info->remote_ip);
+
+			char str_data[data.size() + 1];
+			strcpy(str_data, data.c_str());
+			
+			strtok(str_data, "=&");
+			string device_name = string(strtok(NULL, "=&"));			
+
+			strtok(NULL, "=&");
+			int port_number = atoi(strtok(NULL, "=&"));
+			
+			this_peer->getProtocol()->put(device_name, HostAddress(ip_address, port_number));
 		}
 		else if (strcmp(method_name.c_str(), "getall") || strcmp(method_name.c_str(), "GETALL")) {
 		}
