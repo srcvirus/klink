@@ -61,6 +61,7 @@ struct mg_context *ctx;
 
 void system_init();
 void cleanup();
+void publish_alias();
 
 void *listener_thread(void*);
 void *forwarding_thread(void*);
@@ -103,6 +104,15 @@ int main(int argc, char* argv[]) {
     pthread_create(&web_interface, NULL, web_interface_thread, NULL);
     pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
     pthread_create(&pending_msg_processor, NULL, pending_message_process_thread, NULL);
+
+    while(true)
+    {
+	if(this_peer->IsInitRcvd()) 
+	{
+		publish_alias();
+		break;
+	}
+    }
 
     pthread_join(listener, NULL);
 
@@ -164,6 +174,12 @@ void system_init() {
     FD_SET(s_socket->getSocketFd(), &connection_pool);
 
     fd_max = s_socket->getSocketFd();
+}
+
+void publish_alias()
+{
+	HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
+	this_peer->getProtocol()->put(this_peer->getPeerName(), ha);
 }
 
 void cleanup() {

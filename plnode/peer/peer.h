@@ -29,7 +29,7 @@ class Peer {
 
         int peer_id;
 	string peer_name;
-
+	
         int code_word;
         OverlayID overlay_id;
         int status;
@@ -192,7 +192,7 @@ public:
 			return;
 		}
 
-		char host_name[200];
+		char host_name[200], p_name[200];
 		int port = -1;
 		int n_hosts;
 		bool found = false;
@@ -210,6 +210,7 @@ public:
 			//fscanf(hosts_ptr, "%s %d", host_name, &port);
 			strcpy(host_name, strtok(line, " \n"));
 			port = atoi(strtok(NULL, " \n"));
+			strtok(NULL, " \n");
 
 			printf("%s:%d\n", host_name, port);
 
@@ -217,6 +218,7 @@ public:
 					== 0 || strcmp(host_name, "localhost") == 0)
 			{
 				listen_port_number = port;
+				peer_name = string(strtok(NULL, " \n"));
 				server_socket = new ServerSocket(listen_port_number);
 				if (server_socket->init_connection() < 0)
 				{
@@ -416,6 +418,11 @@ public:
 	int getListenPortNumber()
 	{
 		return listen_port_number;
+	}
+
+	string getPeerName()
+	{
+		return peer_name;
 	}
 
 	void setListenPortNumber(int port)
