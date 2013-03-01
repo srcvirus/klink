@@ -413,7 +413,6 @@ public:
         }
 
         void put(string name, HostAddress hostAddress) {
-
                 int hash_name_to_publish = atoi(name.c_str());
                 OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
 
