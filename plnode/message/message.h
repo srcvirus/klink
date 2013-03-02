@@ -475,6 +475,11 @@ public:
         return sequence_no;
     }
 
+    void setSequenceNo(int seq_no)
+    {
+    	sequence_no = seq_no;
+    }
+
     void setMessageType(unsigned char messageType) {
         this->messageType = messageType;
     }
