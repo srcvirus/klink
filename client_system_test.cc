@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
         PlexusProtocol* plexus = new PlexusProtocol();
         plexus->setContainerPeer(this_peer);
         //ABSCode *iCode = new ReedMuller(2, 4);
-        ABSCode *iCode = new NullCode(30);
+        ABSCode *iCode = new GolayCode();
         this_peer->SetiCode(iCode);
         this_peer->setListenPortNumber(this_peer->getConfiguration()->getClientListenPort());
 

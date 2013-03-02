@@ -30,6 +30,7 @@
 #include "../../message/message.h"
 #include "../../logging/log.h"
 #include "../../logging/log_entry.h"
+#include <cmath>
 
 using namespace std;
 
@@ -371,7 +372,7 @@ public:
         }
 
         void get(string name) {
-                int hash_name_to_get = urlHash(name);//atoi(name.c_str());
+                int hash_name_to_get = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 
                 //printf("h_name = %d, oid = %d\n", hash_name_to_get, targetID.GetOverlay_id());
@@ -391,7 +392,7 @@ public:
         }
 
         void get_from_client(string name, HostAddress destination) {
-                int hash_name_to_get = atoi(name.c_str());
+                int hash_name_to_get = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID destID(hash_name_to_get, getContainerPeer()->GetiCode());
 
                 cout << "id = " << hash_name_to_get << " oid = ";
@@ -409,13 +410,15 @@ public:
         }
 
         void put(string name, HostAddress hostAddress) {
-                int hash_name_to_publish = urlHash(name);
+                int hash_name_to_publish = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
+		
+		targetID.printBits();
 
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,
                         container_peer->getOverlayID(), OverlayID(), targetID, name, hostAddress);
-
+		printf("put msg created.\n");
                 MessageStateIndex msg_index(hash_name_to_publish, msg->getSequenceNo());
                 
 		timeval timestamp;
@@ -426,12 +429,13 @@ public:
                 if (msgProcessor->processMessage(msg)) {
                         addToOutgoingQueue(msg);
                 }
+		printf("put msg add q.\n");
                 getContainerPeer()->incrementPut_generated();
         }
 
         void put_from_client(string name, HostAddress hostAddress,
                 HostAddress destination) {
-                int hash_name_to_publish = atoi(name.c_str());
+                int hash_name_to_publish = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID destID(hash_name_to_publish, getContainerPeer()->GetiCode());
 
                 cout << "id = " << hash_name_to_publish << " oid = ";

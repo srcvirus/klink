@@ -34,6 +34,8 @@
 #include "plnode/protocol/plexus/golay/GolayCode.h"
 #include "plnode/message/p2p/message_cache_me.h"
 
+#include "common/query_string_parser.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <pthread.h>
@@ -713,39 +715,44 @@ static void *interface_callback(enum mg_event event,
             char content[16384];
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
-            int content_length = snprintf(content, sizeof (content),
-                    "<html><head></head><body>Query String: %s<br /> Client IP:Port: %s:%d</body></html>", request_info->query_string, 
-			ipToString(request_info->remote_ip).c_str(), request_info->remote_port);
-		string method = strtok(request_info->query_string, "&");
-		string data = strtok(NULL, "");
 
-		char str_method[method.size() + 1];
-		strcpy(str_method, method.c_str());
-
-		strtok(str_method, "=");
-		string method_name = strtok(NULL, "");
+		QueryStringParser qsp;
+		if(request_info->query_string != NULL)
+			qsp.parse(string(request_info->query_string));
 		
-		if(strcmp(method_name.c_str(), "put") || strcmp(method_name.c_str(), "PUT")) {
-			string ip_address = ipToString(request_info->remote_ip);
-
-			char str_data[data.size() + 1];
-			strcpy(str_data, data.c_str());
-			
-			strtok(str_data, "=&");
-			string device_name = string(strtok(NULL, "=&"));			
-
-			strtok(NULL, "=&");
-			int port_number = atoi(strtok(NULL, "=&"));
-			
-			this_peer->getProtocol()->put(device_name, HostAddress(ip_address, port_number));
+		string method_name;
+		if(qsp.get_value("method", method_name))
+		{
+			if(method_name == "put" || method_name == "PUT") {
+				string ip_address = ipToString(request_info->remote_ip);
+				string name, port;
+				if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
+					int port_number = atoi(port.c_str());
+					if(port_number >= 1024 && port_number <= 65535 && ip_address.size() >= 0 && name.size() >= 0){
+						this_peer->getProtocol()->put(name, HostAddress(ip_address, port_number));
+						printf("put done.");
+					}
+				}			
+				else{
+					printf("w_i: invalid input...");
+				}
+			}
+			else if (method_name == "getall" || method_name == "GETALL") {
+			}
+			else {
+				printf("web_interface: %s is not a valid method\n", method_name.c_str());
+			}
 		}
-		else if (strcmp(method_name.c_str(), "getall") || strcmp(method_name.c_str(), "GETALL")) {
+		else{
+			printf("null method name %s", method_name.c_str());
 		}
-		else {
-			printf("web_interface: %s is not a valid method\n", method_name.c_str());
-		}
-
             //printf("html content: %d::%s\n", content_length, content);
+
+            int content_length = snprintf(content, sizeof (content),
+                    "<html><head></head><body>Query String: %s<br /> Client IP:Port: %s:%d <br />method = %s</body></html>", request_info->query_string, 
+			ipToString(request_info->remote_ip).c_str(), request_info->remote_port, method_name.c_str());
+
+
             mg_printf(conn,
                     "HTTP/1.1 200 OK\r\n"
                     "Content-Type: text/html\r\n"
