@@ -258,6 +258,9 @@ int main(int argc, char* argv[]) {
         tree.execute();
         tree.print();
 
+        pthread_t listener;
+        pthread_create(&listener, NULL, listener_thread, NULL);
+
         send_init_message(tree, name_count);
 
         char input[1000];
@@ -346,6 +349,8 @@ int main(int argc, char* argv[]) {
 				}
                 else puts("invalid command");
         }
+
+        pthread_join(listener, NULL);
 
         /*string name_to_publish = "1378410";
          int hash_name_to_publish = atoi(name_to_publish.c_str());

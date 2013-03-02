@@ -12,3 +12,5 @@ check_point_row=100
 cache_storage=path
 cache_type=reactive
 input=s.db.0
+client_listen_port=50000
+

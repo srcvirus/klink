@@ -391,6 +391,28 @@ public:
                 getContainerPeer()->incrementGet_generated();
         }
 
+        void get_for_client(PeerInitiateGET* message)
+        {
+        	int hash_name_to_get = (int)urlHash(message->getDeviceName()) & 0x003FFFFF;
+        	string name = message->getDeviceName();
+			OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
+
+			MessageGET *msg = new MessageGET(container_peer->getHostName(),
+			                        container_peer->getListenPortNumber(), "", -1,
+			                        container_peer->getOverlayID(), OverlayID(), targetID, name);
+
+			msg->setSequenceNo(message->getSequenceNo());
+
+			MessageStateIndex ind(hash_name_to_get, message->getSequenceNo());
+			unresolved_get.add(ind, HostAddress(message->getSourceHost(), message->getSourcePort()));
+
+			if (msgProcessor->processMessage(msg))
+			{
+					addToOutgoingQueue(msg);
+			}
+			getContainerPeer()->incrementGet_generated();
+        }
+
         void get_from_client(string name, HostAddress destination) {
                 int hash_name_to_get = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID destID(hash_name_to_get, getContainerPeer()->GetiCode());

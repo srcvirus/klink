@@ -147,15 +147,16 @@ public:
                     msg->getSequenceNo());
             string key = i_str;
 
-            int hash_name_to_get = atoi(msg->getDeviceName().c_str());
+            int hash_name_to_get = (int)urlHash(msg->getDeviceName().c_str()) & 0x003FFFFF;
             MessageStateIndex msg_index(hash_name_to_get, msg->getOriginSeqNo());
 
             HostAddress requester;
             bool exists = plexus->getUnresolvedGet().lookup(msg_index, &requester);
-            plexus->getUnresolvedGet().remove(msg_index);
-		
+
 			if(exists)
 			{
+				printf("Requester: %s:%d\n", requester.GetHostName().c_str(), requester.GetHostPort());
+				plexus->getUnresolvedGet().remove(msg_index);
 				message->setDestHost(requester.GetHostName().c_str());
 				message->setDestPort(requester.GetHostPort());
 				plexus->send_message(message);
@@ -194,7 +195,7 @@ public:
 
             string key = i_str;
 
-            int hash_name_to_publish = atoi(msg->getDeviceName().c_str());
+            int hash_name_to_publish = (int)urlHash(msg->getDeviceName().c_str()) & 0x003FFFFF;
             MessageStateIndex msg_index(hash_name_to_publish, msg->getOriginSeqNo());
 
             double start = 0.0;
@@ -214,12 +215,10 @@ public:
         }//INIT Message
                 else if (message->getMessageType() == MSG_PEER_INIT) {
                         PeerInitMessage* pInitMsg = (PeerInitMessage*) message;
-
-
                         container_peer->setNPeers(pInitMsg->getNPeers());
                         GlobalData::network_size = pInitMsg->getNPeers();
                         container_peer->setOverlayID(pInitMsg->getDstOid());
-			container_peer->set_peer_name(pInitMsg->get_peer_name());
+                        container_peer->set_peer_name(pInitMsg->get_peer_name());
                         container_peer->setLogServerName(pInitMsg->getLogServerName());
                         container_peer->setLogServerUser(pInitMsg->getLogServerUser());
                         container_peer->setRunSequenceNo(pInitMsg->getRunSequenceNo());
@@ -271,11 +270,8 @@ public:
                         printf("Processing peer init get msg, oid = %d\n",
                                 pInitGet->getDstOid().GetOverlay_id());
 
-                        int hash_name_to_get = urlHash(pInitGet->getDeviceName());
-			MessageStateIndex index(hash_name_to_get, pInitGet->getSequenceNo());
-			plexus->getUnresolvedGet().add(index, HostAddress(pInitGet->getSourceHost(), pInitGet->getSourcePort()));
+                        plexus->get_for_client(pInitGet);
 
-                        container_protocol->get(pInitGet->getDeviceName());
                 } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
                         PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
                         container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
