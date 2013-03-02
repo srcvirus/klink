@@ -270,10 +270,11 @@ public:
                         PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
                         printf("Processing peer init get msg, oid = %d\n",
                                 pInitGet->getDstOid().GetOverlay_id());
-                        int hash_name_to_get = urlHash(pInitGet->getDeviceName());
 
-						MessageStateIndex index(hash_name_to_get, pInitGet->getSequenceNo());
-						plexus->getUnresolvedGet().add(index, HostAddress(pInitGet->getSourceHost(), pInitGet->getSourcePort()));
+                        int hash_name_to_get = urlHash(pInitGet->getDeviceName());
+			MessageStateIndex index(hash_name_to_get, pInitGet->getSequenceNo());
+			plexus->getUnresolvedGet().add(index, HostAddress(pInitGet->getSourceHost(), pInitGet->getSourcePort()));
+
                         container_protocol->get(pInitGet->getDeviceName());
                 } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
                         PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
