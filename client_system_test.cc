@@ -21,6 +21,8 @@
 
 Peer* this_peer;
 vector <string> log_servers;
+ServerSocket* s_socket;
+void* listener_thread(void*);
 
 void loadMonitors(const char* monitor_file) {
         FILE* fp = fopen(monitor_file, "r");
@@ -247,6 +249,7 @@ int main(int argc, char* argv[]) {
         //ABSCode *iCode = new ReedMuller(2, 4);
         ABSCode *iCode = new NullCode(30);
         this_peer->SetiCode(iCode);
+        this_peer->setListenPortNumber(this_peer->getConfiguration()->getClientListenPort());
 
         Configuration config(GlobalData::config_file_name);
         int name_count = config.getNameCount();
@@ -434,5 +437,105 @@ int main(int argc, char* argv[]) {
 
          delete msg_get;
          delete c_socket;*/
+}
+
+void* listener_thread(void*)
+{
+	int buffer_length;
+	char* buffer;
+
+	s_socket = new ServerSocket(this_peer->getConfiguration()->getClientListenPort());
+	s_socket->init_connection();
+
+	fd_set read_connection_fds, connection_pool;
+	FD_ZERO(&read_connection_fds);
+	FD_ZERO(&connection_pool);
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
+	int fd_max = s_socket->getSocketFd();
+
+	while (true) {
+		read_connection_fds = connection_pool;
+
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
+
+		if (n_select < 0) {
+			puts("Select Error");
+			printf("errno = %d\n", errno);
+
+			s_socket->printActiveConnectionList();
+			printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
+
+			for (int con = 0; con <= fd_max; con++) {
+				if (FD_ISSET(con, &connection_pool)) {
+					int fopts = 0;
+					if (fcntl(con, F_GETFL, &fopts) < 0) {
+						FD_CLR(con, &connection_pool);
+						s_socket->close_connection(con);
+						fd_max = s_socket->getMaxConnectionFd();
+					}
+				}
+			}
+			this_peer->incrementPut_Dropped();
+			//exit(1);
+			continue;
+		}
+		for (int i = 0; i <= fd_max; i++) {
+			if (FD_ISSET(i, &read_connection_fds)) {
+				if (i == s_socket->getSocketFd()) {
+					int connection_fd = s_socket->accept_connection();
+
+					if (connection_fd < 0) {
+						print_error_message(connection_fd);
+						exit(1);
+					}
+
+					FD_SET(connection_fd, &connection_pool);
+					if (connection_fd > fd_max)
+						fd_max = connection_fd;
+					//puts("new connection");
+					//s_socket->printActiveConnectionList();
+				} else {
+					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
+
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					putchar('\n');*/
+
+					s_socket->close_connection(i);
+					FD_CLR(i, &connection_pool);
+					fd_max = s_socket->getMaxConnectionFd();
+
+					s_socket->printActiveConnectionList();
+
+					if (buffer_length > 0) {
+						char messageType = 0;
+						ABSMessage* rcvd_message = NULL;
+
+						memcpy(&messageType, buffer, sizeof (char));
+						printf("[Listening thread]\t Message Type: %d\n", messageType);
+
+						switch (messageType) {
+							case MSG_PLEXUS_GET_REPLY:
+								rcvd_message = new MessageGET_REPLY();
+								rcvd_message->deserialize(buffer, buffer_length);
+								printf("%s:%d\n", ((MessageGET_REPLY*)rcvd_message)->getHostAddress().GetHostName().c_str()
+										, ((MessageGET_REPLY*)rcvd_message)->getHostAddress().GetHostPort());
+								//rcvd_message->message_print_dump();
+								break;
+							default:
+								puts("reached default case");
+								//exit(1);
+								continue;
+						}
+
+						delete[] buffer;
+					} else if (buffer_length < 0) {
+						printf("buffer_length < 0: %d\n", buffer_length);
+						continue;
+					}
+				}
+			}
+		}
+	}
 }
 
