@@ -70,7 +70,7 @@ void send_init_message(BuildTree &tree, int name_count) {
 
         loadMonitors(this_peer->getConfiguration()->getMonitorsFilePath().c_str());
 
-	string peer_name_prefix = "uw";
+	//string peer_name_prefix = "uw";
 	char p_name[20];
 
         for (int i = 0; i < n; i++) {
@@ -118,8 +118,8 @@ void send_init_message(BuildTree &tree, int name_count) {
                 pInit->setRunSequenceNo(seq_no);
                 pInit->setLogServerName(log_server);
                 pInit->setLogServerUser(log_server_user);
-		sprintf(p_name, "%s%d", peer_name_prefix.c_str(), i+1);
-		pInit->set_peer_name(string(p_name));
+		//sprintf(p_name, "%s%d", peer_name_prefix.c_str(), i+1);
+		pInit->set_peer_name(tree.aliasArray[i]);
 
                 int name_interval = name_count / n;
 

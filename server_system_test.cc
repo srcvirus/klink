@@ -720,6 +720,9 @@ static void *interface_callback(enum mg_event event,
 		if(request_info->query_string != NULL)
 			qsp.parse(string(request_info->query_string));
 		
+		string http_code;
+		string http_payload;
+
 		string method_name;
 		if(qsp.get_value("method", method_name))
 		{
@@ -730,35 +733,41 @@ static void *interface_callback(enum mg_event event,
 					int port_number = atoi(port.c_str());
 					if(port_number >= 1024 && port_number <= 65535 && ip_address.size() >= 0 && name.size() >= 0){
 						this_peer->getProtocol()->put(name, HostAddress(ip_address, port_number));
-						printf("put done.");
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";					
 					}
 				}			
 				else{
-					printf("w_i: invalid input...");
+					http_code = "451 Parameter Not Understood";
 				}
 			}
 			else if (method_name == "getall" || method_name == "GETALL") {
+				char *index_table_str = printIndexTable2String(*this_peer->getProtocol()->getIndexTable());				
+				http_payload.append(string(index_table_str));
+				//delete index_table_str;
 			}
 			else {
-				printf("web_interface: %s is not a valid method\n", method_name.c_str());
+				http_code = "405 Method Not Allowed";
 			}
 		}
 		else{
-			printf("null method name %s", method_name.c_str());
+			//the key "method" is missing
+			http_code = "400 Bad Request";
 		}
             //printf("html content: %d::%s\n", content_length, content);
 
             int content_length = snprintf(content, sizeof (content),
-                    "<html><head></head><body>Query String: %s<br /> Client IP:Port: %s:%d <br />method = %s</body></html>", request_info->query_string, 
-			ipToString(request_info->remote_ip).c_str(), request_info->remote_port, method_name.c_str());
+                    "<html><body>%s</body></html>", http_payload.c_str());
 
 
             mg_printf(conn,
-                    "HTTP/1.1 200 OK\r\n"
+                    "HTTP/1.1 %s\r\n"
                     "Content-Type: text/html\r\n"
                     "Content-Length: %d\r\n" // Always set Content-Length
                     "\r\n"
-                    "%s", content_length, content);
+                    "%s", http_code.c_str(), content_length, content);
         }
     }
     return NULL;

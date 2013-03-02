@@ -76,7 +76,7 @@ char* printIndexTable2String(LookupTable<string, HostAddress> &itable)
 		string name = itable_iter.getNextKey();
 		HostAddress ha;
 		itable.lookup(name, &ha);
-		size += name.size() + 5 + ha.getStringSize() + 5;
+		size += name.size() + 1 + ha.getStringSize() + 5;
 	}
 	size += 1;
 	char* result = new char[size];
@@ -87,10 +87,11 @@ char* printIndexTable2String(LookupTable<string, HostAddress> &itable)
 		string name = itable_iter.getNextKey();
 		HostAddress ha;
 		itable.lookup(name, &ha);
-		sprintf((result + index), "%s --> %s<br/>", name.c_str(), ha.toString());
-		index += name.size() + 5 + ha.getStringSize() + 5;
+		sprintf((result + index), "%s,%s<br/>", name.c_str(), ha.toString());
+		index += name.size() + 1 + ha.getStringSize() + 5;
 	}
 	result[size] = '\0';
+	if(size == 1) return "";
 	return result;
 }
 
