@@ -229,14 +229,18 @@ pair <int, double> getCost(string ip_address)
 	return ret;
 }
 
-string nameDbToString(vector <string> names)
+string nameDbToString(vector < pair <string, time_t> > names)
 {
 	string ret = "";
 	for(int i = 0; i < names.size(); i++)
 	{
 		if( i > 0 )
 			ret += ",";
-		ret += names[i];
+		char str_ts[20];
+		sprintf(str_ts, "%ld", names[i].second);
+
+		ret += (names[i].first + "|");
+		ret += str_ts;
 	}
 	return ret;
 }
