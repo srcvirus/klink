@@ -435,7 +435,7 @@ public:
                 int hash_name_to_publish = (int)urlHash(name) & 0x003FFFFF;
                 OverlayID targetID(hash_name_to_publish, getContainerPeer()->GetiCode());
 		
-		targetID.printBits();
+                targetID.printBits();
 
                 MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
                         container_peer->getListenPortNumber(), "", -1,

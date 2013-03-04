@@ -224,4 +224,16 @@ pair <int, double> getCost(string ip_address)
 	return ret;
 }
 
+string nameDbToString(vector <string> names)
+{
+	string ret = "";
+	for(int i = 0; i < names.size(); i++)
+	{
+		if( i > 0 )
+			ret += ",";
+		ret += names[i];
+	}
+	return ret;
+}
+
 #endif
