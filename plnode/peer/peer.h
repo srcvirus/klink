@@ -791,8 +791,8 @@ public:
 
 			while(lit.hasMoreKey())
 			{
-				string key;
-				pair <HostAddress, time_t> value = lit.getNextKey();
+				string key = lit.getNextKey();
+				pair <HostAddress, time_t> value;
 				name_db.lookup(key, &value);
 				if(value.second > timestamp)
 					ret.push_back(key);
