@@ -758,8 +758,11 @@ static void *interface_callback(enum mg_event event,
 					string name;
 					if(qsp.get_value("name", name)){				
 						if(name.size() >= 0){
-							if(1){
+							HostAddress ha;
+							if(this_peer->searchNameDb(name, ha)){
 								//just check whether the device name is in namedb
+								string temp_ha;
+								http_payload.append(ha.toString(temp_ha)); 
 								http_code = "200 OK";
 							}
 							else{
