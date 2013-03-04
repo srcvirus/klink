@@ -39,7 +39,9 @@ using namespace std;
 #define MSG_PLEXUS_GET					42
 #define MSG_PLEXUS_GET_REPLY			43
 #define MSG_PLEXUS_PUT_REPLY			44
+
 #define MSG_CACHE_ME					51
+#define MSG_PUBLISH					52
 
 class ABSMessage {
     static int sequence_no_generator;

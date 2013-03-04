@@ -66,6 +66,23 @@ char* printRoutingTable2String(LookupTable<OverlayID, HostAddress> &rtable)
 	return result;
 }
 
+
+string& routingTable2String(LookupTable<OverlayID, HostAddress> &rtable, string &result)
+{
+	int index = 0, size = 0;
+	LookupTableIterator<OverlayID, HostAddress> rtable_iter(&rtable);
+	rtable_iter.reset_iterator();
+	string temp;
+	while (rtable_iter.hasMoreKey())
+	{
+		OverlayID oid = rtable_iter.getNextKey();
+		HostAddress ha;
+		rtable.lookup(oid, &ha);
+		result.append(oid.toString(temp)).append(",").append(ha.toString(temp)).append("|");
+	}
+	return result;
+}
+
 char* printIndexTable2String(LookupTable<string, HostAddress> &itable)
 {
 	int index = 0, size = 0;
