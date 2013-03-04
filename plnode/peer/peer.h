@@ -784,9 +784,9 @@ public:
 			return false;
 		}
 
-		vector < string > searchNameDb(time_t timestamp)
+		vector < pair <string, time_t> > searchNameDb(time_t timestamp)
 		{
-			vector < string > ret;
+			vector < pair <string, time_t> > ret;
 			LookupTableIterator<string, pair <HostAddress, time_t> > lit(&name_db);
 
 			while(lit.hasMoreKey())
@@ -795,7 +795,7 @@ public:
 				pair <HostAddress, time_t> value;
 				name_db.lookup(key, &value);
 				if(value.second > timestamp)
-					ret.push_back(key);
+					ret.push_back(pair <string, time_t>(key, value.second));
 			}
 			return ret;
 		}
