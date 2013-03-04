@@ -78,7 +78,12 @@ string& routingTable2String(LookupTable<OverlayID, HostAddress> &rtable, string 
 		OverlayID oid = rtable_iter.getNextKey();
 		HostAddress ha;
 		rtable.lookup(oid, &ha);
-		result.append(oid.toString(temp)).append(",").append(ha.toString(temp)).append("|");
+		temp = "";
+		result.append(oid.toString(temp));
+		result.append(",");
+		temp = "";
+		result.append(ha.toString(temp));
+		result.append("|");
 	}
 	return result;
 }
