@@ -784,7 +784,7 @@ public:
 			return false;
 		}
 
-		vector < string > searchNameDb(string name, time_t timestamp)
+		vector < string > searchNameDb(time_t timestamp)
 		{
 			vector < string > ret;
 			LookupTableIterator<string, pair <HostAddress, time_t> > lit(&name_db);
