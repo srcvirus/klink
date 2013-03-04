@@ -82,6 +82,7 @@ class Peer {
         Configuration* configuration;
 
         LookupTable <HostAddress, pair <sockaddr_in, pair <int, double> > > address_db;
+        LookupTable <string, pair <HostAddress, time_t> > name_db; //.first -> HostAddress, .second->timestamp
 public:
 
 
@@ -764,6 +765,39 @@ public:
 		void setCacheType(const string& cacheType)
 		{
 			cache_type = cacheType;
+		}
+
+		void addToNameDB(string name, HostAddress ha)
+		{
+			time_t timestamp = time(NULL);
+			name_db.add(name, pair <HostAddress, time_t>(ha, timestamp));
+		}
+
+		bool searchNameDb(string name, HostAddress* ret)
+		{
+			pair <HostAddress, time_t> val;
+			if(name_db.lookup(name, &val))
+			{
+				*ret = val.first;
+				return true;
+			}
+			return false;
+		}
+
+		vector < string > searchNameDb(string name, time_t timestamp)
+		{
+			vector < string > ret;
+			LookupTableIterator<string, pair <HostAddress, time_t> > lit(&name_db);
+
+			while(lit.hasMoreKey())
+			{
+				string key;
+				pair <HostAddress, time_t> value = lit.getNextKey();
+				name_db.lookup(key, &value);
+				if(value.second > timestamp)
+					ret.push_back(key);
+			}
+			return ret;
 		}
 };
 
