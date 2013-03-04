@@ -773,6 +773,12 @@ public:
 			name_db.add(name, pair <HostAddress, time_t>(ha, timestamp));
 		}
 
+		bool updateNameDB(string name, HostAddress ha)
+		{
+			time_t timestamp = time(NULL);
+			return name_db.update(name, pair <HostAddress, time_t>(ha, timestamp));
+		}
+
 		bool searchNameDb(string name, HostAddress* ret)
 		{
 			pair <HostAddress, time_t> val;
