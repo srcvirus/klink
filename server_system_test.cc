@@ -733,7 +733,7 @@ static void *interface_callback(enum mg_event event,
 						int port_number = atoi(port.c_str());
 						if(port_number >= 1024 && port_number <= 65535){
 							if(ip_address.size()){
-								if(name.size() >= 0){
+								if(name.size()){
 									HostAddress ha;
 									if(!this_peer->searchNameDb(name, &ha)){
 										this_peer->addToNameDB(name, HostAddress(ip_address, port_number));
@@ -759,16 +759,16 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
-				if(method_name == "update" || method_name == "UPDATE") {
+				else if(method_name == "update" || method_name == "UPDATE") {
 					string ip_address = ipToString(request_info->remote_ip);
 					string name, port;
 					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
 						int port_number = atoi(port.c_str());
 						if(port_number >= 1024 && port_number <= 65535){
 							if(ip_address.size()){
-								if(name.size() >= 0){
+								if(name.size()){
 									HostAddress ha;
-									if(this_peer->updateNameDb(name, HostAddress(ip_address, port_number))){
+									if(this_peer->updateNameDB(name, HostAddress(ip_address, port_number))){
 										http_code = "200 OK";
 									}
 									else{
@@ -791,10 +791,10 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
-				if(method_name == "isavailable" || method_name == "ISAVAILABLE") {
+				else if(method_name == "isavailable" || method_name == "ISAVAILABLE") {
 					string name;
 					if(qsp.get_value("name", name)){				
-						if(name.size() >= 0){
+						if(name.size()){
 							HostAddress ha;
 							if(!this_peer->searchNameDb(name, &ha)){
 								//just check whether the device name is in namedb
