@@ -716,45 +716,130 @@ static void *interface_callback(enum mg_event event,
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
 
-		QueryStringParser qsp;
-		if(request_info->query_string != NULL)
+		string http_code = "200 OK";
+		string http_payload = "";
+
+		if(request_info->query_string != NULL){
+			QueryStringParser qsp;
 			qsp.parse(string(request_info->query_string));
 		
-		string http_code;
-		string http_payload;
-
-		string method_name;
-		if(qsp.get_value("method", method_name))
-		{
-			if(method_name == "put" || method_name == "PUT") {
-				string ip_address = ipToString(request_info->remote_ip);
-				string name, port;
-				if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
-					int port_number = atoi(port.c_str());
-					if(port_number >= 1024 && port_number <= 65535 && ip_address.size() >= 0 && name.size() >= 0){
-						this_peer->getProtocol()->put(name, HostAddress(ip_address, port_number));
-						http_code = "200 OK";
+			string method_name;
+			if(qsp.get_value("method", method_name))
+			{
+				if(method_name == "register" || method_name == "REGISTER") {
+					string ip_address = ipToString(request_info->remote_ip);
+					string name, port;
+					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
+						int port_number = atoi(port.c_str());
+						if(port_number >= 1024 && port_number <= 65535){
+							if(ip_address.size()){
+								if(name.size()){
+									HostAddress ha;
+									if(!this_peer->searchNameDb(name, &ha)){
+										this_peer->addToNameDB(name, HostAddress(ip_address, port_number));
+										http_code = "200 OK";
+									}
+									else{
+										http_code = "494 Device Name Not Available"; 
+									}
+								}
+								else{
+									http_code = "493 Device Name of Zero Length Not Allowed";
+								}
+							}
+							else{
+								http_code = "492 Remote IP Error";						
+							}
+						}
+						else{
+							http_code = "491 Port Number Not in Range";					
+						}
+					}			
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(method_name == "update" || method_name == "UPDATE") {
+					string ip_address = ipToString(request_info->remote_ip);
+					string name, port;
+					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
+						int port_number = atoi(port.c_str());
+						if(port_number >= 1024 && port_number <= 65535){
+							if(ip_address.size()){
+								if(name.size()){
+									HostAddress ha;
+									if(this_peer->updateNameDB(name, HostAddress(ip_address, port_number))){
+										http_code = "200 OK";
+									}
+									else{
+										http_code = "496 Device Name Not Found"; 
+									}
+								}
+								else{
+									http_code = "493 Device Name of Zero Length Not Allowed";
+								}
+							}
+							else{
+								http_code = "492 Remote IP Error";						
+							}
+						}
+						else{
+							http_code = "491 Port Number Not in Range";					
+						}
+					}			
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(method_name == "isavailable" || method_name == "ISAVAILABLE") {
+					string name;
+					if(qsp.get_value("name", name)){				
+						if(name.size()){
+							HostAddress ha;
+							if(!this_peer->searchNameDb(name, &ha)){
+								//just check whether the device name is in namedb
+								http_payload.append("Device Name Available."); 
+								http_code = "200 OK";
+							}
+							else{
+								http_code = "494 Device Name Not Available"; 
+							}
+						}
+						else{
+							http_code = "493 Device Name of Zero Length Not Allowed";
+						}
+					}			
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if (method_name == "getall" || method_name == "GETALL") {
+					string timestamp_str;
+					if(qsp.get_value("timestamp", timestamp_str)){	
+						string routing_table_str, name_db_str;					
+						time_t timestamp = atol(timestamp_str.c_str());
+						if(timestamp > 0){
+							routingTable2String(*this_peer->getProtocol()->getRoutingTable(), routing_table_str);
+							http_payload.append(string(routing_table_str));
+							http_payload.append(nameDbToString(this_peer->searchNameDb(timestamp)));
+							http_code = "200 OK";
+						}
+						else{
+							http_code = "495 Timestamp Less Than or Equal to Zero";
+						}
 					}
 					else{
-						http_code = "451 Parameter Not Understood";					
+						http_code = "451 Parameter Not Understood";
 					}
-				}			
-				else{
-					http_code = "451 Parameter Not Understood";
+				}
+				else {
+					http_code = "405 Method Not Allowed";
 				}
 			}
-			else if (method_name == "getall" || method_name == "GETALL") {
-				char *index_table_str = printIndexTable2String(*this_peer->getProtocol()->getIndexTable());				
-				http_payload.append(string(index_table_str));
-				//delete index_table_str;
+			else{
+				//the key "method" is missing
+				http_code = "400 Bad Request";
 			}
-			else {
-				http_code = "405 Method Not Allowed";
-			}
-		}
-		else{
-			//the key "method" is missing
-			http_code = "400 Bad Request";
 		}
             //printf("html content: %d::%s\n", content_length, content);
 

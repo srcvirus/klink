@@ -2,7 +2,7 @@
 #define UTIL_H_
 
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 #include "../plnode/ds/lookup_table.h"
 #include "../plnode/ds/lookup_table_iterator.h"
 #include "../plnode/ds/overlay_id.h"
@@ -63,6 +63,32 @@ char* printRoutingTable2String(LookupTable<OverlayID, HostAddress> &rtable)
 		index += oid.getStringSize() + 5 + ha.getStringSize() + 5;
 	}
 	result[size] = '\0';
+	return result;
+}
+
+
+string& routingTable2String(LookupTable<OverlayID, HostAddress> &rtable, string &result)
+{
+	int count = 0;
+	LookupTableIterator<OverlayID, HostAddress> rtable_iter(&rtable);
+	rtable_iter.reset_iterator();
+	string temp;
+	while (rtable_iter.hasMoreKey())
+	{
+		OverlayID oid = rtable_iter.getNextKey();
+		HostAddress ha;
+		rtable.lookup(oid, &ha);
+		temp = "";
+		//result.append(oid.toString(temp));
+		//result.append(",");
+		//temp = "";
+		result.append(ha.GetHostName());
+		result.append("|");
+		count++;
+	}
+	char buffer[20];
+	sprintf(buffer, "%d", count);
+	result = string(buffer).append("|").append(result);
 	return result;
 }
 
@@ -220,6 +246,9 @@ string nameDbToString(vector < pair <string, time_t> > names)
 		ret += (names[i].first + "|");
 		ret += str_ts;
 	}
+	char buffer[20];
+	sprintf(buffer, "%d", names.size());
+	ret = string(buffer).append("|").append(ret);
 	return ret;
 }
 
