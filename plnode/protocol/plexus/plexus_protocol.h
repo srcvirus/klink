@@ -395,13 +395,16 @@ public:
         {
         	int last_dot;
         	string str = message->getDeviceName();
-        	for(last_dot = (int)str.size(); last_dot >= 0; last_dot++)
+        	printf("str = %s\n", str.c_str());
+
+        	for(last_dot = (int)str.size() - 1; last_dot >= 0; last_dot--)
         		if(str[last_dot] == '.')
         			break;
 
         	string ha_name = str.substr(last_dot + 1);
         	string d_name = str.substr(0, last_dot);
 
+        	printf("Home agent name = %s, Device name = %s\n", ha_name.c_str(), d_name.c_str());
         	int hash_name_to_get = (int)urlHash(ha_name) & 0x003FFFFF;
         	//string name = message->getDeviceName();
 			OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
@@ -413,7 +416,9 @@ public:
 			msg->setSequenceNo(message->getSequenceNo());
 			MessageStateIndex ind(hash_name_to_get, message->getSequenceNo());
 
+			printf("msg_state_index = %d_%d\n", ind.getMessageSeqNo(), ind.getNameHash());
 			unresolved_get.add(ind, make_pair(HostAddress(message->getSourceHost(), message->getSourcePort()), d_name));
+
 			if (msgProcessor->processMessage(msg))
 			{
 					addToOutgoingQueue(msg);
@@ -645,12 +650,12 @@ public:
                 pthread_cond_destroy(&cond_log_queue_empty);
         }
 
-		LookupTable<MessageStateIndex, HostAddress>& getUnresolvedGet()
+		LookupTable<MessageStateIndex, pair <HostAddress, string> >& getUnresolvedGet()
 		{
 			return unresolved_get;
 		}
 
-		void setUnresolvedGet(const LookupTable<MessageStateIndex, HostAddress>& unresolvedGet)
+		void setUnresolvedGet(const LookupTable<MessageStateIndex, pair <HostAddress, string> >& unresolvedGet)
 		{
 			unresolved_get = unresolvedGet;
 		}

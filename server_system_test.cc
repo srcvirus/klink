@@ -384,6 +384,14 @@ void *listener_thread(void* args) {
                                 rcvd_message = new MessageCacheMe();
                                 rcvd_message->deserialize(buffer, buffer_length);
                                 break;
+                            case MSG_RETRIEVE:
+                            	rcvd_message = new RetrieveMessage();
+                            	rcvd_message->deserialize(buffer, buffer_length);
+                            	break;
+                            case MSG_RETRIEVE_REPLY:
+                            	rcvd_message = new MessageRetrieveReply();
+                            	rcvd_message->deserialize(buffer, buffer_length);
+                            	break;
                             default:
                                 puts("reached default case");
                                 //exit(1);
