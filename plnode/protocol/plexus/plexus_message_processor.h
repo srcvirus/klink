@@ -265,14 +265,15 @@ public:
                         PeerConfigMessage* pConfMsg = (PeerConfigMessage*) message;
                         container_peer->setAlpha(pConfMsg->getAlpha());
                         container_peer->setK(pConfMsg->getK());
-                } else if (message->getMessageType() == MSG_PEER_INITIATE_GET) {
-                        PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
-                        printf("Processing peer init get msg, oid = %d\n",
-                                pInitGet->getDstOid().GetOverlay_id());
+                } else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
+                {
+					PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
+					printf("Processing peer init get msg, oid = %d\n",
+							pInitGet->getDstOid().GetOverlay_id());
 
-                        plexus->get_for_client(pInitGet);
-
-                } else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
+					plexus->get_for_client(pInitGet);
+                }
+                else if (message->getMessageType() == MSG_PEER_INITIATE_PUT) {
                         PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;
                         container_protocol->put(pInitPut->getDeviceName(), pInitPut->GetHostAddress());
                 } else if (message->getMessageType() == MSG_PEER_START) {

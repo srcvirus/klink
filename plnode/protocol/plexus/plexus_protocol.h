@@ -46,7 +46,7 @@ class PlexusProtocol : public ABSProtocol {
 protected:
         Log *log[MAX_LOGS];
         LookupTable <MessageStateIndex, double> unresolved_put;
-	LookupTable <MessageStateIndex, HostAddress> unresolved_get;
+        LookupTable <MessageStateIndex, pair <HostAddress, string> > unresolved_get;
 
         LookupTable <OverlayID, HostAddress>* proactive_cache;
 
@@ -393,19 +393,27 @@ public:
 
         void get_for_client(PeerInitiateGET* message)
         {
-        	int hash_name_to_get = (int)urlHash(message->getDeviceName()) & 0x003FFFFF;
-        	string name = message->getDeviceName();
+        	int last_dot;
+        	string str = message->getDeviceName();
+        	for(last_dot = (int)str.size(); last_dot >= 0; last_dot++)
+        		if(str[last_dot] == '.')
+        			break;
+
+        	string ha_name = str.substr(last_dot + 1);
+        	string d_name = str.substr(0, last_dot);
+
+        	int hash_name_to_get = (int)urlHash(ha_name) & 0x003FFFFF;
+        	//string name = message->getDeviceName();
 			OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 
 			MessageGET *msg = new MessageGET(container_peer->getHostName(),
 			                        container_peer->getListenPortNumber(), "", -1,
-			                        container_peer->getOverlayID(), OverlayID(), targetID, name);
+			                        container_peer->getOverlayID(), OverlayID(), targetID, ha_name);
 
 			msg->setSequenceNo(message->getSequenceNo());
-
 			MessageStateIndex ind(hash_name_to_get, message->getSequenceNo());
-			unresolved_get.add(ind, HostAddress(message->getSourceHost(), message->getSourcePort()));
 
+			unresolved_get.add(ind, make_pair(HostAddress(message->getSourceHost(), message->getSourcePort()), d_name));
 			if (msgProcessor->processMessage(msg))
 			{
 					addToOutgoingQueue(msg);
