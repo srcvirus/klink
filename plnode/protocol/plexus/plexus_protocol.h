@@ -203,6 +203,8 @@ public:
                         case MSG_PEER_INITIATE_PUT:
                         case MSG_PEER_FORCE_LOG:
                         case MSG_CACHE_ME:
+                        case MSG_RETRIEVE:
+                        case MSG_RETRIEVE_REPLY:
                         		puts("returning false");
                                 return false;
                                 break;
