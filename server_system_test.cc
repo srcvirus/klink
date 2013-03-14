@@ -204,6 +204,7 @@ void *forwarding_thread(void* args) {
 
         message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
         message->incrementOverlayHops();
+        message->message_print_dump();
 
         if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT) {
             HostAddress ha(message->getDestHost(), message->getDestPort());
@@ -400,6 +401,7 @@ void *listener_thread(void* args) {
 
                         if (rcvd_message != NULL)
                         {
+                        	rcvd_message->message_print_dump();
                         	if(this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
                         	{
                         		puts("INIT already received");
