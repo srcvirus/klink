@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     }
 
     pthread_create(&logger, NULL, logging_thread, NULL);
-    pthread_create(&controller, NULL, controlling_thread, NULL);
+    //pthread_create(&controller, NULL, controlling_thread, NULL);
     pthread_create(&web, NULL, web_thread, NULL);
     pthread_create(&web_interface, NULL, web_interface_thread, NULL);
     pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
