@@ -1,0 +1,5 @@
+3
+localhost 30000 127.0.0.1 mypc0
+localhost 30001 127.0.0.1 mypc1
+localhost 30002 127.0.0.1 mypc2
+
