@@ -96,10 +96,10 @@ public:
 
 	virtual void message_print_dump()
 	{
-		puts(">>>>>>>>Peer Init Get<<<<<<<<<");
+		puts("------------------------------<PEER_INIT_GET Message>------------------------------");
 		ABSMessage::message_print_dump();
 		puts(device_name.c_str());
-		puts(">>>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
+		puts("-----------------------------</PEER_INIT_GET Message>------------------------------");
 	}
 };
 
