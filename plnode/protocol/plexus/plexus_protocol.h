@@ -431,7 +431,10 @@ public:
 		string str = message->getDeviceName();
 		printf("str = %s\n", str.c_str());
 
-		for (last_dot = (int) str.size() - 1; last_dot >= 0; last_dot--)
+		last_dot = (int)str.size() - 1;
+		while(last_dot >= 0 && str[last_dot] == '.') last_dot--;
+
+		for ( ; last_dot >= 0; last_dot--)
 			if (str[last_dot] == '.')
 				break;
 
