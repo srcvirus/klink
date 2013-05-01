@@ -133,8 +133,8 @@ int main(int argc, char* argv[]) {
 }
 
 void system_init() {
-	//freopen("agent.log", "w", stdout);
-	//freopen("agent.err", "w", stderr);
+	freopen("agent.log", "w", stdout);
+	freopen("agent.err", "w", stderr);
 
     int error_code;
     puts("[Main Thread]\tInitializing the System");
