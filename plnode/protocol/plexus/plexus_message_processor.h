@@ -77,6 +77,7 @@ public:
 					cache->add(id, ha);
 				}
 			}
+			fflush(stdout);
 			return true;
 		}
 		//PUT
@@ -84,7 +85,7 @@ public:
 		{
 			container_peer->incrementPut_processed();
 			MessagePUT* putMsg = (MessagePUT*) message;
-			puts("Adding to index table");
+			puts("[Processing thread]\tAdding to index table");
 			index_table->add(putMsg->GetDeviceName(), putMsg->GetHostAddress());
 
 			//puts("PUT Successful");
@@ -216,7 +217,7 @@ public:
 					msg->getDeviceName().c_str(),
 					msg->getSrcOid().GetOverlay_id());
 
-			printf("[Processing Thread:]\tNew log entry created: %s %s\n",
+			printf("[Processing thread]\tNew log entry created: %s %s\n",
 					entry->getKeyString().c_str(),
 					entry->getValueString().c_str());
 			plexus->addToLogQueue(entry);
@@ -474,6 +475,7 @@ public:
 			exit(1);
 		}
 
+		fflush(stdout);
 		return false;
 	}
 

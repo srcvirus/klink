@@ -278,7 +278,7 @@ public:
 
 		int routingTableSize;
 		memcpy(&routingTableSize, buffer + offset, sizeof(int));
-		offset += sizeof(int); printf("offset = %d\n", offset);
+		offset += sizeof(int); //printf("offset = %d\n", offset);
 		//printf("%d\n", routingTableSize);
 
 		for (int i = 0; i < routingTableSize; i++)
@@ -299,7 +299,7 @@ public:
 			key.MAX_LENGTH = m_len;
 
 			memcpy(&hostNameLength, buffer + offset, sizeof(int));
-			offset += sizeof(int); printf("offset = %d\n", offset);
+			offset += sizeof(int); //printf("offset = %d\n", offset);
 			char ch;
 
 			for (int i = 0; i < hostNameLength; i++)
@@ -321,8 +321,7 @@ public:
 
 	virtual void message_print_dump()
 	{
-		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
-		printf("Init Message\n");
+		puts("------------------------------<INIT Message>------------------------------");
 		ABSMessage::message_print_dump();
 		LookupTableIterator<OverlayID, HostAddress> rtable_iterator(
 				&routing_table);
@@ -340,18 +339,19 @@ public:
 					key.GetOverlay_id(), value.GetHostName().c_str(),
 					value.GetHostPort());
 		}
+
 		printf("Peer Name = %s\n", peer_name.c_str());
 		printf("N Peers = %d\n", n_peers);
-		printf("Alpha = %.4lf\n", alpha);
+/*		printf("Alpha = %.4lf\n", alpha);
 		printf("K = %d\n", k);
 		printf("Publish Start = %d End = %d\n", publish_name_range_start,
 				publish_name_range_end);
 		printf("Lookup Start = %d End = %d\n", lookup_name_range_start,
 				lookup_name_range_end);
-		printf("Webserver Port = %d\n", webserver_port);
+		printf("Webserver Port = %d\n", webserver_port);*/
 		printf("Log Server = %s\n", log_server_name.c_str());
 		printf("Log Server User = %s\n", log_server_user.c_str());
-		puts("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>");
+		puts("-----------------------------</INIT Message>------------------------------");
 	}
 
 	void setLookup_name_range_end(int lookup_name_range_end)

@@ -104,16 +104,16 @@ int main(int argc, char* argv[]) {
     //pthread_create(&controller, NULL, controlling_thread, NULL);
     pthread_create(&web, NULL, web_thread, NULL);
     pthread_create(&web_interface, NULL, web_interface_thread, NULL);
-    pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
+    //pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
     pthread_create(&pending_msg_processor, NULL, pending_message_process_thread, NULL);
 
     while(true)
     {
-	if(this_peer->IsInitRcvd()) 
-	{
-		publish_alias();
-		break;
-	}
+		if(this_peer->IsInitRcvd())
+		{
+			publish_alias();
+			break;
+		}
     }
 
     pthread_join(listener, NULL);
@@ -133,12 +133,15 @@ int main(int argc, char* argv[]) {
 }
 
 void system_init() {
+	freopen("agent.log", "w", stdout);
+	freopen("agent.err", "w", stderr);
+
     int error_code;
-    puts("Initializing the System");
+    puts("[Main Thread]\tInitializing the System");
 
     /* creating the peer container */
     this_peer = new Peer(GlobalData::config_file_name.c_str());
-    printf("hostname = %s\n", this_peer->getHostName().c_str());
+    printf("[Main Thread]\thostname = %s\n", this_peer->getHostName().c_str());
 
     if (this_peer->getListenPortNumber() == -1) {
         puts("Port Number Not Found");
@@ -213,7 +216,7 @@ void *forwarding_thread(void* args) {
             double latency = cost.second;
             message->incrementIpHops(ip_hops);
             message->incrementLatency(latency);
-            printf("Next hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n", ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops, latency);
+            printf("[Forwarding Thread %d:]\tNext hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",t_param.getThreadId(), ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops, latency);
         }
 
         printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
@@ -258,10 +261,10 @@ void *listener_thread(void* args) {
 
         if (n_select < 0) {
             puts("Select Error");
-            printf("errno = %d\n", errno);
+            printf("[Listening Thread]\terrno = %d\n", errno);
 
             s_socket->printActiveConnectionList();
-            printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
+            //printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
 
             for (int con = 0; con <= fd_max; con++) {
                 if (FD_ISSET(con, &connection_pool)) {
@@ -303,7 +306,7 @@ void *listener_thread(void* args) {
                     FD_CLR(i, &connection_pool);
                     fd_max = s_socket->getMaxConnectionFd();
 
-                    s_socket->printActiveConnectionList();
+                    //s_socket->printActiveConnectionList();
 
                     if (buffer_length > 0) {
                         char messageType = 0;
@@ -337,7 +340,7 @@ void *listener_thread(void* args) {
                                 this_peer->incrementPut_received();
                                 rcvd_message = new MessagePUT();
                                 rcvd_message->deserialize(buffer, buffer_length);
-                                //rcvd_message->message_print_dump();
+                                rcvd_message->message_print_dump();
                                 //rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
                                 break;
 
@@ -401,17 +404,17 @@ void *listener_thread(void* args) {
 
                         if (rcvd_message != NULL)
                         {
-                        	rcvd_message->message_print_dump();
+                        	//rcvd_message->message_print_dump();
                         	if(this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
                         	{
-                        		puts("INIT already received");
+                        		puts("[Listening thread]\tINIT already received");
                         		((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
                         		printf("[Listening thread]\t Added a %d message to the incoming queue\n",
                         		                                    rcvd_message->getMessageType());
                         	}
                         	else
                         	{
-                        		puts("Received a message before receiving INIT message");
+                        		puts("[Listening thread]\tReceived a message before receiving INIT message");
                         		received_before_init_queue.push(rcvd_message);
                         	}
 
@@ -575,14 +578,14 @@ void *logging_thread(void*) {
         entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
         //printf("[Logging Thread]\tpulled a log entry from the queue\n");
         if (entry->getType() == ALL_LOGS) {
-            ((PlexusProtocol*) plexus)->flushAllLog();
+            //((PlexusProtocol*) plexus)->flushAllLog();
             continue;
         }
-        Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
-        log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());
+        /*Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
+        log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());*/
 
         delete entry;
-        printf("Index table size = %d\n", plexus->getIndexTable()->size());
+        printf("[Logging Thread:]Index table size = %d\n", plexus->getIndexTable()->size());
     }
 }
 

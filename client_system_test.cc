@@ -467,8 +467,8 @@ void* listener_thread(void*)
 			puts("Select Error");
 			printf("errno = %d\n", errno);
 
-			s_socket->printActiveConnectionList();
-			printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
+			/*s_socket->printActiveConnectionList();
+			printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());*/
 
 			for (int con = 0; con <= fd_max; con++) {
 				if (FD_ISSET(con, &connection_pool)) {
