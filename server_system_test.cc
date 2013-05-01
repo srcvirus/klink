@@ -690,13 +690,13 @@ inline std::string toString (const T& t)
 string ipToString(long ip)
 {
     string res;
-    long workIp, a, b, c, d;
+    unsigned long workIp, a, b, c, d;
     workIp = ip;
-    d = workIp % 0x100;
+    d = workIp & 0xFF;
     workIp = workIp >> 8;
-    c = workIp % 0x100;
+    c = workIp & 0xFF;
     workIp = workIp >> 8;
-    b = workIp % 0x100;
+    b = workIp & 0xFF;
     workIp = workIp >> 8;
     a = workIp;
     res = toString(a)+"."+toString(b)+"."+toString(c)+"."+toString(d);
@@ -740,7 +740,9 @@ static void *interface_callback(enum mg_event event,
 			if(qsp.get_value("method", method_name))
 			{
 				if(method_name == "register" || method_name == "REGISTER") {
+					printf("[Web thread]\tip = %ld\n", request_info->remote_ip);
 					string ip_address = ipToString(request_info->remote_ip);
+					printf("[Web thread]\tip address = %s\n", ip_address.c_str());
 					string name, port;
 					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
 						int port_number = atoi(port.c_str());
