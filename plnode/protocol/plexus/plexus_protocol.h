@@ -435,13 +435,14 @@ public:
 		int next_dot;
 
 		while(last_dot >= 0 && str[last_dot] == '.') last_dot--;
+		str = str.substr(0, last_dot + 1);
 
-		for ( next_dot = last_dot - 1; next_dot >= 0; next_dot--)
-			if (str[next_dot] == '.')
+		for ( last_dot = (int)str.size() - 1; last_dot >= 0; last_dot--)
+			if (str[last_dot] == '.')
 				break;
 
-		string ha_name = str.substr(next_dot + 1, last_dot);
-		string d_name = str.substr(0, next_dot);
+		string ha_name = str.substr(last_dot + 1);
+		string d_name = str.substr(0, last_dot);
 
 		printf("Home agent name = %s, Device name = %s\n", ha_name.c_str(),
 				d_name.c_str());
