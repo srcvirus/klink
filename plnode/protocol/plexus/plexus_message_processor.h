@@ -255,9 +255,9 @@ public:
 			if (exists)
 			{
 				requester = r.first;
-				printf("Requester: %s:%d\n", requester.GetHostName().c_str(),
+				printf("[Processing thread]\tRequester: %s:%d\n", requester.GetHostName().c_str(),
 						requester.GetHostPort());
-
+				printf("[Processing thread]\tResult = %s:%d\n", msg->getHostAddress().GetHostName().c_str(), msg->getHostAddress().GetHostPort());
 				plexus->getUnresolvedGet().remove(msg_index);
 
 				MessageGET_REPLY* rtr_msg = new MessageGET_REPLY(
