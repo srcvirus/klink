@@ -385,7 +385,7 @@ public:
 				incrementPutCacheHitCounter();
 		}
 
-		cout << endl << "max match : = " << maxLengthMatch << endl;
+		printf("[Processing thread]\tMax Match Length = %d, Current Node Match Length = %d\n", maxLengthMatch, currentNodeMathLength);
 
 		if (maxLengthMatch == 0 || maxLengthMatch < currentNodeMathLength)
 		{
