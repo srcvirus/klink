@@ -214,6 +214,7 @@ public:
 	{
 		printf("Get Message");
 		ABSMessage::message_print_dump();
+		target_oid.printBits();
 		printf("Device Name %s\n", deviceName.c_str());
 	}
 };
