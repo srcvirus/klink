@@ -258,6 +258,7 @@ public:
 		{
 			MessageGET *get_msg = (MessageGET*) msg;
 			HostAddress h;
+			printf("[Processing thread]\ttarget oid = "); get_msg->getTargetOid().printBits();
 			if (index_table->lookup(get_msg->GetDeviceName(), &h))
 			{
 				return false;
