@@ -449,6 +449,7 @@ public:
 		int hash_name_to_get = (int) urlHash(ha_name) & 0x003FFFFF;
 		//string name = message->getDeviceName();
 		OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
+		printf("h_name = %d, oid = %d, oid_bits = ", hash_name_to_get, targetID.GetOverlay_id()); targetID.printBits();
 
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
