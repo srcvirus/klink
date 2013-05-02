@@ -244,6 +244,8 @@ public:
 			break;
 		}
 
+		printf("[Processing thread]\tTarget oid = "); target_oid.printBits();
+
 		if (container_peer->getCacheStorage() == "end_point")
 		{
 			if (msg->getMessageType() == MSG_PLEXUS_GET_REPLY
@@ -258,15 +260,14 @@ public:
 		{
 			MessageGET *get_msg = (MessageGET*) msg;
 			HostAddress h;
-			printf("[Processing thread]\ttarget oid = "); get_msg->getTargetOid().printBits();
+			//printf("[Processing thread]\ttarget oid = "); get_msg->getTargetOid().printBits();
 			if (index_table->lookup(get_msg->GetDeviceName(), &h))
 			{
 				return false;
 			}
 		}
-		currentNodeMathLength =
-				container_peer->getOverlayID().GetMatchedPrefixLength(
-						msg->getDstOid());
+		//currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(msg->getDstOid());
+		currentNodeMathLength = container_peer->getOverlayID().GetMatchedPrefixLength(target_oid);
 		/*printf("Current match length = %d\n", currentNodeMathLength);
 		printf("Message oid = %d\n", msg->getDstOid().GetOverlay_id());
 		target_oid.printBits();
