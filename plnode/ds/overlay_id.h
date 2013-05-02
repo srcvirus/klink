@@ -111,10 +111,11 @@ public:
         }
 
         void printBits() {
-        		printf(">>>MAX_LENGTH = %d<<<", MAX_LENGTH);
+        		printf("----MAX_LENGTH = %d----", MAX_LENGTH);
                 for (int i = MAX_LENGTH - 1; i >= 0; i--) {
                         cout << GetBitAtPosition(i);
                 }
+                putchar('\n');
         }
 
         int getBitAtPosition(int value, int n) {

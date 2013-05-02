@@ -409,7 +409,7 @@ public:
 		int hash_name_to_get = (int) urlHash(name) & 0x003FFFFF;
 		OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 
-		//printf("h_name = %d, oid = %d\n", hash_name_to_get, targetID.GetOverlay_id());
+		printf("h_name = %d, oid = %d, oid_bits = ", hash_name_to_get, targetID.GetOverlay_id()); targetID.printBits();
 
 		MessageGET *msg = new MessageGET(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
@@ -496,7 +496,7 @@ public:
 		OverlayID targetID(hash_name_to_publish,
 				getContainerPeer()->GetiCode());
 
-		targetID.printBits();
+		//targetID.printBits();
 
 		MessagePUT *msg = new MessagePUT(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), "", -1,
