@@ -835,6 +835,7 @@ static void *interface_callback(enum mg_event event,
 						time_t timestamp = atol(timestamp_str.c_str());
 						if(timestamp > 0){
 							routingTable2String(*this_peer->getProtocol()->getRoutingTable(), routing_table_str);
+							http_payload.append(this_peer->get_peer_name());
 							http_payload.append(string(routing_table_str));
 							http_payload.append(nameDbToString(this_peer->searchNameDb(timestamp)));
 							http_code = "200 OK";
