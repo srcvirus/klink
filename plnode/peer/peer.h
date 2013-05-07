@@ -801,7 +801,11 @@ public:
 				pair <HostAddress, time_t> value;
 				name_db.lookup(key, &value);
 				if(value.second > timestamp)
-					ret.push_back(pair <string, time_t>(key, value.second));
+				{
+					char port_number[10];
+					sprintf(port_number, "%d", value.first.GetHostPort());
+					ret.push_back(pair <string, time_t>(key+":"+port_number, value.second));
+				}
 			}
 			return ret;
 		}
