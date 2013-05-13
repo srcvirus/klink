@@ -37,7 +37,17 @@ vector<vector<string> > Database::query(string query)
 				vector<string> values;
 				for(int col = 0; col < cols; col++)
 				{
-					values.push_back((char*)sqlite3_column_text(statement, col));
+					std::string  val;
+					char * ptr = (char*)sqlite3_column_text(statement, col);
+					//cout << ptr << endl;
+					if(ptr)
+					{
+						val = ptr;
+					}
+					else val = ""; // this can be commented out since std::string  val;
+							// initialize variable 'val' to empty string anyway
+					values.push_back(val);  // now we will never push NULL
+					//values.push_back((char*)sqlite3_column_text(statement, col));
 				}
 				results.push_back(values);
 			}
@@ -74,7 +84,17 @@ vector<vector<string> > Database::query(string query, bool &is_error, string &er
 				vector<string> values;
 				for(int col = 0; col < cols; col++)
 				{
-					values.push_back((char*)sqlite3_column_text(statement, col));
+					std::string  val;
+					char * ptr = (char*)sqlite3_column_text(statement, col);
+					//cout << ptr << endl;
+					if(ptr)
+					{
+						val = ptr;
+					}
+					else val = ""; // this can be commented out since std::string  val;
+							// initialize variable 'val' to empty string anyway
+					values.push_back(val);  // now we will never push NULL
+					//values.push_back((char*)sqlite3_column_text(statement, col));
 				}
 				results.push_back(values);
 			}
