@@ -34,6 +34,8 @@
 #include "plnode/protocol/plexus/golay/GolayCode.h"
 #include "plnode/message/p2p/message_cache_me.h"
 
+#include "plnode/db/pweb_db.h"
+
 #include "common/query_string_parser.h"
 
 #include <cstdlib>
