@@ -9,11 +9,11 @@ int main()
 	db = new Database("pweb.sqlite");
 
 	//create table user
-	db->query("CREATE TABLE IF NOT EXISTS user (username VARCHAR(100), password VARCHAR(100), email VARCHAR(100));");
+	db->query("CREATE TABLE IF NOT EXISTS user (username VARCHAR(100), password VARCHAR(100), email VARCHAR(100), fullname VARCHAR(200), location VARCHAR(200), affiliation VARCHAR(200));");
 	db->query("delete from user;");
 
 	//create table device	
-	db->query("CREATE TABLE IF NOT EXISTS device (username VARCHAR(100), devicename VARCHAR(100), type VARCHAR(100), ip VARCHAR(100), port VARCHAR(100), public_folder VARCHAR(100), private_folder VARCHAR(100));");
+	db->query("CREATE TABLE IF NOT EXISTS device (username VARCHAR(100), devicename VARCHAR(100), type VARCHAR(100), ip VARCHAR(100), port VARCHAR(100), public_folder VARCHAR(100), private_folder VARCHAR(100), last_seen INTEGER, os VARCHAR(100), description VARCHAR(500), searchable INTEGER);");
 	db->query("delete from device;");
 
 	//create table user_device
