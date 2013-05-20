@@ -33,16 +33,16 @@ string existUsername(string username)
 		int count = atoi(result.at(0).at(0).c_str());
 		if(count > 0)
 		{
-			return "{\"name\":\"" + username + "\", \"availability\":\"no\"}";
+			return "{\"status\":\"success\", \"name\":\"" + username + "\", \"availability\":\"no\"}";
 		}
 		else
 		{
-			return "{\"name\":\"" + username + "\", \"availability\":\"yes\"}";
+			return "{\"status\":\"success\", \"id\":123354, \"name\":\"" + username + "\", \"availability\":\"yes\"}";
 		}
 	}
 	else
 	{
-		return "{\"error\":\"" + error_message + "\"}";
+		return "{\"status\":\"failure\", \"error\":\"" + error_message + "\"}";
 	}
 }
 

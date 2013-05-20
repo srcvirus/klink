@@ -252,4 +252,18 @@ string nameDbToString(vector < pair <string, time_t> > names)
 	return ret;
 }
 
+string strtoupper(string& s)
+{
+  std::string::iterator i = s.begin();
+  std::string::iterator end = s.end();
+
+  while (i != end) {
+    *i = std::toupper((unsigned char)*i);
+    ++i;
+  }
+  return s;
+}
+
+
+
 #endif

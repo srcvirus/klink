@@ -741,7 +741,27 @@ static void *interface_callback(enum mg_event event,
 			string method_name;
 			if(qsp.get_value("method", method_name))
 			{
-				if(method_name == "register" || method_name == "REGISTER") {
+				if(strtoupper(method_name) == "EXISTUSERNAME") {
+					string name;
+					if(qsp.get_value("name", name)){				
+						http_payload.append(existUsername(name));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood"
+					}
+				}
+				else if(strtoupper(method_name) == "REGISTERUSER") {
+					string name, password, email, fullname, location, affiliation;
+					if(qsp.get_value("name", name) && qsp.get_value("password", password) && qsp.get_value("email", email) && qsp.get_value("fullname", fullname) && qsp.get_value("location", location) && qsp.get_value("affiliation", affiliation)){				
+						http_payload.append(registertUser(name, passwor, email, fullname, location, affiliation));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood"
+					}
+				}
+				else if(method_name == "register" || method_name == "REGISTER") {
 					printf("[Web thread]\tip = %ld\n", request_info->remote_ip);
 					string ip_address = ipToString(request_info->remote_ip);
 					printf("[Web thread]\tip address = %s\n", ip_address.c_str());
@@ -863,12 +883,16 @@ static void *interface_callback(enum mg_event event,
             //printf("html content: %d::%s\n", content_length, content);
 
             int content_length = snprintf(content, sizeof (content),
-                    "<html><body>%s</body></html>", http_payload.c_str());
+                    "%s", http_payload.c_str());
 
 
             mg_printf(conn,
                     "HTTP/1.1 %s\r\n"
-                    "Content-Type: text/html\r\n"
+		    "Access-Control-Allow-Origin: *\r\n"
+                    "Content-Type: application/json\r\n"
+		    "Connection: Keep-Alive\r\n"
+		    "Keep-Alive:timeout=5, max=100\r\n"
+		    "Vary:Accept-Encoding\r\n"
                     "Content-Length: %d\r\n" // Always set Content-Length
                     "\r\n"
                     "%s", http_code.c_str(), content_length, content);
