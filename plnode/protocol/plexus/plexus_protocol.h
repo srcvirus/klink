@@ -432,6 +432,7 @@ public:
 
 		int last_dot, dot_index;
 		string str = message->getDeviceName();
+		str = str.substr(0, str.size() - 1);
 		printf("str = %s\n", str.c_str());
 
 		//detect resolution of ha name
