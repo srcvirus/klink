@@ -456,6 +456,13 @@ public:
 			if (str[last_dot] == '.')
 				break;
 
+		if(last_dot == 0)
+		{
+			printf("()()()()()()()()()()()()()()()()()()()()()()()()\n");
+			printf("%s\n", str.c_str());
+			printf("()()()()()()()()()()()()()()()()()()()()()()()()\n");
+		}
+
 		string ha_name = str.substr(last_dot + 1);
 		string d_name = str.substr(0, last_dot);
 
