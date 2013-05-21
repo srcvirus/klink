@@ -427,11 +427,6 @@ public:
 		getContainerPeer()->incrementGet_generated();
 	}
 
-	HostAddress getHomeAgentAddressFromFile(string homeagent_name){
-		
-	} 
-
-
 	void get_for_client(PeerInitiateGET* message)
 	{
 
@@ -439,9 +434,20 @@ public:
 		string str = message->getDeviceName();
 		printf("str = %s\n", str.c_str());
 
-		//detect ha name only
+		//detect resolution of ha name
 		if(str.find('.') == string::npos){
-			
+			HostAddress homeagent_address = getContainerPeer()->lookup_alias_ip(str);
+
+			int hash_name_to_get = (int) urlHash(str) & 0x003FFFFF;
+			OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
+			MessageGET *msg = new MessageGET(message->getSourceHost(),
+				message->getSourcePort(), "", -1,
+				container_peer->getOverlayID(), OverlayID(), targetID, str);
+			if (msgProcessor->processMessage(msg))
+			{
+				addToOutgoingQueue(msg);
+			}
+			getContainerPeer()->incrementGet_generated();
 			return;
 		}
 
