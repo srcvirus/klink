@@ -109,13 +109,13 @@ string& routingTable2XML(LookupTable<OverlayID, HostAddress> &rtable, string &re
 		//result.append(oid.toString(temp));
 		//result.append(",");
 		//temp = "";
-		result.append("<hostname>"+ha.GetHostName()+"<hostname>");
+		result.append("<hostname>"+ha.GetHostName()+"</hostname>");
 		int port = ha.GetHostPort();
 		char buffer[20];
 		sprintf(buffer, "%d", port);
 		result.append("<port>"+string(buffer)+"</port>");
 		//count++;
-		result.append("<home_agent>");
+		result.append("</home_agent>");
 	}
 	//char buffer[20];
 	//sprintf(buffer, "%d", count);
