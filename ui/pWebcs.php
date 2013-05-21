@@ -8,6 +8,9 @@ define("maxPatternLength", 36);
 
 session_start();
 
+if(!isset($_SESSION['homeagent']) && isset($_POST['home_agent'])){
+        $_SESSION['homeagent'] = $_POST['home_agent'];
+}
 ?>
 
 <!doctype html>
