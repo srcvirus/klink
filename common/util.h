@@ -92,6 +92,38 @@ string& routingTable2String(LookupTable<OverlayID, HostAddress> &rtable, string 
 	return result;
 }
 
+string& routingTable2XML(LookupTable<OverlayID, HostAddress> &rtable, string &result)
+{
+	int count = 0;
+	LookupTableIterator<OverlayID, HostAddress> rtable_iter(&rtable);
+	rtable_iter.reset_iterator();
+	string temp;
+	result.append("<neighbours>");
+	while (rtable_iter.hasMoreKey())
+	{
+		result.append("<home_agent>");
+		OverlayID oid = rtable_iter.getNextKey();
+		HostAddress ha;
+		rtable.lookup(oid, &ha);
+		temp = "";
+		//result.append(oid.toString(temp));
+		//result.append(",");
+		//temp = "";
+		result.append("<hostname>"+ha.GetHostName()+"<hostname>");
+		int port = ha.GetHostPort();
+		char buffer[20];
+		sprintf(buffer, "%d", port);
+		result.append("<port>"+string(buffer)+"</port>");
+		//count++;
+		result.append("<home_agent>");
+	}
+	//char buffer[20];
+	//sprintf(buffer, "%d", count);
+	//result = string(buffer).append("|").append(result);
+	result.append("</neighbours>");
+	return result;
+}
+
 char* printIndexTable2String(LookupTable<string, HostAddress> &itable)
 {
 	int index = 0, size = 0;
@@ -250,6 +282,35 @@ string nameDbToString(vector < pair <string, time_t> > names)
 	sprintf(buffer, "%d", names.size());
 	ret = string(buffer).append("|").append(ret);
 	return ret;
+}
+
+string strtoupper(string& s)
+{
+  std::string::iterator i = s.begin();
+  std::string::iterator end = s.end();
+
+  while (i != end) {
+    *i = std::toupper((unsigned char)*i);
+    ++i;
+  }
+  return s;
+}
+
+string urlDecode(string &SRC) {
+    string ret;
+    char ch;
+    int i, ii;
+    for (i=0; i<SRC.length(); i++) {
+        if (int(SRC[i])==37) {
+            sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+            ch=static_cast<char>(ii);
+            ret+=ch;
+            i=i+2;
+        } else {
+            ret+=SRC[i];
+        }
+    }
+    return (ret);
 }
 
 #endif

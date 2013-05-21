@@ -39,6 +39,8 @@
 
 #include "../../ds/overlay_id.h"
 
+#include "../../db/pweb_db.h"
+
 #include "../../peer/peer_status.h"
 
 #include "../../logging/log_entry.h"
@@ -229,7 +231,8 @@ public:
 
 			//msg->message_print_dump();
 
-			container_peer->searchNameDb(msg->GetDeviceName(), &result);
+			//container_peer->searchNameDb(msg->GetDeviceName(), &result);
+			searchDeviceName(msg->GetDeviceName(), result);
 
 			MessageRetrieveReply* rtr_reply = new MessageRetrieveReply(
 					container_peer->getHostName(), container_peer->getListenPortNumber(),

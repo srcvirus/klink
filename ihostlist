@@ -1,7 +1,12 @@
 1
 localhost 30000 127.0.0.1 mypc0
+<<<<<<< HEAD
 localhost 30001 127.0.0.1 mypc1
 localhost 30002 127.0.0.1 mypc2
 localhost 30001 127.0.0.1 mypc1
 localhost 30002 127.0.0.1 mypc2
+=======
+rblpfb 30001 127.0.0.1 mypc1
+rblpfb 30002 127.0.0.1 mypc2
+>>>>>>> 014028619d646ef03fd18cb80d5ade04830247d9
 

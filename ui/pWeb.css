@@ -1,0 +1,135 @@
+body {
+	margin:auto;
+	background-color: #000;
+	
+}
+
+
+
+label
+{
+	display: block;
+	width: 200px;
+	float: left;
+}
+
+#wrapper {
+
+	background-image:url(image/background.jpg);
+	background-repeat:repeat;
+	width: 901px;
+	height: 0px auto;
+	margin: auto;
+	overflow: auto;
+}
+
+#header {
+	margin:auto;
+	width: 901 px;
+	height: 100px;
+	background-image:url(image/header.jpg);
+	background-repeat:no-repeat;
+	}
+	
+#header ul{
+	 float: right;
+	 margin-top: 22px;
+	}
+	 
+	#header ul li{
+	 display: inline-block;
+	 float: left;
+	 height: 48px;
+	 margin: 0px 0px 0px 5px;
+	}
+	 
+	#home_button a {
+	 width: 70px;
+	 height: 16px;
+		}
+	
+	 
+	#register_button a {
+	 width: 70px;
+	 height: 16px;
+	}
+
+	 
+	#login_button a {
+	 width: 70px;
+	 height: 16px;
+	}
+
+#main {
+	margin: auto;
+	margin-top:50px;
+	width: 901px;
+	min-height: 500px;
+	height:0px auto;
+	}
+
+#menu {
+	float: left;
+	margin-left: 10px;
+	background-image:url(image/menu.png);
+	background-repeat:no-repeat;
+	width: 200px;
+	height: 250px;
+	border-radius: 10px;
+	}
+	
+#menuButton {
+	margin-left: 10px;
+	}
+
+#content {
+	float:right;
+	width:550px;
+	height: 0px auto;
+	margin-right: 10px;
+	}
+	
+	
+	#content2 {
+	float:right;
+	width:450px;
+	height: 0px auto;
+	margin-right: 200px;
+	}
+
+#video {
+	float:right;
+	width:550px;
+	height: 0px auto;
+	margin-right: 10px;
+	}
+	
+#comments {
+	float:right;
+	width:550px;
+	height: 0px auto;
+	margin-right: 10px;
+	}
+	
+#views_likes {
+	float:right;
+	width:550px;
+	height: 0px auto;
+	margin-right: 100px;
+	text-align: right;
+	}
+	
+#related_videos {
+	width:290px;
+	height: 0px auto;
+	margin-left: 10px;
+	}
+	
+#footer {
+	bottom:0;
+	margin: auto;
+	background-image:url(image/footer.png);
+	background-repeat:no-repeat;
+	width: 901px;
+	height:122px;
+	}
