@@ -748,19 +748,122 @@ static void *interface_callback(enum mg_event event,
 						http_code = "200 OK";
 					}
 					else{
-						http_code = "451 Parameter Not Understood"
+						http_code = "451 Parameter Not Understood";
 					}
 				}
 				else if(strtoupper(method_name) == "REGISTERUSER") {
 					string name, password, email, fullname, location, affiliation;
 					if(qsp.get_value("name", name) && qsp.get_value("password", password) && qsp.get_value("email", email) && qsp.get_value("fullname", fullname) && qsp.get_value("location", location) && qsp.get_value("affiliation", affiliation)){				
-						http_payload.append(registertUser(name, passwor, email, fullname, location, affiliation));			
+						http_payload.append(registerUser(name, password, email, fullname, location, affiliation));			
 						http_code = "200 OK";
 					}
 					else{
-						http_code = "451 Parameter Not Understood"
+						http_code = "451 Parameter Not Understood";
 					}
 				}
+				else if(strtoupper(method_name) == "AUTHENTICATE") {
+					string name, password;
+					if(qsp.get_value("name", name) && qsp.get_value("password", password)){				
+						http_payload.append(authenticate(name, password));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "GETDEVICELIST") {
+					string username;
+					if(qsp.get_value("username", username)){				
+						http_payload.append(getDeviceList(username));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "ISAVAILABLE") {
+					string username, devicename;
+					if(qsp.get_value("devicename", devicename) && qsp.get_value("username", username)){				
+						//int dot_index = name.find_last_of('.');
+						//devicename = name.substr(0, dot_index);
+						//username = name.substr(dot_index+1, string::npos);
+						http_payload.append(existDevicename(username, devicename));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "MODIFYDEVICE") {
+					string username, devicename, newdevicename, port, public_folder, private_folder;
+					if(qsp.get_value("username", username) && qsp.get_value("devicename", devicename) && qsp.get_value("newdevicename", newdevicename) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder)){				
+						//int dot_index = name.find_last_of('.');
+						//devicename = name.substr(0, dot_index);
+						//username = name.substr(dot_index+1, string::npos);
+						http_payload.append(modifyDevice(username, devicename, newdevicename, port, public_folder, private_folder));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "DELETEDEVICE") {
+					string name, username, devicename;
+					if(qsp.get_value("name", name)){				
+						int dot_index = name.find_last_of('.');
+						devicename = name.substr(0, dot_index);
+						username = name.substr(dot_index+1, string::npos);
+						http_payload.append(deleteDevice(username, devicename));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "REGISTER") {
+					string name, username, devicename, type, port, public_folder, private_folder, os, description, is_publicly_indexed;
+					if(qsp.get_value("name", name) && qsp.get_value("type", type) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder) && qsp.get_value("os", os) && qsp.get_value("description", description) && qsp.get_value("ispublicly_indexed", is_publicly_indexed)){				
+						int dot_index = name.find_last_of('.');
+						devicename = name.substr(0, dot_index);
+						username = name.substr(dot_index+1, string::npos);
+						bool searchable = true;
+						if(is_publicly_indexed == "no") searchable = false;
+						http_payload.append(registerDevice(username, devicename, type, "ip", port, public_folder, private_folder, os, description, searchable));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "UPDATE") {
+					string name, username, devicename, ip, port;
+					if(qsp.get_value("name", name) && qsp.get_value("ip", ip) && qsp.get_value("port", port)){				
+						int dot_index = name.find_last_of('.');
+						devicename = name.substr(0, dot_index);
+						username = name.substr(dot_index+1, string::npos);
+						http_payload.append(updateDevice(username, devicename, ip, port));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "GETALL") {
+					string timestamp, neighbours;
+					if(qsp.get_value("timestamp", timestamp)){
+						string result = "<getall><name>" + this_peer->get_peer_name() + "</name>";
+						routingTable2XML(*this_peer->getProtocol()->getRoutingTable(), neighbours);
+						result.append(neighbours);	
+						result.append(getall(timestamp));
+						result.append("</getall>");
+						http_payload.append(result);			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				/*
 				else if(method_name == "register" || method_name == "REGISTER") {
 					printf("[Web thread]\tip = %ld\n", request_info->remote_ip);
 					string ip_address = ipToString(request_info->remote_ip);
@@ -828,7 +931,7 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
-				else if(method_name == "isavailable" || method_name == "ISAVAILABLE") {
+				else if(method_name == "isavailable_" || method_name == "ISAVAILABLE_") {
 					string name;
 					if(qsp.get_value("name", name)){				
 						if(name.size()){
@@ -871,6 +974,7 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
+				*/
 				else {
 					http_code = "405 Method Not Allowed";
 				}

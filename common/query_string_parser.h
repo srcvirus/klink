@@ -3,6 +3,7 @@
 
 #include "../plnode/ds/lookup_table.h"
 #include<vector>
+#include"util.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ public:
 		vector<string> kvps = split(query_string, '&');
 		for(vector<string>::iterator it = kvps.begin(); it != kvps.end(); ++it) {
 			vector<string> kv = split(*it, '=');
-			key_value_store->add(kv[0], kv[1]);
+			key_value_store->add(urlDecode(kv[0]), urlDecode(kv[1]));
 		}
 	}
 	

@@ -427,11 +427,24 @@ public:
 		getContainerPeer()->incrementGet_generated();
 	}
 
+	HostAddress getHomeAgentAddressFromFile(string homeagent_name){
+		
+	} 
+
+
 	void get_for_client(PeerInitiateGET* message)
 	{
-		int last_dot;
+
+		int last_dot, dot_index;
 		string str = message->getDeviceName();
 		printf("str = %s\n", str.c_str());
+
+		//detect ha name only
+		if(str.find('.') == string::npos){
+			
+			return;
+		}
+
 
 		last_dot = (int)str.size() - 1;
 		int next_dot;
