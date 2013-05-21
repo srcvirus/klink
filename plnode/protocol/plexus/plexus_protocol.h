@@ -432,8 +432,17 @@ public:
 
 		int last_dot, dot_index;
 		string str = message->getDeviceName();
-		str = str.substr(0, str.size() - 1);
+		//str = str.substr(0, str.size() - 1);
 		printf("str = %s\n", str.c_str());
+
+
+		last_dot = (int)str.size() - 1;
+		int next_dot;
+
+		while(last_dot >= 0 && str[last_dot] == '.') last_dot--;
+		str = str.substr(0, last_dot + 1);
+		printf("str = %s\n", str.c_str());
+
 
 		//detect resolution of ha name
 		if(str.find('.') == string::npos){
@@ -451,13 +460,6 @@ public:
 			getContainerPeer()->incrementGet_generated();
 			return;
 		}
-
-
-		last_dot = (int)str.size() - 1;
-		int next_dot;
-
-		while(last_dot >= 0 && str[last_dot] == '.') last_dot--;
-		str = str.substr(0, last_dot + 1);
 
 		for ( last_dot = (int)str.size() - 1; last_dot >= 0; last_dot--)
 			if (str[last_dot] == '.')
