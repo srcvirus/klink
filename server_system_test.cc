@@ -185,7 +185,19 @@ void system_init() {
 
 void publish_alias()
 {
-	HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
+	char temp[255];
+	const hostent* host_info = NULL ;
+	host_info = gethostbyname(this_peer->getHostName().c_str()) ;
+ 
+	if (host_info) {
+		const in_addr* address = (in_addr*)host_info->h_addr_list[0] ;
+        	memset(temp,NULL,sizeof(temp)) ;
+        	strcpy(temp,inet_ntoa(*address)) ;
+     	}
+	string ip = temp;	
+
+	//HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
+	HostAddress ha(ip, this_peer->getListenPortNumber());
 	this_peer->getProtocol()->put(this_peer->getPeerName(), ha);
 }
 
