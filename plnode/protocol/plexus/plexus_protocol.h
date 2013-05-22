@@ -453,6 +453,7 @@ public:
 			MessageGET *msg = new MessageGET(message->getSourceHost(),
 				message->getSourcePort(), "", -1,
 				container_peer->getOverlayID(), OverlayID(), targetID, str);
+			msg->setSequenceNo(message->getSequenceNo());
 			if (msgProcessor->processMessage(msg))
 			{
 				addToOutgoingQueue(msg);
