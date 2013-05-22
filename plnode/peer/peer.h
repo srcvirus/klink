@@ -83,7 +83,7 @@ class Peer {
 
         LookupTable <HostAddress, pair <sockaddr_in, pair <int, double> > > address_db;
         LookupTable <string, pair <HostAddress, time_t> > name_db; //.first -> HostAddress, .second->timestamp
-        LookupTable <string, HostAddress > alias2ip_db;
+        LookupTable <string, string > alias2ip_db;
 public:
 
 
@@ -263,7 +263,7 @@ public:
 			h_address.SetHostName(string(str_h_addr));
 			h_address.SetHostPort(atoi(str_h_port));
 
-			alias2ip_db.add(str_h_alias, h_address);
+			alias2ip_db.add(str_h_alias, ip_address);
 
 			char str_port[12];
 			sprintf(str_port, "%d", h_address.GetHostPort());
@@ -328,9 +328,9 @@ public:
 		return ret;
 	}
 
-	HostAddress lookup_alias_ip(const string& h_alias)
+	string lookup_alias_ip(const string& h_alias)
 	{
-		HostAddress ret;
+		string ret;
 		bool found = alias2ip_db.lookup(h_alias, &ret);
 		return ret;
 	}

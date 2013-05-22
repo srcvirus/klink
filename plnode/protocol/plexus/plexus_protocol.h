@@ -446,15 +446,15 @@ public:
 
 		//detect resolution of ha name
 		if(str.find('.') == string::npos){
-			HostAddress homeagent_address = getContainerPeer()->lookup_alias_ip(str);
-
+			string homeagent_ip = getContainerPeer()->lookup_alias_ip(str);
+			printf("8888888888  %s -> %s 888888888888\n", str.c_str(), homeagent_ip.c_str());
 			
 			MessageGET_REPLY *msg = new MessageGET_REPLY(container_peer->getHostName(),
 				container_peer->getListenPortNumber(), 
 				message->getSourceHost(),
 				message->getSourcePort(), 
 				container_peer->getOverlayID(), OverlayID(), SUCCESS, OverlayID(),
-						homeagent_address, msg->getDeviceName());
+						HostAddress(homeagent_ip, -1), str);
 			msg->setSequenceNo(message->getSequenceNo());		
 			if (msgProcessor->processMessage(msg))
 			{
