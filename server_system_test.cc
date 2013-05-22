@@ -196,8 +196,8 @@ void publish_alias()
      	}
 	string ip = temp;	
 
-	printf("%s\n", deleteDevice("##", "##").c_str());
-	printf("%s\n", registerDevice("##", "##", "dummy", ip, "port", "public_folder", "private_folder", "os", "description", false).c_str());
+	printf("Delete device: %s\n", deleteDevice("##", "##").c_str());
+	printf("Insert device: %s\n", registerDevice("##", "##", "dummy", ip, "port", "public_folder", "private_folder", "os", "description", false).c_str());
 	//HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
 	HostAddress ha(ip, this_peer->getListenPortNumber());
 	this_peer->getProtocol()->put(this_peer->getPeerName(), ha);
