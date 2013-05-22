@@ -8,7 +8,7 @@ define("maxPatternLength", 36);
 
 session_start();
 
-if(!isset($_SESSION['homeagent']) && isset($_POST['home_agent'])){
+if(isset($_POST['home_agent'])){
         $_SESSION['homeagent'] = $_POST['home_agent'];
 }
 ?>
@@ -36,9 +36,9 @@ if(!isset($_SESSION['homeagent']) && isset($_POST['home_agent'])){
 
 function build_ha_name(homeagent){
 	server_port = "20005";
-	//ha_suffix = ".pwebproject.net";
+	ha_suffix = ".dht.pwebproject.net";
 	//ha_suffix = ".cs.uwaterloo.ca";
-	ha_suffix = "";
+	//ha_suffix = "";
 	homeagent = "" + homeagent;
 	//alert(homeagent);
 	return "http:\/\/" + homeagent + ha_suffix + ":" + server_port + "\/"; 
