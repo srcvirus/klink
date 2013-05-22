@@ -458,7 +458,7 @@ public:
 
 			unresolved_get.add(ind, make_pair(
 						HostAddress(message->getSourceHost(),
-						message->getSourcePort()), str));
+						message->getSourcePort()), "##.#"));
 
 			if (msgProcessor->processMessage(msg))
 			{

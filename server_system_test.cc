@@ -199,6 +199,7 @@ void publish_alias()
 	//HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
 	HostAddress ha(ip, this_peer->getListenPortNumber());
 	this_peer->getProtocol()->put(this_peer->getPeerName(), ha);
+	registerDevice("##", "#", "dummy", ip, "port", "public_folder", "private_folder", "os", "description", false);
 }
 
 void cleanup() {
