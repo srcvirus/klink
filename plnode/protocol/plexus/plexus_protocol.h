@@ -448,6 +448,21 @@ public:
 		if(str.find('.') == string::npos){
 			HostAddress homeagent_address = getContainerPeer()->lookup_alias_ip(str);
 
+			
+			MessageGET_REPLY *msg = new MessageGET_REPLY(container_peer->getHostName(),
+				container_peer->getListenPortNumber(), 
+				message->getSourceHost(),
+				message->getSourcePort(), 
+				container_peer->getOverlayID(), OverlayID(), SUCCESS, OverlayID(),
+						homeagent_address, msg->getDeviceName());
+			msg->setSequenceNo(message->getSequenceNo());		
+			if (msgProcessor->processMessage(msg))
+			{
+				addToOutgoingQueue(msg);
+			}	
+
+
+			/*
 			int hash_name_to_get = (int) urlHash(str) & 0x003FFFFF;
 			OverlayID targetID(hash_name_to_get, getContainerPeer()->GetiCode());
 			MessageGET *msg = new MessageGET(message->getSourceHost(),
@@ -465,6 +480,9 @@ public:
 				addToOutgoingQueue(msg);
 			}
 			getContainerPeer()->incrementGet_generated();
+			*/
+
+
 			return;
 		}
 
