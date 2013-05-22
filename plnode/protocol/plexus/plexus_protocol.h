@@ -456,11 +456,7 @@ public:
 				container_peer->getOverlayID(), OverlayID(), SUCCESS, OverlayID(),
 						HostAddress(homeagent_ip, -1), str);
 			msg->setSequenceNo(message->getSequenceNo());		
-			if (msgProcessor->processMessage(msg))
-			{
-				addToOutgoingQueue(msg);
-			}	
-
+			addToOutgoingQueue(msg);
 
 			/*
 			int hash_name_to_get = (int) urlHash(str) & 0x003FFFFF;
