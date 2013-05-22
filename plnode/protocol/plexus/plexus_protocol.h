@@ -454,6 +454,12 @@ public:
 				message->getSourcePort(), "", -1,
 				container_peer->getOverlayID(), OverlayID(), targetID, str);
 			msg->setSequenceNo(message->getSequenceNo());
+			MessageStateIndex ind(hash_name_to_get, message->getSequenceNo());
+
+			unresolved_get.add(ind, make_pair(
+						HostAddress(message->getSourceHost(),
+						message->getSourcePort()), str));
+
 			if (msgProcessor->processMessage(msg))
 			{
 				addToOutgoingQueue(msg);
