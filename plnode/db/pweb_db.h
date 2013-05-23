@@ -296,12 +296,12 @@ string modifyDevice(string username, string old_devicename, string new_devicenam
 	return "{\"status\":\"success\"}";
 }
 
-string modifyDevice(string username, string old_devicename, string new_devicename, string port, string public_folder, string private_folder)
+string modifyDevice(string username, string old_devicename, string new_devicename, string ip, string port, string public_folder, string private_folder)
 {
 	open_db();
 	bool is_error = false;
 	string error_message = "";
-	vector<vector<string> > result = db->query("UPDATE device SET devicename='" + new_devicename + "', port='" + port + "', public_folder='" + public_folder + "', private_folder='" + private_folder + "' WHERE username='" + username + "' and devicename='" + old_devicename + "'", is_error, error_message);
+	vector<vector<string> > result = db->query("UPDATE device SET devicename='" + new_devicename + "', ip= '" + ip + "', port='" + port + "', public_folder='" + public_folder + "', private_folder='" + private_folder + "' WHERE username='" + username + "' and devicename='" + old_devicename + "'", is_error, error_message);
 	close_db();
 
 	if(is_error){

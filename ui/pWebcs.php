@@ -102,11 +102,12 @@ $.ajax({
 }
 
 
-function modifyitem(name,port,publicf,privatef)
+function modifyitem(name,ip,port,publicf,privatef)
 {
 
 document.modifyDev.device_name.value = name;
 document.modifyDev.new_device_name.value = name;
+document.modifyDev.device_ip.value = ip;
 document.modifyDev.device_port.value = port;
 document.modifyDev.public_folder.value = publicf;
 document.modifyDev.private_folder.value = privatef;
@@ -136,11 +137,12 @@ $('#col1').html( '<tr><td><b>device name</b></td><td width="50px"></td><td><b>de
                 success: function(json) {
 				$.each(json.devices, function(i,name) {
 				device_name=json.devices[i].name;
+				ip=json.devices[i].ip;
 				port=json.devices[i].port;
 				public_folder=json.devices[i].public_folder;
 				private_folder=json.devices[i].private_folder;
 				name=json.devices[i].name+"."+username;
-								$('#col1').append( '<tr><td>'+json.devices[i].name+'</td><td></td><td>'+json.devices[i].type+'</td><td></td><td><a href="javascript:;" id="deleteDev" onClick="deleteitem(\''+name+'\');">delete</a></td><td></td><td><a href="javascript:;" id="modifyDev" onClick="modifyitem(\''+device_name+'\',\''+port+'\',\''+public_folder+'\',\''+private_folder+'\');">modify</a></td></tr>');
+								$('#col1').append( '<tr><td>'+json.devices[i].name+'</td><td></td><td>'+json.devices[i].type+'</td><td></td><td><a href="javascript:;" id="deleteDev" onClick="deleteitem(\''+name+'\');">delete</a></td><td></td><td><a href="javascript:;" id="modifyDev" onClick="modifyitem(\''+device_name+'\',\''+ip+'\',\''+port+'\',\''+public_folder+'\',\''+private_folder+'\');">modify</a></td></tr>');
 								
 								});
 							
@@ -691,7 +693,7 @@ case "device_list":
 			<label>New Name :</label><input type="text" name="new_device_name"  id="new_device_name"  /><br />
 								<font color="green"><div id="suggest"></div></font>
 
-			<label>Device IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
+			<label>Device IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
 			<label>Device Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
 			<label>public folder:</label><input type="text" name="public_folder" id="public_folder" /> <br/>
 			<label>private Folder:</label>  <input type="text" name="private_folder" id="private_folder"  /> <br/><br/>
