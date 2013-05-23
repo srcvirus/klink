@@ -835,14 +835,14 @@ static void *interface_callback(enum mg_event event,
 					}
 				}
 				else if(strtoupper(method_name) == "REGISTER") {
-					string name, username, devicename, type, port, public_folder, private_folder, os, description, is_publicly_indexed;
-					if(qsp.get_value("name", name) && qsp.get_value("type", type) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder) && qsp.get_value("os", os) && qsp.get_value("description", description) && qsp.get_value("ispublicly_indexed", is_publicly_indexed)){				
+					string name, username, devicename, type, ip, port, public_folder, private_folder, os, description, is_publicly_indexed;
+					if(qsp.get_value("name", name) && qsp.get_value("type", type) && qsp.get_value("ip", ip) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder) && qsp.get_value("os", os) && qsp.get_value("description", description) && qsp.get_value("ispublicly_indexed", is_publicly_indexed)){				
 						int dot_index = name.find_last_of('.');
 						devicename = name.substr(0, dot_index);
 						username = name.substr(dot_index+1, string::npos);
 						bool searchable = true;
 						if(is_publicly_indexed == "no") searchable = false;
-						http_payload.append(registerDevice(username, devicename, type, "ip", port, public_folder, private_folder, os, description, searchable));			
+						http_payload.append(registerDevice(username, devicename, type, ip, port, public_folder, private_folder, os, description, searchable));			
 						http_code = "200 OK";
 					}
 					else{

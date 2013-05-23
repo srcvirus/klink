@@ -331,6 +331,7 @@ $('#selectDev').hide();
 		var device_name= $('#device_name').val();
 		var new_device_name= $('#new_device_name').val();
 		var device_port= $('#device_port').val();
+		var device_ip= $('#device_ip').val();
 		var public_folder= $('#public_folder').val();
 		var private_folder= $('#private_folder').val();
 		
@@ -367,7 +368,7 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
+						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&ip='+device_ip+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
 						type: 'GET',                       
 						success: function(json)
 						{
@@ -431,6 +432,7 @@ $('#addDev').on('submit', function() {
 
 		var device_type = $('#device_type').val();
 		var device_name= $('#device_name').val();
+		var device_ip= $('#device_ip').val();
 		var device_port= $('#device_port').val();
 		var public_folder= $('#public_folder').val();
 		var private_folder= $('#private_folder').val();
@@ -466,7 +468,7 @@ $('#addDev').on('submit', function() {
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/?method=register&name='+device+'&port='+device_port+'&type='+device_type+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,
-						url: ha+'?method=register&name='+device+'&port='+device_port+'&type='+device_type+'&public_folder='+public_folder+'&private_folder='+private_folder+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,			
+						url: ha+'?method=register&name='+device+'&ip='+device_ip+'&port='+device_port+'&type='+device_type+'&public_folder='+public_folder+'&private_folder='+private_folder+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,			
 						type: 'GET', 
 						success: function(json)
 						{
@@ -689,6 +691,7 @@ case "device_list":
 			<label>New Name :</label><input type="text" name="new_device_name"  id="new_device_name"  /><br />
 								<font color="green"><div id="suggest"></div></font>
 
+			<label>Device IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
 			<label>Device Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
 			<label>public folder:</label><input type="text" name="public_folder" id="public_folder" /> <br/>
 			<label>private Folder:</label>  <input type="text" name="private_folder" id="private_folder"  /> <br/><br/>
@@ -819,7 +822,7 @@ break;
 			
 			<label>Name of your device :<font color="red">*  </font></label><input type="text" name="device_name"  id="device_name"/><br />
 								<font color="green"><div id="suggest"></div></font>
-
+			<label>Device IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
 			<label>Device Port :<font color="red">*  </font> </label><input type="text" name="device_port" id="device_port"/> <br/>
 			<label>Public folder:<font color="red">*  </font></label> <input type="text" name="public_folder" id="public_folder"/> <br/>
 			<label>Private Folder:<font color="red">*  </font> </label> <input type="text" name="private_folder" id="private_folder"/> <br/>

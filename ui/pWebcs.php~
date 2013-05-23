@@ -8,6 +8,9 @@ define("maxPatternLength", 36);
 
 session_start();
 
+if(isset($_POST['home_agent'])){
+        $_SESSION['homeagent'] = $_POST['home_agent'];
+}
 ?>
 
 <!doctype html>
@@ -31,6 +34,15 @@ session_start();
 
 <script type="text/javascript"> 
 
+function build_ha_name(homeagent){
+	server_port = "20005";
+	ha_suffix = ".dht.pwebproject.net";
+	//ha_suffix = ".cs.uwaterloo.ca";
+	//ha_suffix = "";
+	homeagent = "" + homeagent;
+	//alert(homeagent);
+	return "http:\/\/" + homeagent + ha_suffix + ":" + server_port + "\/"; 
+}
 
 function getha() {
    var tagss=[];
@@ -73,14 +85,12 @@ function deleteitem(name)
 
 var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
 //var ha=homeagent+'.pWebproject.net';
-var ha=homeagent;
+var ha=build_ha_name(homeagent);
 
 $.ajax({
                 //url: 'fichier.php', //ha+'/?method=deleteDevice&name='+name,
-		url: ha+'/?method=deleteDevice&name='+name,
-                type: 'POST', 
-                data: $(this).serialize(), 
-                dataType: 'json',
+		url: ha+'?method=deleteDevice&name='+name,
+                type: 'GET', 
                 success: function(json) {
                     if (json.status  == 'success')
 					{
@@ -115,16 +125,14 @@ function listDev()
 	    var homeagent=  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
 		var username= '<?php if (isset ($_SESSION['user'])) echo $_SESSION['user']->getUsername(); ?>';
 		//var ha=homeagent+'.pWebproject.net';
-		var ha=homeagent;//+'.pWebproject.net';
+		var ha = build_ha_name(homeagent);
 
 		
 $('#col1').html( '<tr><td><b>device name</b></td><td width="50px"></td><td><b>device type</b></td><td width="50px"></td><td><b>delete</b></td><td width="50px"></td><td><b>modify</b></td></tr>');
 		$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=getDeviceList&username='+username,
-		url: ha+'/?method=getDeviceList&username='+username,
-                type: 'POST', 
-            
-                dataType: 'json',
+		url: ha+'?method=getDeviceList&username='+username,
+                type: 'GET', 
                 success: function(json) {
 				$.each(json.devices, function(i,name) {
 				device_name=json.devices[i].name;
@@ -158,22 +166,19 @@ $('#selectDev').hide();
        
          var Username = $('#Username').val();
          var Password = $('#Password').val();
-		 var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
-		//var ha=homeagent+'.pWebproject.net';
-		var ha=homeagent;//+'.pWebproject.net';
+	 var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
+	//var ha=homeagent+'.pWebproject.net';
+	var ha=build_ha_name(homeagent);
 
      
         if(Username == '' || Password == '') {
 		    $('#auth').html('<b>Filling all the inputs is required </b>');
            
         } else {
-          
             $.ajax({
-                //url: 'fichier.php?homeagent='+ha+'&username='+Username+'&password='+Password, //ha+'/?method=authenticate&username='+Username+'&password='+Password
-		url: ha+'/?method=authenticate&username='+Username+'&password='+Password,
-                type: $(this).attr('method'), 
-                data: $(this).serialize(), 
-                dataType: 'json',
+                //url: 'fichier.php?homeagent='+ha+'&name='+Username+'&password='+Password, //ha+'/?method=authenticate&username='+Username+'&password='+Password
+		url: ha+'?method=authenticate&name='+Username+'&password='+Password,
+                type: 'GET', 
                 success: function(json) {
                     if (json.status == 'success')
 					{
@@ -218,9 +223,9 @@ $('#selectDev').hide();
 		var Full_name= $('#Full_name').val();
 		var Country= $('#Country').val();
 		var Affiliation= $('#Affiliation').val();
-	    var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
+	    	var homeagent='<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
 		//var ha=homeagent+'.pWebproject.net';
-		var ha=homeagent;//+'.pWebproject.net';
+		var ha = build_ha_name(homeagent);
 
 		
 		var text='<font color="red"><b>This account already exists, please change your username!</b></font></br> you can choose from this list: </br> (';
@@ -237,29 +242,25 @@ $('#selectDev').hide();
 					else
 					{
 					
-					
+					//alert(ha+'?method=existUsername&name='+u);	
 					//check availability
 					$.ajax({
 					
 				
                 //url: 'fichier.php?username='+ u +'&password='+ p1,  // ha+'/?method=existUsername&name='+u,
-                url: 'http://'+ha+'/?method=existUsername&name='+u,
-                type: 'POST', 
-                data: $(this).serialize(), 
-                dataType: 'json',
-			    success: function(json)
-				{
-					if (json.availability == 'yes')
+                url: ha+'?method=existUsername&name='+u,
+		type: 'GET',
+		success: function(json)	{
+				//alert(json);
+				if (json.availability == 'yes')
 				    { //registration
 					
 						$.ajax({
 					
 					
 						//url:'fichier.php?username='+ u +'&password='+ p1,  // ha+'/?method=registerUser&name='+u+'&password='+p1+'&email='+uid+'&Full_name='+Full_name+'&Country='+Country+'&Affiliation='+Affiliation,
-						url: ha+'/?method=registerUser&name='+u+'&password='+p1+'&email='+uid+'&Full_name='+Full_name+'&Country='+Country+'&Affiliation='+Affiliation,
-						type: 'POST', 
-						data: $(this).serialize(), 
-						dataType: 'json',
+						url: ha+'?method=registerUser&name='+u+'&password='+p1+'&email='+uid+'&fullname='+Full_name+'&location='+Country+'&affiliation='+Affiliation,
+						type: 'GET', 
 						success: function(json)
 						{
 							  if (json.status == 'success')
@@ -302,6 +303,9 @@ $('#selectDev').hide();
 								$('#suggest').html(text);
 								
 					}
+				},
+				error:function(jqXHR, textStatus, errorThrown){
+					alert("error in ajax call: " + jqXHR.responseXML + " - " + textStatus + " - " + errorThrown);
 				}
 								
 									
@@ -327,6 +331,7 @@ $('#selectDev').hide();
 		var device_name= $('#device_name').val();
 		var new_device_name= $('#new_device_name').val();
 		var device_port= $('#device_port').val();
+		var device_ip= $('#device_ip').val();
 		var public_folder= $('#public_folder').val();
 		var private_folder= $('#private_folder').val();
 		
@@ -337,14 +342,14 @@ $('#selectDev').hide();
 		{
 		var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
 		//var ha=homeagent+'.pWebproject.net';
-		var ha=homeagent;//+'.pWebproject.net';
+		var ha=build_ha_name(homeagent);
 
 		var username= '<?php if (isset ($_SESSION['user'])) echo $_SESSION['user']->getUsername(); ?>';
-						var text='<font color="red"><b>This device name already exists, please change it!</b></font></br> you can choose from this list: </br> (';
+		var text='<font color="red"><b>This device name already exists, please change it!</b></font></br> you can choose from this list: </br> (';
 
-		old_device=device_name+'.'+username;
-		device = new_device_name+'.'+username;
-		if (device_name !=new_device_name)
+		//old_device=device_name+'.'+username;
+		//device = new_device_name+'.'+username;
+		if (device_name != new_device_name)
 		{
 		//check availability of new name
 		
@@ -352,12 +357,10 @@ $('#selectDev').hide();
 
 			$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=isavailable&name='+device,
-                url: ha+'/?method=isavailable&name='+device,
-                type: 'POST', 
-                data: $(this).serialize(), 
-                dataType: 'json',
+                url: ha+'?method=isavailable&devicename='+new_device_name+'&username='+username,
+                type: 'GET', 
                 success: function(json) {
-                    if (json.availability  == 'yes')
+                    if (json.availability == 'yes')
 					 {
 					
 					 
@@ -365,10 +368,8 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						type: 'POST',                       
-						data: $(this).serialize(), 
-						dataType: 'json',
+						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
+						type: 'GET',                       
 						success: function(json)
 						{
 							  if (json.status == 'success')
@@ -406,10 +407,8 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						type: 'POST',                       
-						data: $(this).serialize(), 
-						dataType: 'json',
+						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
+						type: 'GET',                       
 						success: function(json)
 						{
 							  if (json.status == 'success')
@@ -433,12 +432,12 @@ $('#addDev').on('submit', function() {
 
 		var device_type = $('#device_type').val();
 		var device_name= $('#device_name').val();
+		var device_ip= $('#device_ip').val();
 		var device_port= $('#device_port').val();
 		var public_folder= $('#public_folder').val();
 		var private_folder= $('#private_folder').val();
 		var os= $('#os').val();
 		var description= $('#description').val();
-		
 		var checked=$('input[name=index]:checked', '#addDev').val();
 		
 		
@@ -453,17 +452,15 @@ $('#addDev').on('submit', function() {
 		{
 		var homeagent =  '<?php if (isset ($_SESSION['homeagent'])) echo $_SESSION['homeagent']; ?>';
 		//var ha=homeagent+'.pWebproject.net';
-		var ha=homeagent;//+'.pWebproject.net';
+		var ha=build_ha_name(homeagent);
 
 		var username= '<?php if (isset ($_SESSION['user'])) echo $_SESSION['user']->getUsername(); ?>';
 		device = device_name+'.'+username;
 
 			$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=isavailable&name='+device,
-                url: ha+'/?method=isavailable&name='+device,
-                type: $(this).attr('method'), 
-                data: $(this).serialize(), 
-                dataType: 'json',
+                url: ha+'?method=isavailable&username='+username+'&devicename='+device_name,
+                type: 'GET', 
                 success: function(json) {
                     if (json.availability  == 'yes')
 					{
@@ -471,10 +468,8 @@ $('#addDev').on('submit', function() {
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/?method=register&name='+device+'&port='+device_port+'&type='+device_type+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,
-						url: ha+'/?method=register&name='+device+'&port='+device_port+'&type='+device_type+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,			
-						type: 'POST', 
-						data: $(this).serialize(), 
-						dataType: 'json',
+						url: ha+'?method=register&name='+device+'&ip='+device_ip+'&port='+device_port+'&type='+device_type+'&public_folder='+public_folder+'&private_folder='+private_folder+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,			
+						type: 'GET', 
 						success: function(json)
 						{
 							  if (json.status == 'success')
@@ -525,10 +520,12 @@ $('#addDev').on('submit', function() {
 			echo '<li><a href="pWebcs.php?fn=logout">Logout</a></li>';
 			echo '<li><a href="pWebcs.php?fn=device_add">Add device</a></li>';
 			echo '<li><a href="pWebcs.php?fn=device_list" id="mydevices">my devices</a></li>';
+			echo '<li><a href="#">' . $_SESSION['user']->getUserName() . '@' . $_SESSION['homeagent'] . '</a></li>';
 			} else {
 			
 			echo '<li><a href="pWebcs.php?fn=login">Login</a></li>';
 			echo '<li><a href="pWebcs.php?fn=registration">Register</a></li>';
+			echo '<li><a href="#">' . '@' . $_SESSION['homeagent'] . '</a></li>';
 			} 
 			?>
 		</ul>
@@ -753,9 +750,7 @@ break;
 			<?php
 			}
 			else{
-
-			$_SESSION['homeagent']=$_POST['home_agent'];
-			
+				$_SESSION['homeagent']=$_POST['home_agent'];
 			?>
 				
 				<center>
@@ -764,7 +759,7 @@ break;
 			<h3>Registration Form</h3></header>
 				 <div id="content2">
 				<div id="registration">
-				<p>	You are resigtering at home agent <h3><?php echo $_SESSION['homeagent'];?></h3><br />
+				<p>	You are registering at home agent <h3><?php echo $_SESSION['homeagent'];?></h3><br />
 					Please complete the form below. Mondatory fields are marked with <font color="red">*</font>
 				</p>
 				
