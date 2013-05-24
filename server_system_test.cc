@@ -809,7 +809,7 @@ static void *interface_callback(enum mg_event event,
 					}
 				}
 				else if(strtoupper(method_name) == "MODIFYDEVICE") {
-					string username, devicename, newdevicename, port, public_folder, private_folder;
+					string username, devicename, newdevicename, ip, port, public_folder, private_folder;
 					if(qsp.get_value("username", username) && qsp.get_value("devicename", devicename) && qsp.get_value("newdevicename", newdevicename) && qsp.get_value("ip", ip) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder)){				
 						//int dot_index = name.find_last_of('.');
 						//devicename = name.substr(0, dot_index);
