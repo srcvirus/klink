@@ -409,7 +409,7 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'?method=modifyDevice&username='+encodeURIComponent(username)+'&devicename='+encodeURIComponent(device_name)+'&newdevicename='+encodeURIComponent(new_device_name)+'&port='+encodeURIComponent(device_port)+'&public_folder='+encodeURIComponent(public_folder)+'&private_folder='+encodeURIComponent(private_folder),
+						url: ha+'?method=modifyDevice&username='+encodeURIComponent(username)+'&devicename='+encodeURIComponent(device_name)+'&newdevicename='+encodeURIComponent(new_device_name)+'&ip='+device_ip+'&port='+encodeURIComponent(device_port)+'&public_folder='+encodeURIComponent(public_folder)+'&private_folder='+encodeURIComponent(private_folder),
 						type: 'GET',                       
 						success: function(json)
 						{
