@@ -89,7 +89,7 @@ var ha=build_ha_name(homeagent);
 
 $.ajax({
                 //url: 'fichier.php', //ha+'/?method=deleteDevice&name='+name,
-		url: ha+'?method=deleteDevice&name='+name,
+		url: ha+'?method=deleteDevice&name='+encodeURIComponent(name),
                 type: 'GET', 
                 success: function(json) {
                     if (json.status  == 'success')
@@ -132,7 +132,7 @@ function listDev()
 $('#col1').html( '<tr><td><b>device name</b></td><td width="50px"></td><td><b>device type</b></td><td width="50px"></td><td><b>delete</b></td><td width="50px"></td><td><b>modify</b></td></tr>');
 		$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=getDeviceList&username='+username,
-		url: ha+'?method=getDeviceList&username='+username,
+		url: ha+'?method=getDeviceList&username='+encodeURIComponent(username),
                 type: 'GET', 
                 success: function(json) {
 				$.each(json.devices, function(i,name) {
@@ -179,7 +179,7 @@ $('#selectDev').hide();
         } else {
             $.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&name='+Username+'&password='+Password, //ha+'/?method=authenticate&username='+Username+'&password='+Password
-		url: ha+'?method=authenticate&name='+Username+'&password='+Password,
+		url: ha+'?method=authenticate&name='+encodeURIComponent(Username)+'&password='+encodeURIComponent(Password),
                 type: 'GET', 
                 success: function(json) {
                     if (json.status == 'success')
@@ -693,7 +693,7 @@ case "device_list":
 			<label>New Name :</label><input type="text" name="new_device_name"  id="new_device_name"  /><br />
 								<font color="green"><div id="suggest"></div></font>
 
-			<label>Device IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
+			<label>Device IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
 			<label>Device Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
 			<label>public folder:</label><input type="text" name="public_folder" id="public_folder" /> <br/>
 			<label>private Folder:</label>  <input type="text" name="private_folder" id="private_folder"  /> <br/><br/>

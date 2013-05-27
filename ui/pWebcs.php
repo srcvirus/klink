@@ -89,7 +89,7 @@ var ha=build_ha_name(homeagent);
 
 $.ajax({
                 //url: 'fichier.php', //ha+'/?method=deleteDevice&name='+name,
-		url: ha+'?method=deleteDevice&name='+name,
+		url: ha+'?method=deleteDevice&name='+encodeURIComponent(name),
                 type: 'GET', 
                 success: function(json) {
                     if (json.status  == 'success')
@@ -132,7 +132,7 @@ function listDev()
 $('#col1').html( '<tr><td><b>device name</b></td><td width="50px"></td><td><b>device type</b></td><td width="50px"></td><td><b>delete</b></td><td width="50px"></td><td><b>modify</b></td></tr>');
 		$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=getDeviceList&username='+username,
-		url: ha+'?method=getDeviceList&username='+username,
+		url: ha+'?method=getDeviceList&username='+encodeURIComponent(username),
                 type: 'GET', 
                 success: function(json) {
 				$.each(json.devices, function(i,name) {
@@ -179,7 +179,7 @@ $('#selectDev').hide();
         } else {
             $.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&name='+Username+'&password='+Password, //ha+'/?method=authenticate&username='+Username+'&password='+Password
-		url: ha+'?method=authenticate&name='+Username+'&password='+Password,
+		url: ha+'?method=authenticate&name='+encodeURIComponent(Username)+'&password='+encodeURIComponent(Password),
                 type: 'GET', 
                 success: function(json) {
                     if (json.status == 'success')
@@ -188,7 +188,7 @@ $('#selectDev').hide();
 					
 					
 					$.ajax({
-                url: 'pWebcs.php?fn=check_login&username='+Username+'&password='+Password, 
+                url: 'pWebcs.php?fn=check_login&username='+encodeURIComponent(Username)+'&password='+encodeURIComponent(Password), 
                 type: 'POST', 
                 data: $(this).serialize(), 
            
@@ -250,7 +250,7 @@ $('#selectDev').hide();
 					
 				
                 //url: 'fichier.php?username='+ u +'&password='+ p1,  // ha+'/?method=existUsername&name='+u,
-                url: ha+'?method=existUsername&name='+u,
+                url: ha+'?method=existUsername&name='+encodeURIComponent(u),
 		type: 'GET',
 		success: function(json)	{
 				//alert(json);
@@ -261,7 +261,7 @@ $('#selectDev').hide();
 					
 					
 						//url:'fichier.php?username='+ u +'&password='+ p1,  // ha+'/?method=registerUser&name='+u+'&password='+p1+'&email='+uid+'&Full_name='+Full_name+'&Country='+Country+'&Affiliation='+Affiliation,
-						url: ha+'?method=registerUser&name='+u+'&password='+p1+'&email='+uid+'&fullname='+Full_name+'&location='+Country+'&affiliation='+Affiliation,
+						url: ha+'?method=registerUser&name='+encodeURIComponent(u)+'&password='+encodeURIComponent(p1)+'&email='+encodeURIComponent(uid)+'&fullname='+encodeURIComponent(Full_name)+'&location='+encodeURIComponent(Country)+'&affiliation='+encodeURIComponent(Affiliation),
 						type: 'GET', 
 						success: function(json)
 						{
@@ -270,7 +270,7 @@ $('#selectDev').hide();
 							  
 									$.ajax({
 					                   //save username in SESSION variable
-                                         url: 'pWebcs.php?fn=check_login&username='+u+'&password='+p1,   
+                                         url: 'pWebcs.php?fn=check_login&username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p1),   
                                          type: 'POST', 
                                          data: $(this).serialize(), 
 								
@@ -359,7 +359,7 @@ $('#selectDev').hide();
 
 			$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=isavailable&name='+device,
-                url: ha+'?method=isavailable&devicename='+new_device_name+'&username='+username,
+                url: ha+'?method=isavailable&devicename='+encodeURIComponent(new_device_name)+'&username='+encodeURIComponent(username),
                 type: 'GET', 
                 success: function(json) {
                     if (json.availability == 'yes')
@@ -370,7 +370,7 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&ip='+device_ip+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
+						url: ha+'?method=modifyDevice&username='+encodeURIComponent(username)+'&devicename='+encodeURIComponent(device_name)+'&newdevicename='+encodeURIComponent(new_device_name)+'&ip='+encodeURIComponent(device_ip)+'&port='+encodeURIComponent(device_port)+'&public_folder='+encodeURIComponent(public_folder)+'&private_folder='+encodeURIComponent(private_folder),
 						type: 'GET',                       
 						success: function(json)
 						{
@@ -409,7 +409,7 @@ $('#selectDev').hide();
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/ ?method=modifyDevice&Oldname='+old_device+'&newName='+device+'&port='+device_port+'publicFolder='+public_folder+'&privateFolder='+private_folder,
-						url: ha+'?method=modifyDevice&username='+username+'&devicename='+device_name+'&newdevicename='+new_device_name+'&port='+device_port+'&public_folder='+public_folder+'&private_folder='+private_folder,
+						url: ha+'?method=modifyDevice&username='+encodeURIComponent(username)+'&devicename='+encodeURIComponent(device_name)+'&newdevicename='+encodeURIComponent(new_device_name)+'&port='+encodeURIComponent(device_port)+'&public_folder='+encodeURIComponent(public_folder)+'&private_folder='+encodeURIComponent(private_folder),
 						type: 'GET',                       
 						success: function(json)
 						{
@@ -461,7 +461,7 @@ $('#addDev').on('submit', function() {
 
 			$.ajax({
                 //url: 'fichier.php?homeagent='+ha+'&username='+username, //ha+'/?method=isavailable&name='+device,
-                url: ha+'?method=isavailable&username='+username+'&devicename='+device_name,
+                url: ha+'?method=isavailable&username='+encodeURIComponent(username)+'&devicename='+encodeURIComponent(device_name),
                 type: 'GET', 
                 success: function(json) {
                     if (json.availability  == 'yes')
@@ -470,7 +470,7 @@ $('#addDev').on('submit', function() {
 					
 						
 						//url: 'fichier.php?homeagent='+ha+'&username='+username,  // ha+'/?method=register&name='+device+'&port='+device_port+'&type='+device_type+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,
-						url: ha+'?method=register&name='+device+'&ip='+device_ip+'&port='+device_port+'&type='+device_type+'&public_folder='+public_folder+'&private_folder='+private_folder+'&os='+os+'&description='+description+'&ispublicly_indexed='+checked,			
+						url: ha+'?method=register&name='+encodeURIComponent(device)+'&ip='+encodeURIComponent(device_ip)+'&port='+encodeURIComponent(device_port)+'&type='+encodeURIComponent(device_type)+'&public_folder='+encodeURIComponent(public_folder)+'&private_folder='+encodeURIComponent(private_folder)+'&os='+encodeURIComponent(os)+'&description='+encodeURIComponent(description)+'&ispublicly_indexed='+encodeURIComponent(checked),			
 						type: 'GET', 
 						success: function(json)
 						{
