@@ -357,7 +357,7 @@ string getall(string timestamp)
 	for(vector<vector<string> >::iterator it = result.begin(); it < result.end(); ++it)
 	{	
 		vector<string> row = *it;
-		data.append("<device><owner>"+row.at(3)+"</owner><name>"+row.at(7)+"</name><timestamp>"+row.at(13)+"</timestamp><localtion>"+row.at(4)+"</location><description>"+row.at(15)+"</description></device>");
+		data.append("<device><owner>"+row.at(3)+"</owner><name>"+row.at(7)+"</name><port>"+row.at(10)+"</port><timestamp>"+row.at(13)+"</timestamp><location>"+row.at(4)+"</location><description>"+row.at(15)+"</description></device>");
 	}
 	data.append("</devices>");
 	return data;
