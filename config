@@ -1,4 +1,4 @@
-node_file=chostlist
+node_file=ihostlist
 monitors_file=imonitorlist
 seq_file=seq
 log_server_name=cn101.cs.uwaterloo.ca
