@@ -81,7 +81,7 @@ vector<vector<string> > Database::query(string query, bool &is_error, string &er
 	sqlite3_stmt *statement;
 	vector<vector<string> > results;
 	ReplaceStringInPlace(query, "'", "''");
-
+	cout << "^^^^" << query << endl;
 	if(sqlite3_prepare_v2(database, query.c_str(), -1, &statement, 0) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
