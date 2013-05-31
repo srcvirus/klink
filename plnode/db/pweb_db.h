@@ -21,8 +21,23 @@ void close_db()
 	db->close();	
 }
 
+void ReplaceStringInPlace(std::string& subject, const std::string& search,
+                          const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+         subject.replace(pos, search.length(), replace);
+         pos += replace.length();
+    }
+}
+
+void escape_single_quote(string& value){
+	ReplaceStringInPlace(value, "'","''");
+}
 
 void searchDeviceName(string name, HostAddress &ha){
+
+	escape_single_quote(name);
+
 	string devicename, username;
 	int dot_index = name.find_last_of('.');
 	devicename = name.substr(0, dot_index);
@@ -43,6 +58,9 @@ void searchDeviceName(string name, HostAddress &ha){
 }
 
 bool isUserNameAvailable(string username){
+
+	escape_single_quote(username);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -66,6 +84,9 @@ bool isUserNameAvailable(string username){
 
 string existUsername(string username)
 {
+
+	escape_single_quote(username);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -111,6 +132,10 @@ string existUsername(string username)
 
 string authenticate(string username, string password)
 {
+
+	escape_single_quote(username);
+	escape_single_quote(password);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -138,6 +163,13 @@ string authenticate(string username, string password)
 
 string registerUser(string username, string password, string email, string fullname, string location, string affiliation)
 {
+	escape_single_quote(username);
+	escape_single_quote(password);
+	escape_single_quote(email);
+	escape_single_quote(fullname);
+	escape_single_quote(location);
+	escape_single_quote(affiliation);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -156,6 +188,16 @@ string registerUser(string username, string password, string email, string fulln
 
 string registerDevice(string username, string devicename, string type, string ip, string port, string public_folder, string private_folder, string os, string description, bool searchable)
 {
+	escape_single_quote(username);
+	escape_single_quote(devicename);
+	escape_single_quote(type);
+	escape_single_quote(ip);
+	escape_single_quote(port);
+	escape_single_quote(public_folder);
+	escape_single_quote(private_folder);
+	escape_single_quote(os);
+	escape_single_quote(description);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -180,6 +222,9 @@ string registerDevice(string username, string devicename, string type, string ip
 
 bool isDeviceNameAvailable(string username, string devicename)
 {
+	escape_single_quote(username);
+	escape_single_quote(devicename);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -203,6 +248,9 @@ bool isDeviceNameAvailable(string username, string devicename)
 
 string existDevicename(string username, string devicename)
 {
+	escape_single_quote(username);
+	escape_single_quote(devicename);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -247,6 +295,9 @@ string existDevicename(string username, string devicename)
 
 string deleteDevice(string username, string devicename)
 {
+	escape_single_quote(username);
+	escape_single_quote(devicename);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -261,6 +312,11 @@ string deleteDevice(string username, string devicename)
 
 string updateDevice(string username, string devicename, string ip, string port)
 {
+	escape_single_quote(username);
+	escape_single_quote(devicename);
+	escape_single_quote(ip);
+	escape_single_quote(port);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -281,6 +337,14 @@ string updateDevice(string username, string devicename, string ip, string port)
 
 string modifyDevice(string username, string old_devicename, string new_devicename, string public_folder, string private_folder, string os, string description, bool searchable)
 {
+	escape_single_quote(username);
+	escape_single_quote(old_devicename);
+	escape_single_quote(new_devicename);
+	escape_single_quote(public_folder);
+	escape_single_quote(private_folder);
+	escape_single_quote(os);
+	escape_single_quote(description);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -298,6 +362,14 @@ string modifyDevice(string username, string old_devicename, string new_devicenam
 
 string modifyDevice(string username, string old_devicename, string new_devicename, string ip, string port, string public_folder, string private_folder)
 {
+	escape_single_quote(username);
+	escape_single_quote(old_devicename);
+	escape_single_quote(new_devicename);
+	escape_single_quote(ip);
+	escape_single_quote(port);
+	escape_single_quote(public_folder);
+	escape_single_quote(private_folder);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -312,6 +384,8 @@ string modifyDevice(string username, string old_devicename, string new_devicenam
 
 string getDeviceList(string username)
 {
+	escape_single_quote(username);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";
@@ -342,6 +416,8 @@ string getDeviceList(string username)
 
 string getall(string timestamp)
 {
+	escape_single_quote(timestamp);
+
 	open_db();
 	bool is_error = false;
 	string error_message = "";

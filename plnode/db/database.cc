@@ -19,20 +19,11 @@ bool Database::open(string filename)
 	return false;   
 }
 
-void ReplaceStringInPlace(std::string& subject, const std::string& search,
-                          const std::string& replace) {
-    size_t pos = 0;
-    while ((pos = subject.find(search, pos)) != std::string::npos) {
-         subject.replace(pos, search.length(), replace);
-         pos += replace.length();
-    }
-}
-
 vector<vector<string> > Database::query(string query)
 {
 	sqlite3_stmt *statement;
 	vector<vector<string> > results;
-	ReplaceStringInPlace(query, "'", "''");
+	//ReplaceStringInPlace(query, "'", "''");
 
 	if(sqlite3_prepare_v2(database, query.c_str(), -1, &statement, 0) == SQLITE_OK)
 	{
@@ -80,8 +71,8 @@ vector<vector<string> > Database::query(string query, bool &is_error, string &er
 {
 	sqlite3_stmt *statement;
 	vector<vector<string> > results;
-	ReplaceStringInPlace(query, "'", "''");
-	cout << "^^^^" << query << endl;
+	//ReplaceStringInPlace(query, "'", "''");
+	//cout << "^^^^" << query << endl;
 	if(sqlite3_prepare_v2(database, query.c_str(), -1, &statement, 0) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
