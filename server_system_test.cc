@@ -862,6 +862,19 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
+				else if(strtoupper(method_name) == "UPDATEMETA") {
+					string name, username, devicename, data;
+					if(qsp.get_value("name", name) && qsp.get_value("data", data)){				
+						int dot_index = name.find_last_of('.');
+						devicename = name.substr(0, dot_index);
+						username = name.substr(dot_index+1, string::npos);
+						http_payload.append(updateMeta(username, devicename, data));			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
 				else if(strtoupper(method_name) == "GETALL") {
 					string timestamp, neighbours;
 					if(qsp.get_value("timestamp", timestamp)){

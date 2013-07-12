@@ -693,8 +693,8 @@ case "device_list":
 			<label>New Name :</label><input type="text" name="new_device_name"  id="new_device_name"  /><br />
 								<font color="green"><div id="suggest"></div></font>
 
-			<label>Device IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
-			<label>Device Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
+			<label>Device/Directory IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
+			<label>Device/Directory Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
 			<label>public folder:</label><input type="text" name="public_folder" id="public_folder" /> <br/>
 			<label>private Folder:</label>  <input type="text" name="private_folder" id="private_folder"  /> <br/><br/>
 			<center><INPUT type=submit name="modify_device" id="modify_device" value="save modification" >
@@ -824,8 +824,8 @@ break;
 			
 			<label>Name of your device :<font color="red">*  </font></label><input type="text" name="device_name"  id="device_name"/><br />
 								<font color="green"><div id="suggest"></div></font>
-			<label>Device IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
-			<label>Device Port :<font color="red">*  </font> </label><input type="text" name="device_port" id="device_port"/> <br/>
+			<label>Device/Directory IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
+			<label>Device/Directory Port :<font color="red">*  </font> </label><input type="text" name="device_port" id="device_port"/> <br/>
 			<label>Public folder:<font color="red">*  </font></label> <input type="text" name="public_folder" id="public_folder"/> <br/>
 			<label>Private Folder:<font color="red">*  </font> </label> <input type="text" name="private_folder" id="private_folder"/> <br/>
 			<label>OS:<font color="red">*  </font> </label> <input type="text" name="os" id="os"/> <br/>
