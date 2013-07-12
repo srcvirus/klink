@@ -13,7 +13,7 @@ int main()
 	db->query("delete from user;");
 
 	//create table device	
-	db->query("CREATE TABLE IF NOT EXISTS device (username VARCHAR(100), devicename VARCHAR(100), type VARCHAR(100), ip VARCHAR(100), port VARCHAR(100), public_folder VARCHAR(100), private_folder VARCHAR(100), last_seen INTEGER, os VARCHAR(100), description VARCHAR(500), searchable INTEGER);");
+	db->query("CREATE TABLE IF NOT EXISTS device (username VARCHAR(100), devicename VARCHAR(100), type VARCHAR(100), ip VARCHAR(100), port VARCHAR(100), dir_ip VARCHAR(100), dir_port VARCHAR(100), public_folder VARCHAR(100), private_folder VARCHAR(100), last_seen INTEGER, os VARCHAR(100), description VARCHAR(500), searchable INTEGER);");
 	db->query("delete from device;");
 
 	//create table user_device
