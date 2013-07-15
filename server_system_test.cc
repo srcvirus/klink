@@ -875,7 +875,7 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
-				else if(strtoupper(method_name) == "GETALL") {
+				else if(strtoupper(method_name) == "GETALL" || strtoupper(method_name) == "GETDEVICELIST") {
 					string timestamp, neighbours;
 					if(qsp.get_value("timestamp", timestamp)){
 						string result = "<getall><name>" + this_peer->get_peer_name() + "</name>";
@@ -884,6 +884,19 @@ static void *interface_callback(enum mg_event event,
 						result.append(getall(timestamp));
 						result.append("</getall>");
 						http_payload.append(result);			
+						http_code = "200 OK";
+					}
+					else{
+						http_code = "451 Parameter Not Understood";
+					}
+				}
+				else if(strtoupper(method_name) == "GETCONTENTLIST") {
+					string name, username, devicename;
+					if(qsp.get_value("name", name)){				
+						int dot_index = name.find_last_of('.');
+						devicename = name.substr(0, dot_index);
+						username = name.substr(dot_index+1, string::npos);
+						http_payload.append(getContentList(username, devicename));			
 						http_code = "200 OK";
 					}
 					else{

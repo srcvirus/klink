@@ -186,13 +186,13 @@ string registerUser(string username, string password, string email, string fulln
 	}
 }
 
-string registerDevice(string username, string devicename, string type, string dir_ip, string dir_port, string public_folder, string private_folder, string os, string description, bool searchable)
+string registerDevice(string username, string devicename, string type, string ip, string port, string public_folder, string private_folder, string os, string description, bool searchable)
 {
 	escape_single_quote(username);
 	escape_single_quote(devicename);
 	escape_single_quote(type);
-	escape_single_quote(dir_ip);
-	escape_single_quote(dir_port);
+	escape_single_quote(ip);
+	escape_single_quote(port);
 	escape_single_quote(public_folder);
 	escape_single_quote(private_folder);
 	escape_single_quote(os);
@@ -211,7 +211,7 @@ string registerDevice(string username, string devicename, string type, string di
 	ss << timestamp;
 	string timestamp_str = ss.str();
 
-	db->query("INSERT INTO device (username, devicename, type, dir_ip, dir_port, last_seen, public_folder, private_folder, os, description, searchable) VALUES('" + username + "', '" + devicename + "', '" + type + "', '" + dir_ip + "', '" + dir_port + "', " + timestamp_str + ",'" + public_folder + "','" + private_folder + "','" + os + "','" + description + "', " + searchable_str + ")", is_error, error_message);
+	db->query("INSERT INTO device (username, devicename, type, ip, port, last_seen, public_folder, private_folder, os, description, searchable) VALUES('" + username + "', '" + devicename + "', '" + type + "', '" + ip + "', '" + port + "', " + timestamp_str + ",'" + public_folder + "','" + private_folder + "','" + os + "','" + description + "', " + searchable_str + ")", is_error, error_message);
 	if(is_error){
 		return "{\"status\":\"failure\", \"error\":\"" + error_message + "\"}";
 	}
@@ -350,7 +350,7 @@ string updateMeta(string username, string devicename, string data)
 	ss << timestamp;
 	string timestamp_str = ss.str();
 
-	vector<vector<string> > result = db->query("UPDATE device SET content_meta='" + data + "', last_seen=" + timestamp_str + " WHERE username='" + username + "' and devicename='" + devicename + "'", is_error, error_message);
+	vector<vector<string> > result = db->query("UPDATE device SET content_meta='" + data + "', content_timestamp=" + timestamp_str + " WHERE username='" + username + "' and devicename='" + devicename + "'", is_error, error_message);
 	close_db();
 
 	if(is_error){
@@ -384,20 +384,20 @@ string modifyDevice(string username, string old_devicename, string new_devicenam
 	return "{\"status\":\"success\"}";
 }
 
-string modifyDevice(string username, string old_devicename, string new_devicename, string dir_ip, string dir_port, string public_folder, string private_folder)
+string modifyDevice(string username, string old_devicename, string new_devicename, string ip, string port, string public_folder, string private_folder)
 {
 	escape_single_quote(username);
 	escape_single_quote(old_devicename);
 	escape_single_quote(new_devicename);
-	escape_single_quote(dir_ip);
-	escape_single_quote(dir_port);
+	escape_single_quote(ip);
+	escape_single_quote(port);
 	escape_single_quote(public_folder);
 	escape_single_quote(private_folder);
 
 	open_db();
 	bool is_error = false;
 	string error_message = "";
-	vector<vector<string> > result = db->query("UPDATE device SET devicename='" + new_devicename + "', dir_ip= '" + dir_ip + "', dir_port='" + dir_port + "', public_folder='" + public_folder + "', private_folder='" + private_folder + "' WHERE username='" + username + "' and devicename='" + old_devicename + "'", is_error, error_message);
+	vector<vector<string> > result = db->query("UPDATE device SET devicename='" + new_devicename + "', ip= '" + ip + "', port='" + port + "', public_folder='" + public_folder + "', private_folder='" + private_folder + "' WHERE username='" + username + "' and devicename='" + old_devicename + "'", is_error, error_message);
 	close_db();
 
 	if(is_error){
@@ -460,8 +460,55 @@ string getall(string timestamp)
 		data.append("<device><owner>"+row.at(3)+"</owner><name>"+row.at(7)+"."+row.at(0)+"</name><port>"+row.at(10)+"</port><timestamp>"+row.at(15)+"</timestamp><location>"+row.at(4)+"</location><description>"+row.at(17)+"</description><content_meta>"+row.at(19)+"</content_meta></device>");
 	}
 	data.append("</devices>");
+
+	//get content data
+	is_error = false;
+	error_message = "";
+	vector<vector<string> > result2 = db->query("SELECT user.username, device.devicename FROM user, device WHERE device.searchable=1 AND user.username=device.username AND device.content_timestamp >= " + timestamp, is_error, error_message);
+	close_db();
+
+	if(is_error){
+		return "{\"error\":\"" + error_message + "\"}";
+	}	
+
+	data.append("<content updates>");
+	data_appended = false;
+	for(vector<vector<string> >::iterator it = result2.begin(); it < result2.end(); ++it)
+	{	
+		vector<string> row = *it;
+		data.append(row.at(1) + "." + row.at(0) + ",");
+		if(!data_appended) 
+			data_appended = true;
+	}
+	if(data_appended)
+	{
+		data = data.substr(0, data.size()-1);
+	}
+	data.append("</content updates>");
+
 	return data;
 }
 
+string getContentList(string username, string devicename)
+{
+	escape_single_quote(username);
+	escape_single_quote(devicename);
 
+	open_db();
+	bool is_error = false;
+	string error_message = "";
+	vector<vector<string> > result = db->query("SELECT content_meta FROM device WHERE device.searchable=1 AND device.username='" + username + "' AND device.devicename='" + devicename + "'", is_error, error_message);
+	close_db();
+
+	if(is_error){
+		return "{\"error\":\"" + error_message + "\"}";
+	}
+	
+	string data = "";
+	for(vector<vector<string> >::iterator it = result.begin(); it < result.end(); ++it)
+	{	
+		vector<string> row = *it;
+		data.append(row.at(0));
+	}
+}
 #endif
