@@ -461,6 +461,7 @@ string getall(string timestamp)
 	}
 	data.append("</devices>");
 
+	open_db();
 	//get content data
 	is_error = false;
 	error_message = "";

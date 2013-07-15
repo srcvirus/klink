@@ -875,7 +875,7 @@ static void *interface_callback(enum mg_event event,
 						http_code = "451 Parameter Not Understood";
 					}
 				}
-				else if(strtoupper(method_name) == "GETALL" || strtoupper(method_name) == "GETDEVICELIST") {
+				else if(strtoupper(method_name) == "GETALL" || strtoupper(method_name) == "DEVICELIST") {
 					string timestamp, neighbours;
 					if(qsp.get_value("timestamp", timestamp)){
 						string result = "<getall><name>" + this_peer->get_peer_name() + "</name>";
