@@ -506,10 +506,8 @@ string getContentList(string username, string devicename)
 	}
 	
 	string data = "";
-	for(vector<vector<string> >::iterator it = result.begin(); it < result.end(); ++it)
-	{	
-		vector<string> row = *it;
-		data.append(row.at(0));
-	}
+	data.append(result.at(0).at(0));
+
+	return data;
 }
 #endif
