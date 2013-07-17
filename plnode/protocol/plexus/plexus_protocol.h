@@ -10,6 +10,7 @@
 
 #include <pthread.h>
 #include <cstring>
+#include <sstream>
 #include <queue>
 #include "../protocol.h"
 #include "../../ds/cache.h"
@@ -443,6 +444,11 @@ public:
 		str = str.substr(0, last_dot + 1);
 		printf("str = %s\n", str.c_str());
 
+		std::stringstream trimmer;
+		trimmer << str;
+		str.clear();
+		trimmer	>> str;
+		if(str == "") return;
 
 		//detect resolution of ha name
 		if(str.find('.') == string::npos){
