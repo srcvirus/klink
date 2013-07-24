@@ -448,7 +448,10 @@ public:
 		trimmer << str;
 		str.clear();
 		trimmer	>> str;
-		if(str == "") return;
+		if(str == ""){
+			printf("Empty name. Request source: %s\n", message->getSourceHost().c_str());
+			return;
+		}
 
 		//detect resolution of ha name
 		if(str.find('.') == string::npos){
