@@ -449,7 +449,7 @@ public:
 		trimmer << str;
 		//str.clear();
 		trimmer	>> str_trim;
-		if(str == ""){
+		if(str_trim == ""){
 			printf("Empty name. Request source: %s\n", message->getSourceHost().c_str());
 			return;
 		}
