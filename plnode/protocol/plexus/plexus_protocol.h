@@ -447,9 +447,9 @@ public:
 		string str_trim;
 		std::stringstream trimmer;
 		trimmer << str;
-		str.clear();
+		//str.clear();
 		trimmer	>> str_trim;
-		if(str_trim == ""){
+		if(str == ""){
 			printf("Empty name. Request source: %s\n", message->getSourceHost().c_str());
 			return;
 		}
