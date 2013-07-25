@@ -444,11 +444,12 @@ public:
 		str = str.substr(0, last_dot + 1);
 		printf("str = %s\n", str.c_str());
 
+		string str_trim;
 		std::stringstream trimmer;
 		trimmer << str;
 		str.clear();
-		trimmer	>> str;
-		if(str == ""){
+		trimmer	>> str_trim;
+		if(str_trim == ""){
 			printf("Empty name. Request source: %s\n", message->getSourceHost().c_str());
 			return;
 		}
