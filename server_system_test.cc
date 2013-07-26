@@ -896,7 +896,9 @@ static void *interface_callback(enum mg_event event,
 						int dot_index = name.find_last_of('.');
 						devicename = name.substr(0, dot_index);
 						username = name.substr(dot_index+1, string::npos);
+						http_payload.append("<html>");
 						http_payload.append(getContentList(username, devicename));			
+						http_payload.append("</html>");
 						http_code = "200 OK";
 					}
 					else{
