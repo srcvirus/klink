@@ -232,7 +232,8 @@ $('#selectDev').hide();
 		
 		var text='<font color="red"><b>This account already exists, please change your username!</b></font></br> you can choose from this list: </br> (';
 
-		if ( u =='' || p1 =='' || p2 =='' || uid =='' || Full_name ==''|| Country == '' || Affiliation == '')
+		//if ( u =='' || p1 =='' || p2 =='' || uid =='' || Full_name ==''|| Country == '' || Affiliation == '')
+		if ( u =='' || p1 =='' || p2 =='' || Full_name =='')
 					{$('#lp3').html('');
 						$('#lp0').html(' <b>Filling all the compulsary inputs is required </b>');
 					}
@@ -694,7 +695,7 @@ case "device_list":
 								<font color="green"><div id="suggest"></div></font>
 
 			<label>Device/Directory IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
-			<label>Device Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
+			<label>Device/Directory Port : </label><input type="text" name="device_port" id="device_port"  /> <br/>
 			<label>public folder:</label><input type="text" name="public_folder" id="public_folder" /> <br/>
 			<label>private Folder:</label>  <input type="text" name="private_folder" id="private_folder"  /> <br/><br/>
 			<center><INPUT type=submit name="modify_device" id="modify_device" value="save modification" >

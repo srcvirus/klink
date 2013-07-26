@@ -232,7 +232,8 @@ $('#selectDev').hide();
 		
 		var text='<font color="red"><b>This account already exists, please change your username!</b></font></br> you can choose from this list: </br> (';
 
-		if ( u =='' || p1 =='' || p2 =='' || uid =='' || Full_name ==''|| Country == '' || Affiliation == '')
+		//if ( u =='' || p1 =='' || p2 =='' || uid =='' || Full_name ==''|| Country == '' || Affiliation == '')
+		if ( u =='' || p1 =='' || p2 =='' || Full_name =='')
 					{$('#lp3').html('');
 						$('#lp0').html(' <b>Filling all the compulsary inputs is required </b>');
 					}
@@ -775,9 +776,9 @@ break;
 					<label for="Password">Password : <font color="red">* </font></label><input type="password" id="p1" name="Password" /><br/>
 					<label  for="confirmPassword">confirm password : <font color="red">* </font></label><input type="password" id="p2" name="confirmPassword" /><br/><font color="red"><div id ="lp3" ></div></font>
 
-					<label for="uID">E-mail :<font color="red">*  </font></label><input id="uid" type="email" name="uID" /><br/>
-					<label for="Country">Country :<font color="red">*  </font></label><input id="Country" type="text" name="Country" /><br/>
-					<label for="uID">Affiliation :<font color="red">*  </font></label><input id="Affiliation" type="text" name="Affiliation" /><br/>
+					<label for="uID">E-mail :</label><input id="uid" type="email" name="uID" /><br/>
+					<label for="Country">Country :</label><input id="Country" type="text" name="Country" /><br/>
+					<label for="uID">Affiliation :</label><input id="Affiliation" type="text" name="Affiliation" /><br/>
 					<INPUT type=submit name="Register" value=Register >
 					
 				</FORM>
