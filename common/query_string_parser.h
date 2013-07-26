@@ -33,6 +33,9 @@ public:
 		string item;
 		while(getline(ss, item, delim)) {
 			elems.push_back(item);
+			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+			printf(">>>>>>>>>  %s  ", item.c_str());
+			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			item.clear();
 		}
 		return elems;
