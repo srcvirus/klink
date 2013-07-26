@@ -338,7 +338,8 @@ $('#selectDev').hide();
 		var public_folder= $('#public_folder').val();
 		var private_folder= $('#private_folder').val();
 		
-		if ( device_name =='' ||device_port=='' || public_folder=='' || private_folder=='' || new_device_name =='')
+		//if ( device_name =='' ||device_port=='' || public_folder=='' || private_folder=='' || new_device_name =='')
+		if ( device_name =='' || new_device_name =='')
 		$('#lp0').html(' <font color="red"><b>Filling all the compulsary inputs is required </b></font>');
 		
 		else 
@@ -448,7 +449,8 @@ $('#addDev').on('submit', function() {
 		
 		var text='<font color="red"><b>This device name already exists, please change it!</b></font></br> you can choose from this list: </br> (';
 
-		if (device_type == '' || device_name =='' ||device_port=='' || public_folder=='' || private_folder==''|| os==''|| description=='')
+		//if (device_type == '' || device_name =='' ||device_port=='' || public_folder=='' || private_folder==''|| os==''|| description=='')
+		if (device_type == '' || device_name =='')
 		$('#lp0').html(' <font color="red"><b>Filling all the compulsary inputs is required </b></font>');
 		
 		else 
@@ -816,21 +818,21 @@ break;
 		<FORM id="addDev" Method="POST" Action="fichier.php?homeagent=<?php echo $_SESSION['homeagent'] ?>&username=<?php echo $user->getUsername() ?>">
 			<label>Type of your device :<font color="red">*  </font></label>
 			<SELECT name="device_type" id="device_type" >
-				<OPTION>Public computer</OPTION>
-				<OPTION>Personal computer</OPTION>
-				<OPTION>Personal laptop</OPTION>
-				<OPTION>Mobile Phone</OPTION>
+				<OPTION>Desktop</OPTION>
+				<OPTION>Laptop</OPTION>
+				<OPTION>Cell Phone</OPTION>
 				<OPTION>Tablet</OPTION>
+				<OPTION>NAS</OPTION>
 			<SELECT><br/>
 			
 			<label>Name of your device :<font color="red">*  </font></label><input type="text" name="device_name"  id="device_name"/><br />
 								<font color="green"><div id="suggest"></div></font>
-			<label>Device/Directory IP :<font color="red">*  </font> </label><input type="text" name="device_ip" id="device_ip"/> <br/>
-			<label>Device/Directory Port :<font color="red">*  </font> </label><input type="text" name="device_port" id="device_port"/> <br/>
-			<label>Public folder:<font color="red">*  </font></label> <input type="text" name="public_folder" id="public_folder"/> <br/>
-			<label>Private Folder:<font color="red">*  </font> </label> <input type="text" name="private_folder" id="private_folder"/> <br/>
-			<label>OS:<font color="red">*  </font> </label> <input type="text" name="os" id="os"/> <br/>
-			<label>Description: <font color="red">*  </font></label> <TEXTAREA rows="3" name="description" id="description" ></TEXTAREA><br/>
+			<label>Device/Directory IP : </label><input type="text" name="device_ip" id="device_ip"/> <br/>
+			<label>Device/Directory Port : </label><input type="text" name="device_port" id="device_port"/> <br/>
+			<label>Public folder:</label> <input type="text" name="public_folder" id="public_folder"/> <br/>
+			<label>Private Folder: </label> <input type="text" name="private_folder" id="private_folder"/> <br/>
+			<label>OS: </label> <input type="text" name="os" id="os"/> <br/>
+			<label>Description: </label> <TEXTAREA rows="3" name="description" id="description" ></TEXTAREA><br/>
 			<label>Publicly indexed: <font color="red">*  </font></label> <input type="radio" name="index" value="yes" id="index0"> Yes           <input type="radio" name="index" value="no" id="index1" checked >No <br/>
 			<center><font color="green">(if you choose "yes",your public folder will be indexed by the crawlers for public access.)</font></center>
 			<center><INPUT type=submit name="add_device" value="Add a new device">			<INPUT type=button name="cancel" value="cancel" onclick="cancelMod();">
