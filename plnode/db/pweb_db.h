@@ -499,6 +499,7 @@ string getContentList(string username, string devicename)
 	bool is_error = false;
 	string error_message = "";
 	vector<vector<string> > result = db->query("SELECT content_meta FROM device WHERE device.searchable=1 AND device.username='" + username + "' AND device.devicename='" + devicename + "'", is_error, error_message);
+	//vector<vector<string> > result = db->query("SELECT content_meta FROM device WHERE device.username='" + username + "' AND device.devicename='" + devicename + "'", is_error, error_message);
 	close_db();
 
 	if(is_error){
@@ -506,7 +507,8 @@ string getContentList(string username, string devicename)
 	}
 	
 	string data = "";
-	data.append(result.at(0).at(0));
+	if(result.size() > 0 && result.at(0).size() > 0)
+		data.append(result.at(0).at(0));
 
 	return data;
 }
