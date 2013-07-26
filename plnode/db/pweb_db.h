@@ -507,7 +507,7 @@ string getContentList(string username, string devicename)
 	}
 	
 	string data = "";
-	if(result.size() > 0 && result.at(0).size() > 0)
+	if(result.size() > 0)
 		data.append(result.at(0).at(0));
 
 	return data;
