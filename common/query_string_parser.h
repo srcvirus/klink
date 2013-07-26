@@ -20,6 +20,9 @@ public:
 		for(vector<string>::iterator it = kvps.begin(); it != kvps.end(); ++it) {
 			vector<string> kv = split(*it, '=');
 			key_value_store->add(urlDecode(kv[0]), urlDecode(kv[1]));
+			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+			printf(">>>>>>>>>%s, %s --> %s, %s<<<<<<<<<<<\n", kv[0].c_str(), kv[1].c_str(), urlDecode(kv[0]).c_str(), urlDecode(kv[1]).c_str());
+			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 		}
 	}
 	
@@ -33,9 +36,9 @@ public:
 		string item;
 		while(getline(ss, item, delim)) {
 			elems.push_back(item);
-			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			printf(">>>>>>>>>  %s  ", item.c_str());
-			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+			//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+			//printf(">>>>>>>>>%s<<<<<<<<<<<\n", item.c_str());
+			//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 			item.clear();
 		}
 		return elems;
