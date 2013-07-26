@@ -3,6 +3,7 @@
 
 #include "../plnode/ds/lookup_table.h"
 #include<vector>
+#include<sstream>
 #include"util.h"
 
 using namespace std;
@@ -19,7 +20,12 @@ public:
 		vector<string> kvps = split(query_string, '&');
 		for(vector<string>::iterator it = kvps.begin(); it != kvps.end(); ++it) {
 			vector<string> kv = split(*it, '=');
-			key_value_store->add(urlDecode(kv[0]), urlDecode(kv[1]));
+			if(kv.size() == 2){
+				key_value_store->add(urlDecode(kv[0]), urlDecode(kv[1]));
+			}
+			else if(kv.size() == 1){
+				key_value_store->add(urlDecode(kv[0]), "");
+			} 
 			//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 			//printf(">>>>>>>>>%s, %s --> %s, %s<<<<<<<<<<<\n", kv[0].c_str(), kv[1].c_str(), urlDecode(kv[0]).c_str(), urlDecode(kv[1]).c_str());
 			//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
@@ -31,16 +37,17 @@ public:
 	}
 	
 	vector<string> &split(const string &s, char delim, vector<string> &elems) {
+		//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+		//printf("Received: %s\n", s.c_str());
 		stringstream ss(s);
 		ss << std::noskipws;
 		string item;
 		while(getline(ss, item, delim)) {
 			elems.push_back(item);
-			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-			printf(">>>>>>>>>%s<<<<<<<<<<<\n", item.c_str());
-			printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+			//printf("item: %s\n", item.c_str());
 			item.clear();
 		}
+		//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 		return elems;
 	}
 

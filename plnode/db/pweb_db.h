@@ -457,7 +457,7 @@ string getall(string timestamp)
 	for(vector<vector<string> >::iterator it = result.begin(); it < result.end(); ++it)
 	{	
 		vector<string> row = *it;
-		data.append("<device><owner>"+row.at(3)+"</owner><name>"+row.at(7)+"."+row.at(0)+"</name><port>"+row.at(10)+"</port><timestamp>"+row.at(15)+"</timestamp><location>"+row.at(4)+"</location><description>"+row.at(17)+"</description><content_meta>"+row.at(19)+"</content_meta></device>");
+		data.append("<device><owner>"+row.at(3)+"</owner><name>"+row.at(7)+"."+row.at(0)+"</name><port>"+row.at(10)+"</port><type>"+row.at(8)+"</type><timestamp>"+row.at(15)+"</timestamp><location>"+row.at(4)+"</location><description>"+row.at(17)+"</description><content_meta>"+row.at(19)+"</content_meta></device>");
 	}
 	data.append("</devices>");
 
@@ -507,7 +507,7 @@ string getContentList(string username, string devicename)
 	}
 	
 	string data = "";
-	if(result.size() > 0 && result.at(0).size() > 0)
+	if(result.size() > 0)
 		data.append(result.at(0).at(0));
 	else
 		data.append("");
