@@ -1035,7 +1035,7 @@ static void *interface_callback(enum mg_event event,
 	    
 	    if(return_as_html){
 	            mg_printf(conn,
-	                    "HTTP/1.1 200 OK\r\n"
+	                    "HTTP/1.1 %s\r\n"
 	                    "Content-Type: text/html\r\n"
 	                    "Content-Length: %d\r\n" // Always set Content-Length
         	            "\r\n"
