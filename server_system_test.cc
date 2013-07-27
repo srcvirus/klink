@@ -742,6 +742,7 @@ static void *interface_callback(enum mg_event event,
             // Mark as processed
         } else {
             char content[16384];
+	    bool return_as_html = false;
             PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
             //<meta http-equiv=\"refresh\" content=\"10\">
 
@@ -891,6 +892,7 @@ static void *interface_callback(enum mg_event event,
 					}
 				}
 				else if(strtoupper(method_name) == "GETCONTENTLIST") {
+					return_as_html = true;
 					string name, username, devicename;
 					if(qsp.get_value("name", name)){				
 						int dot_index = name.find_last_of('.');
@@ -1030,18 +1032,27 @@ static void *interface_callback(enum mg_event event,
 
             int content_length = snprintf(content, sizeof (content),
                     "%s", http_payload.c_str());
-
-
-            mg_printf(conn,
-                    "HTTP/1.1 %s\r\n"
-		    "Access-Control-Allow-Origin: *\r\n"
-                    "Content-Type: application/json\r\n"
-		    "Connection: Keep-Alive\r\n"
-		    "Keep-Alive:timeout=5, max=100\r\n"
-		    "Vary:Accept-Encoding\r\n"
-                    "Content-Length: %d\r\n" // Always set Content-Length
-                    "\r\n"
-                    "%s", http_code.c_str(), content_length, content);
+	    
+	    if(return_as_html){
+	            mg_printf(conn,
+	                    "HTTP/1.1 200 OK\r\n"
+	                    "Content-Type: text/html\r\n"
+	                    "Content-Length: %d\r\n" // Always set Content-Length
+        	            "\r\n"
+        	            "%s", http_code.c_str(), content_length, content);
+	    }
+	    else{
+	            mg_printf(conn,
+        	            "HTTP/1.1 %s\r\n"
+			    "Access-Control-Allow-Origin: *\r\n"
+        	            "Content-Type: application/json\r\n"
+			    "Connection: Keep-Alive\r\n"
+			    "Keep-Alive:timeout=5, max=100\r\n"
+			    "Vary:Accept-Encoding\r\n"
+        	            "Content-Length: %d\r\n" // Always set Content-Length
+        	            "\r\n"
+        	            "%s", http_code.c_str(), content_length, content);
+	    }
         }
     }
     return NULL;
