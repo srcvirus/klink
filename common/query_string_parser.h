@@ -44,9 +44,7 @@ public:
 		string item;
 		while(getline(ss, item, delim)) {
 			elems.push_back(item);
-			
 			//printf("item: %s\n", item.c_str());
-			
 			item.clear();
 		}
 		//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
