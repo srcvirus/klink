@@ -895,7 +895,7 @@ if(isset($user)){ $_SESSION['user'] = $user; }
     
     <section>
     <h3><a href="http://pwebproject.net/en/">About Us</a></h3>
-    <p>&copy; 2013 <a href="#" title="your site name">pWebsite.com</a> All rights reserved.</p>
+    <p>&copy; 2013 <a href="http://pwebproject.net/en/">pwebproject.net</a> All rights reserved.</p>
     </section>
 
 	</footer>
