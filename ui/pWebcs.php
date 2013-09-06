@@ -882,20 +882,20 @@ if(isset($user)){ $_SESSION['user'] = $user; }
 		
 	<footer>
     <section>
-    <h3>about pweb</h3>
+    <h3>&nbsp;</h3>
    
     
     </section>
     
     <section>
-    <h3>Help</h3>
-    <p>FAQs</p>
+    <h3><a href="http://pwebproject.net/en/tutorial/#main">Help</a></h3>
+    <p>&nbsp;</p>
    
     </section>
     
     <section>
-    <h3>about us</h3>
-    <p>&copy; 2013 <a href="#" title="your site name">pWebsite.com</a> All rights reserved.</p>
+    <h3><a href="http://pwebproject.net/en/">About Us</a></h3>
+    <p>&copy; 2013 <a href="http://pwebproject.net/en/">pwebproject.net</a> All rights reserved.</p>
     </section>
 
 	</footer>
