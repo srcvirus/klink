@@ -514,7 +514,7 @@ $('#addDev').on('submit', function() {
 
 
 	<header>
-		<h1>pWeb</h1>
+		<h1>pWeb: Host Yourself</h1>
 	</header>
 	<nav>
 		<ul>

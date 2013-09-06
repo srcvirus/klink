@@ -16,7 +16,7 @@ if(isset($_POST['home_agent'])){
 <!doctype html>
 <html lang="en">
 <head>
-	<title>pWeb</title>
+	<title>pWeb: Host Yourself</title>
 	<link rel="stylesheet" href="styles.css" type="text/css" media="screen" />
 	
 	
