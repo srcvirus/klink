@@ -3,10 +3,6 @@
 
 //$username=$_GET['username'];
 
-
-
-
-
 //$reponse = 'not ok';
 
 $array['name']='asd';
