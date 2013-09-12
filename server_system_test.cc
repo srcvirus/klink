@@ -639,7 +639,7 @@ static void *callback(enum mg_event event,
                                 "Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
                                 "Logging Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
                                 "<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
+                                "Locally  processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
                                 "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
                                 "<strong>Index Table</strong><br/>size = %d<br/></body></html>",
