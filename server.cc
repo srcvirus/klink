@@ -864,7 +864,7 @@ static void *interface_callback(enum mg_event event,
 					{
 						string name, password, email, fullname, location,
 								affiliation;
-						printf("HTTP query string = %s\n", request_info->query_string));
+						printf("HTTP query string = %s\n", request_info->query_string);
 						if (qsp.get_value("name", name)
 								&& qsp.get_value("password", password)
 								&& qsp.get_value("email", email)
