@@ -58,7 +58,7 @@ ABSCode *iCode;
 int fd_max;
 fd_set connection_pool;
 fd_set read_connection_fds;
-queue <ABSMessage*> received_before_init_queue;
+queue<ABSMessage*> received_before_init_queue;
 ServerSocket* s_socket = NULL;
 
 struct mg_context *ctx;
@@ -77,1061 +77,1245 @@ void *logging_thread(void*);
 void *storage_stat_thread(void*);
 void *pending_message_process_thread(void*);
 
-int main(int argc, char* argv[]) {
-    system_init();
+int main(int argc, char* argv[])
+{
+	system_init();
 
-    pthread_t listener, controller, web, web_interface, logger, storage_stat;
-    pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
-    pthread_t pending_msg_processor;
+	pthread_t listener, controller, web, web_interface, logger, storage_stat;
+	pthread_t forwarder[MAX_FORWARDING_THREAD], processor[MAX_PROCESSOR_THREAD];
+	pthread_t pending_msg_processor;
 
-    ThreadParameter f_param[MAX_FORWARDING_THREAD], p_param[MAX_PROCESSOR_THREAD];
+	ThreadParameter f_param[MAX_FORWARDING_THREAD],
+			p_param[MAX_PROCESSOR_THREAD];
 
-    for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
-        f_param[i] = ThreadParameter(i);
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		f_param[i] = ThreadParameter(i);
 
-    for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
-        p_param[i] = ThreadParameter(i);
+	for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+		p_param[i] = ThreadParameter(i);
 
-    pthread_create(&listener, NULL, listener_thread, NULL);
+	pthread_create(&listener, NULL, listener_thread, NULL);
 
-    for (int i = 0; i < MAX_FORWARDING_THREAD; i++) {
-        pthread_create(&forwarder[i], NULL, forwarding_thread, &f_param[i]);
-    }
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
+	{
+		pthread_create(&forwarder[i], NULL, forwarding_thread, &f_param[i]);
+	}
 
-    for (int i = 0; i < MAX_PROCESSOR_THREAD; i++) {
-        pthread_create(&processor[i], NULL, processing_thread, &p_param);
-    }
+	for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+	{
+		pthread_create(&processor[i], NULL, processing_thread, &p_param);
+	}
 
-    pthread_create(&logger, NULL, logging_thread, NULL);
-    //pthread_create(&controller, NULL, controlling_thread, NULL);
-    pthread_create(&web, NULL, web_thread, NULL);
-    pthread_create(&web_interface, NULL, web_interface_thread, NULL);
-    //pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
-    pthread_create(&pending_msg_processor, NULL, pending_message_process_thread, NULL);
+	pthread_create(&logger, NULL, logging_thread, NULL);
+	//pthread_create(&controller, NULL, controlling_thread, NULL);
+	pthread_create(&web, NULL, web_thread, NULL);
+	pthread_create(&web_interface, NULL, web_interface_thread, NULL);
+	//pthread_create(&storage_stat, NULL, storage_stat_thread, NULL);
+	pthread_create(&pending_msg_processor, NULL, pending_message_process_thread,
+			NULL);
 
-    while(true)
-    {
-		if(this_peer->IsInitRcvd())
+	while (true)
+	{
+		if (this_peer->IsInitRcvd())
 		{
 			publish_alias();
 			break;
 		}
-    }
+	}
 
-    pthread_join(listener, NULL);
+	pthread_join(listener, NULL);
 
-    for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
-        pthread_join(forwarder[i], NULL);
-    for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
-        pthread_join(processor[i], NULL);
-    pthread_join(logger, NULL);
-    pthread_join(controller, NULL);
-    pthread_join(storage_stat, NULL);
+	for (int i = 0; i < MAX_FORWARDING_THREAD; i++)
+		pthread_join(forwarder[i], NULL);
+	for (int i = 0; i < MAX_PROCESSOR_THREAD; i++)
+		pthread_join(processor[i], NULL);
+	pthread_join(logger, NULL);
+	pthread_join(controller, NULL);
+	pthread_join(storage_stat, NULL);
 
-    pthread_join(web, NULL);
-    pthread_join(web_interface, NULL);
+	pthread_join(web, NULL);
+	pthread_join(web_interface, NULL);
 
-    cleanup();
+	cleanup();
 }
 
-void system_init() {
-	freopen("agent.log", "w", stdout);
-	freopen("agent.err", "w", stderr);
+void system_init()
+{
+	//freopen("agent.log", "w", stdout);
+	//freopen("agent.err", "w", stderr);
 
-    int error_code;
-    puts("[Main Thread]\tInitializing the System");
+	int error_code;
+	puts("[Main Thread]\tInitializing the System");
 
-    /* creating the peer container */
-    this_peer = new Peer(GlobalData::config_file_name.c_str());
-    printf("[Main Thread]\thostname = %s\n", this_peer->getHostName().c_str());
+	/* creating the peer container */
+	this_peer = new Peer(GlobalData::config_file_name.c_str());
+	printf("[Main Thread]\thostname = %s\n", this_peer->getHostName().c_str());
 
-    if (this_peer->getListenPortNumber() == -1) {
-        puts("Port Number Not Found");
-        exit(1);
-    }
+	if (this_peer->getListenPortNumber() == -1)
+	{
+		puts("Port Number Not Found");
+		exit(1);
+	}
 
-    /* creating the message processor for plexus */
-    PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
+	/* creating the message processor for plexus */
+	PlexusMessageProcessor* msg_processor = new PlexusMessageProcessor();
 
-    /* creating the plexus protocol object */
-    plexus = new PlexusProtocol(this_peer, msg_processor);
+	/* creating the plexus protocol object */
+	plexus = new PlexusProtocol(this_peer, msg_processor);
 
-    /* setting the message processor's protocol */
-    msg_processor->setContainerProtocol(plexus);
+	/* setting the message processor's protocol */
+	msg_processor->setContainerProtocol(plexus);
 
-    /* setting the protocol of the peer */
-    this_peer->setProtocol(plexus);
+	/* setting the protocol of the peer */
+	this_peer->setProtocol(plexus);
 
-    /* setting the code of the peer */
-    //iCode = new ReedMuller(2, 4);
-    iCode = new GolayCode();
-    this_peer->SetiCode(iCode);
+	/* setting the code of the peer */
+	//iCode = new ReedMuller(2, 4);
+	iCode = new GolayCode();
+	this_peer->SetiCode(iCode);
 
-    /* initializing the connection sets */
-    FD_ZERO(&connection_pool);
-    FD_ZERO(&read_connection_fds);
+	/* initializing the connection sets */
+	FD_ZERO(&connection_pool);
+	FD_ZERO(&read_connection_fds);
 
-    /* creating the server socket for accepting connection from other peers */
-    s_socket = this_peer->getServerSocket();
-    if (s_socket == NULL) {
-        printf("Socket create error");
-        exit(1);
-    }
+	/* creating the server socket for accepting connection from other peers */
+	s_socket = this_peer->getServerSocket();
+	if (s_socket == NULL)
+	{
+		printf("Socket create error");
+		exit(1);
+	}
 
-    FD_SET(s_socket->getSocketFd(), &connection_pool);
+	FD_SET(s_socket->getSocketFd(), &connection_pool);
 
-    fd_max = s_socket->getSocketFd();
+	fd_max = s_socket->getSocketFd();
 }
 
 void publish_alias()
 {
 	char temp[255];
-	const hostent* host_info = NULL ;
-	host_info = gethostbyname(this_peer->getHostName().c_str()) ;
- 
-	if (host_info) {
-		const in_addr* address = (in_addr*)host_info->h_addr_list[0] ;
-        	memset(temp,NULL,sizeof(temp)) ;
-        	strcpy(temp,inet_ntoa(*address)) ;
-     	}
-	string ip = temp;	
+	const hostent* host_info = NULL;
+	host_info = gethostbyname(this_peer->getHostName().c_str());
+
+	if (host_info)
+	{
+		const in_addr* address = (in_addr*) host_info->h_addr_list[0];
+		memset(temp, NULL, sizeof(temp));
+		strcpy(temp, inet_ntoa(*address));
+	}
+	string ip = temp;
 
 	printf("Delete device: %s\n", deleteDevice("##", "##").c_str());
-	printf("Insert device: %s\n", registerDevice("##", "##", "dummy", ip, "port", "public_folder", "private_folder", "os", "description", false).c_str());
+	printf("Insert device: %s\n",
+			registerDevice("##", "##", "dummy", ip, "port", "public_folder",
+					"private_folder", "os", "description", false).c_str());
 	//HostAddress ha(this_peer->getHostName(), this_peer->getListenPortNumber());
 	HostAddress ha(ip, this_peer->getListenPortNumber());
 	this_peer->getProtocol()->put(this_peer->getPeerName(), ha);
 }
 
-void cleanup() {
-    delete this_peer;
-    this_peer = NULL;
-    plexus = NULL;
-    s_socket->print_socket_info();
-    mg_stop(ctx);
+void cleanup()
+{
+	delete this_peer;
+	this_peer = NULL;
+	plexus = NULL;
+	s_socket->print_socket_info();
+	mg_stop(ctx);
 }
 
-void *forwarding_thread(void* args) {
-    ThreadParameter t_param = *((ThreadParameter*) args);
-    printf("Starting forwarding thread %d\n", t_param.getThreadId());
+void *forwarding_thread(void* args)
+{
+	ThreadParameter t_param = *((ThreadParameter*) args);
+	printf("Starting forwarding thread %d\n", t_param.getThreadId());
 
-    char* buffer = NULL;
-    int buffer_length;
-    ABSMessage* message = NULL;
+	char* buffer = NULL;
+	int buffer_length;
+	ABSMessage* message = NULL;
 
-    while (true) {
+	while (true)
+	{
 
-        message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
-        message->incrementOverlayHops();
-        message->message_print_dump();
+		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
+		message->incrementOverlayHops();
+		message->message_print_dump();
 
-        if (message->getMessageType() == MSG_PLEXUS_GET || message->getMessageType() == MSG_PLEXUS_PUT) {
-            HostAddress ha(message->getDestHost(), message->getDestPort());
-            pair <int, double> cost = (this_peer->lookup_address(ha)).second;
-            int ip_hops = cost.first;
-            double latency = cost.second;
-            message->incrementIpHops(ip_hops);
-            message->incrementLatency(latency);
-            printf("[Forwarding Thread %d:]\tNext hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",t_param.getThreadId(), ha.GetHostName().c_str(), ha.GetHostPort(), ip_hops, latency);
-        }
+		if (message->getMessageType() == MSG_PLEXUS_GET
+				|| message->getMessageType() == MSG_PLEXUS_PUT)
+		{
+			HostAddress ha(message->getDestHost(), message->getDestPort());
+			pair<int, double> cost = (this_peer->lookup_address(ha)).second;
+			int ip_hops = cost.first;
+			double latency = cost.second;
+			message->incrementIpHops(ip_hops);
+			message->incrementLatency(latency);
+			printf(
+					"[Forwarding Thread %d:]\tNext hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",
+					t_param.getThreadId(), ha.GetHostName().c_str(),
+					ha.GetHostPort(), ip_hops, latency);
+		}
 
-        printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n", t_param.getThreadId(),
-                message->getMessageType(), message->getDestHost().c_str(), message->getDestPort());
+		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n",
+				t_param.getThreadId(), message->getMessageType(),
+				message->getDestHost().c_str(), message->getDestPort());
 
-        int retry = 0, error_code = 0;
+		int retry = 0, error_code = 0;
 
-        while (retry < this_peer->getNRetry()) {
-            error_code = plexus->send_message(message);
-            if (error_code < 0)
-                retry++;
-            else break;
-        }
+		while (retry < this_peer->getNRetry())
+		{
+			error_code = plexus->send_message(message);
+			if (error_code < 0)
+				retry++;
+			else
+				break;
+		}
 
-        if (error_code >= 0) {
-            if (message->getMessageType() == MSG_PLEXUS_GET)
-                this_peer->incrementGet_forwarded();
-            else if (message->getMessageType() == MSG_PLEXUS_PUT)
-                this_peer->incrementPut_forwarded();
-        } else {
-            if (message->getMessageType() == MSG_PLEXUS_GET)
-                this_peer->incrementGet_Dropped();
-            else if (message->getMessageType() == MSG_PLEXUS_PUT)
-                this_peer->incrementPut_Dropped();
-        }
+		if (error_code >= 0)
+		{
+			if (message->getMessageType() == MSG_PLEXUS_GET)
+				this_peer->incrementGet_forwarded();
+			else if (message->getMessageType() == MSG_PLEXUS_PUT)
+				this_peer->incrementPut_forwarded();
+		} else
+		{
+			if (message->getMessageType() == MSG_PLEXUS_GET)
+				this_peer->incrementGet_Dropped();
+			else if (message->getMessageType() == MSG_PLEXUS_PUT)
+				this_peer->incrementPut_Dropped();
+		}
 
-        delete message;
-    }
+		delete message;
+	}
 }
 
-void *listener_thread(void* args) {
-    puts("Starting Listener Thread");
+void *listener_thread(void* args)
+{
+	puts("Starting Listener Thread");
 
-    int buffer_length;
-    char* buffer;
+	int buffer_length;
+	char* buffer;
 
+	while (true)
+	{
+		read_connection_fds = connection_pool;
 
-    while (true) {
-        read_connection_fds = connection_pool;
+		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
+				NULL);
 
-        int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL, NULL);
+		if (n_select < 0)
+		{
+			puts("Select Error");
+			printf("[Listening Thread]\terrno = %d\n", errno);
 
-        if (n_select < 0) {
-            puts("Select Error");
-            printf("[Listening Thread]\terrno = %d\n", errno);
+			s_socket->printActiveConnectionList();
+			//printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
 
-            s_socket->printActiveConnectionList();
-            //printf("fd_max = %d, socket_fd = %d\n", fd_max, s_socket->getSocketFd());
+			for (int con = 0; con <= fd_max; con++)
+			{
+				if (FD_ISSET(con, &connection_pool))
+				{
+					int fopts = 0;
+					if (fcntl(con, F_GETFL, &fopts) < 0)
+					{
+						FD_CLR(con, &connection_pool);
+						s_socket->close_connection(con);
+						fd_max = s_socket->getMaxConnectionFd();
+					}
+				}
+			}
+			this_peer->incrementPut_Dropped();
+			//exit(1);
+			continue;
+		}
+		for (int i = 0; i <= fd_max; i++)
+		{
+			if (FD_ISSET(i, &read_connection_fds))
+			{
+				if (i == s_socket->getSocketFd())
+				{
+					int connection_fd = s_socket->accept_connection();
 
-            for (int con = 0; con <= fd_max; con++) {
-                if (FD_ISSET(con, &connection_pool)) {
-                    int fopts = 0;
-                    if (fcntl(con, F_GETFL, &fopts) < 0) {
-                        FD_CLR(con, &connection_pool);
-                        s_socket->close_connection(con);
-                        fd_max = s_socket->getMaxConnectionFd();
-                    }
-                }
-            }
-            this_peer->incrementPut_Dropped();
-            //exit(1);
-            continue;
-        }
-        for (int i = 0; i <= fd_max; i++) {
-            if (FD_ISSET(i, &read_connection_fds)) {
-                if (i == s_socket->getSocketFd()) {
-                    int connection_fd = s_socket->accept_connection();
+					if (connection_fd < 0)
+					{
+						print_error_message(connection_fd);
+						exit(1);
+					}
 
-                    if (connection_fd < 0) {
-                        print_error_message(connection_fd);
-                        exit(1);
-                    }
+					FD_SET(connection_fd, &connection_pool);
+					if (connection_fd > fd_max)
+						fd_max = connection_fd;
+					//puts("new connection");
+					//s_socket->printActiveConnectionList();
+				} else
+				{
+					buffer_length = s_socket->receive_data(i, &buffer);
+					printf("[Listening thread]\t Received %d Bytes\n",
+							buffer_length);
 
-                    FD_SET(connection_fd, &connection_pool);
-                    if (connection_fd > fd_max)
-                        fd_max = connection_fd;
-                    //puts("new connection");
-                    //s_socket->printActiveConnectionList();
-                } else {
-                    buffer_length = s_socket->receive_data(i, &buffer);
-                    printf("[Listening thread]\t Received %d Bytes\n", buffer_length);
+					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
+					 putchar('\n');*/
 
-                    /*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
-                    putchar('\n');*/
+					s_socket->close_connection(i);
+					FD_CLR(i, &connection_pool);
+					fd_max = s_socket->getMaxConnectionFd();
 
-                    s_socket->close_connection(i);
-                    FD_CLR(i, &connection_pool);
-                    fd_max = s_socket->getMaxConnectionFd();
+					//s_socket->printActiveConnectionList();
 
-                    //s_socket->printActiveConnectionList();
+					if (buffer_length > 0)
+					{
+						char messageType = 0;
+						ABSMessage* rcvd_message = NULL;
 
-                    if (buffer_length > 0) {
-                        char messageType = 0;
-                        ABSMessage* rcvd_message = NULL;
+						memcpy(&messageType, buffer, sizeof(char));
+						printf("[Listening thread]\t Message Type: %d\n",
+								messageType);
 
-                        memcpy(&messageType, buffer, sizeof (char));
-                        printf("[Listening thread]\t Message Type: %d\n", messageType);
+						switch (messageType)
+						{
+						case MSG_PEER_INIT:
+							rcvd_message = new PeerInitMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
 
-                        switch (messageType) {
-                            case MSG_PEER_INIT:
-                                rcvd_message = new PeerInitMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                rcvd_message->message_print_dump();
-                                break;
+						case MSG_PLEXUS_GET:
+							this_peer->incrementGet_received();
+							rcvd_message = new MessageGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							//rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
+							break;
 
-                            case MSG_PLEXUS_GET:
-                                this_peer->incrementGet_received();
-                                rcvd_message = new MessageGET();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                rcvd_message->message_print_dump();
-                                //rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
-                                break;
+						case MSG_PLEXUS_GET_REPLY:
+							rcvd_message = new MessageGET_REPLY();
+							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->message_print_dump();
+							break;
 
-                            case MSG_PLEXUS_GET_REPLY:
-                                rcvd_message = new MessageGET_REPLY();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                //rcvd_message->message_print_dump();
-                                break;
+						case MSG_PLEXUS_PUT:
+							this_peer->incrementPut_received();
+							rcvd_message = new MessagePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							//rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
+							break;
 
-                            case MSG_PLEXUS_PUT:
-                                this_peer->incrementPut_received();
-                                rcvd_message = new MessagePUT();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                rcvd_message->message_print_dump();
-                                //rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
-                                break;
+						case MSG_PLEXUS_PUT_REPLY:
+							rcvd_message = new MessagePUT_REPLY();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
 
-                            case MSG_PLEXUS_PUT_REPLY:
-                                rcvd_message = new MessagePUT_REPLY();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
+						case MSG_PEER_INITIATE_GET:
+							this_peer->incrementGet_received();
+							rcvd_message = new PeerInitiateGET();
+							rcvd_message->deserialize(buffer, buffer_length);
+							rcvd_message->message_print_dump();
+							break;
+						case MSG_PEER_INITIATE_PUT:
+							this_peer->incrementPut_received();
+							rcvd_message = new PeerInitiatePUT();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_START:
+							rcvd_message = new PeerStartMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_CHANGE_STATUS:
+							rcvd_message = new PeerChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_START_GENERATE_NAME:
+							rcvd_message = new PeerStartGenNameMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_START_LOOKUP_NAME:
+							rcvd_message = new PeerStartLookupNameMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_DYN_CHANGE_STATUS:
+							rcvd_message = new PeerDynChangeStatusMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_PEER_FORCE_LOG:
+							rcvd_message = new LogForceMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_CACHE_ME:
+							rcvd_message = new MessageCacheMe();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_RETRIEVE:
+							rcvd_message = new RetrieveMessage();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						case MSG_RETRIEVE_REPLY:
+							rcvd_message = new MessageRetrieveReply();
+							rcvd_message->deserialize(buffer, buffer_length);
+							break;
+						default:
+							puts("reached default case");
+							//exit(1);
+							continue;
+						}
 
-                            case MSG_PEER_INITIATE_GET:
-                                this_peer->incrementGet_received();
-                                rcvd_message = new PeerInitiateGET();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                rcvd_message->message_print_dump();
-                                break;
-                            case MSG_PEER_INITIATE_PUT:
-                                this_peer->incrementPut_received();
-                                rcvd_message = new PeerInitiatePUT();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_PEER_START:
-                                rcvd_message = new PeerStartMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_PEER_CHANGE_STATUS:
-                                rcvd_message = new PeerChangeStatusMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_START_GENERATE_NAME:
-                                rcvd_message = new PeerStartGenNameMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_START_LOOKUP_NAME:
-                                rcvd_message = new PeerStartLookupNameMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_DYN_CHANGE_STATUS:
-                                rcvd_message = new PeerDynChangeStatusMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_PEER_FORCE_LOG:
-                                rcvd_message = new LogForceMessage();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_CACHE_ME:
-                                rcvd_message = new MessageCacheMe();
-                                rcvd_message->deserialize(buffer, buffer_length);
-                                break;
-                            case MSG_RETRIEVE:
-                            	rcvd_message = new RetrieveMessage();
-                            	rcvd_message->deserialize(buffer, buffer_length);
-                            	break;
-                            case MSG_RETRIEVE_REPLY:
-                            	rcvd_message = new MessageRetrieveReply();
-                            	rcvd_message->deserialize(buffer, buffer_length);
-                            	break;
-                            default:
-                                puts("reached default case");
-                                //exit(1);
-                                continue;
-                        }
+						if (rcvd_message != NULL)
+						{
+							//rcvd_message->message_print_dump();
+							if (this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
+							{
+								puts(
+										"[Listening thread]\tINIT already received");
+								((PlexusProtocol*) plexus)->addToIncomingQueue(
+										rcvd_message);
+								printf(
+										"[Listening thread]\t Added a %d message to the incoming queue\n",
+										rcvd_message->getMessageType());
+							} else
+							{
+								puts(
+										"[Listening thread]\tReceived a message before receiving INIT message");
+								received_before_init_queue.push(rcvd_message);
+							}
 
-                        if (rcvd_message != NULL)
-                        {
-                        	//rcvd_message->message_print_dump();
-                        	if(this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
-                        	{
-                        		puts("[Listening thread]\tINIT already received");
-                        		((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
-                        		printf("[Listening thread]\t Added a %d message to the incoming queue\n",
-                        		                                    rcvd_message->getMessageType());
-                        	}
-                        	else
-                        	{
-                        		puts("[Listening thread]\tReceived a message before receiving INIT message");
-                        		received_before_init_queue.push(rcvd_message);
-                        	}
+						} else
+						{
+							puts("received message is null");
+							exit(1);
+						}
 
-                        } else {
-                            puts("received message is null");
-                            exit(1);
-                        }
-
-                        delete[] buffer;
-                    } else if (buffer_length < 0) {
-                        printf("buffer_length < 0: %d\n", buffer_length);
-                        //exit(1);
-                        continue;
-                    }
-                }
-            }
-        }
-    }
+						delete[] buffer;
+					} else if (buffer_length < 0)
+					{
+						printf("buffer_length < 0: %d\n", buffer_length);
+						//exit(1);
+						continue;
+					}
+				}
+			}
+		}
+	}
 }
 
-void *processing_thread(void* args) {
-    ThreadParameter t_param = *((ThreadParameter*) args);
-    printf("Starting processing thread %d\n", t_param.getThreadId());
+void *processing_thread(void* args)
+{
+	ThreadParameter t_param = *((ThreadParameter*) args);
+	printf("Starting processing thread %d\n", t_param.getThreadId());
 
-    ABSMessage* message = NULL;
-    while (true) {
-        //                if (!this_peer->IsInitRcvd())
-        //                        continue;
+	ABSMessage* message = NULL;
+	while (true)
+	{
+		//                if (!this_peer->IsInitRcvd())
+		//                        continue;
 
-        message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
+		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
-        printf("[Processing Thread %d]\tpulled a %d type message from the incoming queue\n",
-                t_param.getThreadId(), message->getMessageType());
+		printf(
+				"[Processing Thread %d]\tpulled a %d type message from the incoming queue\n",
+				t_param.getThreadId(), message->getMessageType());
 
-        bool forward = plexus->getMessageProcessor()->processMessage(message);
-        if (forward) {
-            printf("[Processing Thread %d]\tpushed a %d type message for forwarding\n",
-                    t_param.getThreadId(), message->getMessageType());
+		bool forward = plexus->getMessageProcessor()->processMessage(message);
+		if (forward)
+		{
+			printf(
+					"[Processing Thread %d]\tpushed a %d type message for forwarding\n",
+					t_param.getThreadId(), message->getMessageType());
 
-            message->getDstOid().printBits();
-            /*printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
-                    message->getDestHost().c_str(), message->getDestPort(),
-                    message->getOverlayTtl(), message->getOverlayHops());*/
-            //                        if(message->getMessageType() == MSG_PLEXUS_PUT){
-            //                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
-            //                        }
-            //                        if(message->getMessageType() == MSG_PLEXUS_GET){
-            //                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
-            //                        }
-            ((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
-        }
-    }
+			message->getDstOid().printBits();
+			/*printf("[Processing Thread %d:]\thost: %s:%d TTL: %d Hops: %d\n", t_param.getThreadId(),
+			 message->getDestHost().c_str(), message->getDestPort(),
+			 message->getOverlayTtl(), message->getOverlayHops());*/
+			//                        if(message->getMessageType() == MSG_PLEXUS_PUT){
+			//                                message->setDstOid(OverlayID(atoi(((MessagePUT*)message)->GetDeviceName().c_str()), iCode));
+			//                        }
+			//                        if(message->getMessageType() == MSG_PLEXUS_GET){
+			//                                message->setDstOid(OverlayID(atoi(((MessageGET*)message)->GetDeviceName().c_str()), iCode));
+			//                        }
+			((PlexusProtocol*) plexus)->addToOutgoingQueue(message);
+		}
+	}
 }
 
-void *controlling_thread(void* args) {
-    puts("Starting a controlling thread");
+void *controlling_thread(void* args)
+{
+	puts("Starting a controlling thread");
 
-    //sleep(20);
-    //vector <int> putId, getId, idsp, idsg;
+	//sleep(20);
+	//vector <int> putId, getId, idsp, idsg;
 
-    bool publish_name_done = false, lookup_name_done = false;
-    char buffer[33];
-    while (!publish_name_done || !lookup_name_done) {
+	bool publish_name_done = false, lookup_name_done = false;
+	char buffer[33];
+	while (!publish_name_done || !lookup_name_done)
+	{
 
-    	while(!this_peer->IsInitRcvd());
+		while (!this_peer->IsInitRcvd())
+			;
 
-    	int total_pub_names = this_peer->getPublish_name_range_end() - this_peer->getPublish_name_range_start() + 1;
-		int total_lkp_names = this_peer->getLookup_name_range_end() - this_peer->getLookup_name_range_start() + 1;
+		int total_pub_names = this_peer->getPublish_name_range_end()
+				- this_peer->getPublish_name_range_start() + 1;
+		int total_lkp_names = this_peer->getLookup_name_range_end()
+				- this_peer->getLookup_name_range_start() + 1;
 
 		char str_end[12], str_total[12];
 		char command[100];
 
-		sprintf(command, "head -%d %s | tail -%d > %s.tmp", this_peer->getPublish_name_range_end() + 1, this_peer->getConfiguration()->getInputFilePath().c_str()
-				, total_pub_names, this_peer->getConfiguration()->getInputFilePath().c_str());
+		sprintf(command, "head -%d %s | tail -%d > %s.tmp",
+				this_peer->getPublish_name_range_end() + 1,
+				this_peer->getConfiguration()->getInputFilePath().c_str(),
+				total_pub_names,
+				this_peer->getConfiguration()->getInputFilePath().c_str());
 
 		FILE* pipe = popen(command, "r");
 		sleep(5);
 		fclose(pipe);
 
-		vector <unsigned int> names;
+		vector<unsigned int> names;
 		char filename[100];
-		sprintf(filename, "%s.tmp", this_peer->getConfiguration()->getInputFilePath().c_str());
+		sprintf(filename, "%s.tmp",
+				this_peer->getConfiguration()->getInputFilePath().c_str());
 
 		unsigned int name;
 		FILE* name_file = fopen(filename, "r");
-		while(fscanf(name_file, "%u", &name) != EOF) names.push_back(name);
+		while (fscanf(name_file, "%u", &name) != EOF)
+			names.push_back(name);
 		fclose(name_file);
 
-        if (this_peer->IsStart_gen_name_rcvd() && !publish_name_done) {
+		if (this_peer->IsStart_gen_name_rcvd() && !publish_name_done)
+		{
 
-            //getId.clear(), putId.clear();
-            //publish names
-            printf("[Controlling Thread]\tPublishing name in range %d %d\n",
-                    this_peer->getPublish_name_range_start(),
-                    this_peer->getPublish_name_range_end());
+			//getId.clear(), putId.clear();
+			//publish names
+			printf("[Controlling Thread]\tPublishing name in range %d %d\n",
+					this_peer->getPublish_name_range_start(),
+					this_peer->getPublish_name_range_end());
 
+			sleep(15);
 
+			for (int i = this_peer->getPublish_name_range_start();
+					i <= this_peer->getPublish_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%u",
+						names[i - this_peer->getPublish_name_range_start()]);
+				printf("[Controlling Thread]\tPublishing name: %d\n", i);
 
-            sleep(15);
+				//putId.push_back(OverlayID(i, iCode).GetOverlay_id());
+				//idsp.push_back(i);
 
-            for (int i = this_peer->getPublish_name_range_start();
-                    i <= this_peer->getPublish_name_range_end(); i++) {
-                HostAddress ha("dummyhost", i);
-                //itoa(i, buffer, 10);
-                sprintf(buffer, "%u", names[i - this_peer->getPublish_name_range_start()]);
-                printf("[Controlling Thread]\tPublishing name: %d\n", i);
+				this_peer->getProtocol()->put(string(buffer), ha);
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			publish_name_done = true;
+		}
 
-                //putId.push_back(OverlayID(i, iCode).GetOverlay_id());
-                //idsp.push_back(i);
+		if (this_peer->IsStart_lookup__name_rcvd() && !lookup_name_done)
+		{
+			//lookup names
+			printf("[Controlling Thread:]\tLooking up name ...\n");
+			//usleep(8000000);
+			//sleep(60);
+			for (int i = this_peer->getLookup_name_range_start();
+					i <= this_peer->getLookup_name_range_end(); i++)
+			{
+				HostAddress ha("dummyhost", i);
+				//itoa(i, buffer, 10);
+				sprintf(buffer, "%u",
+						names[i - this_peer->getPublish_name_range_start()]);
+				printf("[Controlling Thread:]\tLooking up name: %d\n", i);
 
-                this_peer->getProtocol()->put(string(buffer), ha);
-                if (i % 3 == 0)
-                    pthread_yield();
-            }
-            publish_name_done = true;
-        }
+				//getId.push_back(OverlayID(i, iCode).GetOverlay_id());
+				//idsg.push_back(i);
 
-        if (this_peer->IsStart_lookup__name_rcvd() && !lookup_name_done) {
-            //lookup names
-            printf("[Controlling Thread:]\tLooking up name ...\n");
-            //usleep(8000000);
-            //sleep(60);
-            for (int i = this_peer->getLookup_name_range_start();
-                    i <= this_peer->getLookup_name_range_end(); i++) {
-                HostAddress ha("dummyhost", i);
-                //itoa(i, buffer, 10);
-                sprintf(buffer, "%u", names[i - this_peer->getPublish_name_range_start()]);
-                printf("[Controlling Thread:]\tLooking up name: %d\n", i);
+				this_peer->getProtocol()->get(string(buffer));
+				if (i % 3 == 0)
+					pthread_yield();
+			}
+			lookup_name_done = true;
+		}
 
-                //getId.push_back(OverlayID(i, iCode).GetOverlay_id());
-                //idsg.push_back(i);
+		pthread_yield();
+	}
 
-                this_peer->getProtocol()->get(string(buffer));
-                if (i % 3 == 0)
-                    pthread_yield();
-            }
-            lookup_name_done = true;
-        }
-
-        pthread_yield();
-    }
-
-
-    //        sleep(60);
-    //        for (int X = 0; X < getId.size(); X++)
-    //                if (getId[X] != putId[X])
-    //                        printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
-    //                else puts("EQUAL");
+	//        sleep(60);
+	//        for (int X = 0; X < getId.size(); X++)
+	//                if (getId[X] != putId[X])
+	//                        printf("NOT EQUAL %d %d for %d == %d\n", getId[X], putId[X], idsp[X], idsg[X]);
+	//                else puts("EQUAL");
 }
 
-void *logging_thread(void*) {
-    puts("Starting a logging thread");
-    LogEntry *entry;
-    while (true) {
-        if (!this_peer->IsInitRcvd()) {
-            //puts("[Logging Thread]\tnot init received");
-            continue;
-        }
+void *logging_thread(void*)
+{
+	puts("Starting a logging thread");
+	LogEntry *entry;
+	while (true)
+	{
+		if (!this_peer->IsInitRcvd())
+		{
+			//puts("[Logging Thread]\tnot init received");
+			continue;
+		}
 
-        //printf("[Logging Thread]\twaiting for a log entry to pop\n");
-        entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
-        //printf("[Logging Thread]\tpulled a log entry from the queue\n");
-        if (entry->getType() == ALL_LOGS) {
-            //((PlexusProtocol*) plexus)->flushAllLog();
-            continue;
-        }
-        /*Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
-        log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());*/
+		//printf("[Logging Thread]\twaiting for a log entry to pop\n");
+		entry = ((PlexusProtocol*) plexus)->getLoggingQueueFront();
+		//printf("[Logging Thread]\tpulled a log entry from the queue\n");
+		if (entry->getType() == ALL_LOGS)
+		{
+			//((PlexusProtocol*) plexus)->flushAllLog();
+			continue;
+		}
+		/*Log* log = ((PlexusProtocol*) plexus)->getLog(entry->getType());
+		 log->write(entry->getKeyString().c_str(), entry->getValueString().c_str());*/
 
-        delete entry;
-        printf("[Logging Thread:]Index table size = %d\n", plexus->getIndexTable()->size());
-    }
+		delete entry;
+		printf("[Logging Thread:]Index table size = %d\n",
+				plexus->getIndexTable()->size());
+	}
 }
 
-static void *callback(enum mg_event event,
-        struct mg_connection * conn) {
-    const struct mg_request_info *request_info = mg_get_request_info(conn);
+static void *callback(enum mg_event event, struct mg_connection * conn)
+{
+	const struct mg_request_info *request_info = mg_get_request_info(conn);
 
-    if (event == MG_NEW_REQUEST) {
-        if (!this_peer->IsInitRcvd()) {
-            char content[1024];
-            int content_length = snprintf(content, sizeof (content),
-                    "Peer Status Report<br/><br/> \
+	if (event == MG_NEW_REQUEST)
+	{
+		if (!this_peer->IsInitRcvd())
+		{
+			char content[1024];
+			int content_length =
+					snprintf(content, sizeof(content),
+							"Peer Status Report<br/><br/> \
                         peer oid %s<br/>\
                         INIT not received",
-                    this_peer->getOverlayID().toString());
-            mg_printf(conn,
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    "Content-Length: %d\r\n" // Always set Content-Length
-                    "\r\n"
-                    "%s",
-                    content_length, content);
-            //delete[] content;
-            // Mark as processed
-        } else {
-            char content[16384];
-            PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
-            //<meta http-equiv=\"refresh\" content=\"10\">
-            int content_length = snprintf(content, sizeof (content),
-                    "<html><head></head><body>"\
-                                "<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"\
-                                "<strong>Proactive Cache</strong><br/>size = %d<br/>%s<br/>"\
-                                "<strong>Cache</strong><br/>size = %d<br/>%s<br/>"\
-                                "<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"\
-                                "Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
-                                "Logging Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"\
-                                "<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally  processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
-                                "<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"\
-                                "Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"\
-                                "<strong>Index Table</strong><br/>size = %d<br/></body></html>",
-                    this_peer->getOverlayID().toString(),
+							this_peer->getOverlayID().toString());
+			mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+					"Content-Type: text/html\r\n"
+					"Content-Length: %d\r\n" // Always set Content-Length
+					"\r\n"
+					"%s", content_length, content);
+			//delete[] content;
+			// Mark as processed
+		} else
+		{
+			char content[16384];
+			PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
+			//<meta http-equiv=\"refresh\" content=\"10\">
+			int content_length =
+					snprintf(content, sizeof(content),
+							"<html><head></head><body>"
+									"<h1>Peer Status Report</h1><br/><br/><strong>peer oid = </strong>%s<br/><strong>Routing Table</strong><br/>size = %d<br/>%s<br/>"
+									"<strong>Proactive Cache</strong><br/>size = %d<br/>%s<br/>"
+									"<strong>Cache</strong><br/>size = %d<br/>%s<br/>"
+									"<strong>Queue Stats</strong><br/>Incoming Queue<br/>pushed = %d<br/>popped = %d<br/>"
+									"Outgoing Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"
+									"Logging Queue<br/>pushed = %d<br/>popped = %d<br/><br/>"
+									"<strong>PUT Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"
+									"Locally  processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"
+									"<strong>GET Message</strong><br/>Generated = %d<br/>Received = %d<br/>Generated/Received = %d<br/><br/>"
+									"Locally processed = %d<br/>Forwarded = %d<br/>Dropped = %d<br/>Processed/Forwarded = %d<br/><br/><br/>"
+									"<strong>Index Table</strong><br/>size = %d<br/></body></html>",
+							this_peer->getOverlayID().toString(),
 
-                    this_peer->getProtocol()->getRoutingTable()->size(),
-                    printRoutingTable2String(*this_peer->getProtocol()->getRoutingTable()),
+							this_peer->getProtocol()->getRoutingTable()->size(),
+							printRoutingTable2String(
+									*this_peer->getProtocol()->getRoutingTable()),
 
-                    ((PlexusProtocol*)plexus)->getProactiveCache()->size(),
-                    printRoutingTable2String(*(((PlexusProtocol*)plexus)->getProactiveCache())),
+							((PlexusProtocol*) plexus)->getProactiveCache()->size(),
+							printRoutingTable2String(
+									*(((PlexusProtocol*) plexus)->getProactiveCache())),
 
-                    this_peer->getProtocol()->getCache()->getSize(),
-                    this_peer->getProtocol()->getCache()->toString(),
+							this_peer->getProtocol()->getCache()->getSize(),
+							this_peer->getProtocol()->getCache()->toString(),
 
-                    plexus->incoming_queue_pushed, plexus->incoming_queue_popped,
-                    plexus->outgoing_queue_pushed, plexus->outgoing_queue_popped,
-                    plexus->logging_queue_pushed, plexus->logging_queue_popped,
+							plexus->incoming_queue_pushed,
+							plexus->incoming_queue_popped,
+							plexus->outgoing_queue_pushed,
+							plexus->outgoing_queue_popped,
+							plexus->logging_queue_pushed,
+							plexus->logging_queue_popped,
 
-                    this_peer->numOfPut_generated(), this_peer->numOfPut_received(), this_peer->numOfPut_generated() + this_peer->numOfPut_received(),
-                    this_peer->numOfPut_processed(), this_peer->numOfPut_forwarded(), this_peer->numOfPut_dropped(), this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded(),
+							this_peer->numOfPut_generated(),
+							this_peer->numOfPut_received(),
+							this_peer->numOfPut_generated()
+									+ this_peer->numOfPut_received(),
+							this_peer->numOfPut_processed(),
+							this_peer->numOfPut_forwarded(),
+							this_peer->numOfPut_dropped(),
+							this_peer->numOfPut_processed()
+									+ this_peer->numOfPut_forwarded(),
 
-                    this_peer->numOfGet_generated(), this_peer->numOfGet_received(), this_peer->numOfGet_generated() + this_peer->numOfGet_received(),
-                    this_peer->numOfGet_processed(), this_peer->numOfGet_forwarded(), this_peer->numOfGet_dropped(), this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded(),
+							this_peer->numOfGet_generated(),
+							this_peer->numOfGet_received(),
+							this_peer->numOfGet_generated()
+									+ this_peer->numOfGet_received(),
+							this_peer->numOfGet_processed(),
+							this_peer->numOfGet_forwarded(),
+							this_peer->numOfGet_dropped(),
+							this_peer->numOfGet_processed()
+									+ this_peer->numOfGet_forwarded(),
 
-
-                    this_peer->getProtocol()->getIndexTable()->size()//,
-                    //printIndexTable2String(*this_peer->getProtocol()->getIndexTable())
-                    );
-            //printf("html content: %d::%s\n", content_length, content);
-            mg_printf(conn,
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    "Content-Length: %d\r\n" // Always set Content-Length
-                    "\r\n"
-                    "%s",
-                    content_length, content);
-        }
-    }
-    return NULL;
+							this_peer->getProtocol()->getIndexTable()->size() //,
+							//printIndexTable2String(*this_peer->getProtocol()->getIndexTable())
+							);
+			//printf("html content: %d::%s\n", content_length, content);
+			mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+					"Content-Type: text/html\r\n"
+					"Content-Length: %d\r\n" // Always set Content-Length
+					"\r\n"
+					"%s", content_length, content);
+		}
+	}
+	return NULL;
 }
 
-void *web_thread(void*) {
-    printf("Starting a web thread on port ");
-    char buffer[33];
-    int port = 20002;
-    while (true) {
-        sprintf(buffer, "%d", port++);
-        const char *options[] = {"listening_ports", buffer, NULL};
-        ctx = mg_start(&callback, NULL, options);
-        if (ctx != NULL)
-            break;
-    }
-    puts(buffer);
-}
-
-template <class T>
-inline std::string toString (const T& t)
+void *web_thread(void*)
 {
-    std::stringstream ss;
-    ss << t;
-    return ss.str();
+	printf("Starting a web thread on port ");
+	char buffer[33];
+	int port = 20002;
+	while (true)
+	{
+		sprintf(buffer, "%d", port++);
+		const char *options[] = { "listening_ports", buffer, NULL };
+		ctx = mg_start(&callback, NULL, options);
+		if (ctx != NULL)
+			break;
+	}
+	puts(buffer);
+}
+
+template<class T>
+inline std::string toString(const T& t)
+{
+	std::stringstream ss;
+	ss << t;
+	return ss.str();
 }
 
 string ipToString(long ip)
 {
-    string res;
-    unsigned long workIp, a, b, c, d;
-    workIp = ip;
-    d = workIp & 0xFF;
-    workIp = workIp >> 8;
-    c = workIp & 0xFF;
-    workIp = workIp >> 8;
-    b = workIp & 0xFF;
-    workIp = workIp >> 8;
-    a = workIp;
-    res = toString(a)+"."+toString(b)+"."+toString(c)+"."+toString(d);
-    return res;
+	string res;
+	unsigned long workIp, a, b, c, d;
+	workIp = ip;
+	d = workIp & 0xFF;
+	workIp = workIp >> 8;
+	c = workIp & 0xFF;
+	workIp = workIp >> 8;
+	b = workIp & 0xFF;
+	workIp = workIp >> 8;
+	a = workIp;
+	res = toString(a) + "." + toString(b) + "." + toString(c) + "."
+			+ toString(d);
+	return res;
 }
 
 static void *interface_callback(enum mg_event event,
-        struct mg_connection * conn) {
-    const struct mg_request_info *request_info = mg_get_request_info(conn);
+		struct mg_connection * conn)
+{
+	const struct mg_request_info *request_info = mg_get_request_info(conn);
 
-    if (event == MG_NEW_REQUEST) {
-        if (!this_peer->IsInitRcvd()) {
-            char content[1024];
-            int content_length = snprintf(content, sizeof (content),
-                    "Peer Status Report<br/><br/> \
+	if (event == MG_NEW_REQUEST)
+	{
+		if (!this_peer->IsInitRcvd())
+		{
+			char content[1024];
+			int content_length =
+					snprintf(content, sizeof(content),
+							"Peer Status Report<br/><br/> \
                         peer oid %s<br/>\
                         INIT not received",
-                    this_peer->getOverlayID().toString());
-            mg_printf(conn,
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    "Content-Length: %d\r\n" // Always set Content-Length
-                    "\r\n"
-                    "%s",
-                    content_length, content);
-            //delete[] content;
-            // Mark as processed
-        } else {
-            char content[16384];
-	    bool return_as_html = false;
-            PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
-            //<meta http-equiv=\"refresh\" content=\"10\">
+							this_peer->getOverlayID().toString());
+			mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+					"Content-Type: text/html\r\n"
+					"Content-Length: %d\r\n" // Always set Content-Length
+					"\r\n"
+					"%s", content_length, content);
+			//delete[] content;
+			// Mark as processed
+		} else
+		{
+			char content[16384];
+			bool return_as_html = false;
+			PlexusProtocol* plexus = (PlexusProtocol*) this_peer->getProtocol();
+			//<meta http-equiv=\"refresh\" content=\"10\">
 
-		string http_code = "200 OK";
-		string http_payload = "";
+			string http_code = "200 OK";
+			string http_payload = "";
 
-		if(request_info->query_string != NULL){
-			QueryStringParser qsp;
-			qsp.parse(string(request_info->query_string));
-		
-			string method_name;
-			if(qsp.get_value("method", method_name))
+			if (request_info->query_string != NULL)
 			{
-				if(strtoupper(method_name) == "EXISTUSERNAME") {
-					string name;
-					if(qsp.get_value("name", name)){				
-						http_payload.append(existUsername(name));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "REGISTERUSER") {
-					string name, password, email, fullname, location, affiliation;
-					if(qsp.get_value("name", name) && qsp.get_value("password", password) && qsp.get_value("email", email) && qsp.get_value("fullname", fullname) && qsp.get_value("location", location) && qsp.get_value("affiliation", affiliation)){				
-						http_payload.append(registerUser(name, password, email, fullname, location, affiliation));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "AUTHENTICATE") {
-					string name, password;
-					if(qsp.get_value("name", name) && qsp.get_value("password", password)){				
-						http_payload.append(authenticate(name, password));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "GETDEVICELIST") {
-					string username;
-					if(qsp.get_value("username", username)){				
-						http_payload.append(getDeviceList(username));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "ISAVAILABLE") {
-					string username, devicename;
-					if(qsp.get_value("devicename", devicename) && qsp.get_value("username", username)){				
-						//int dot_index = name.find_last_of('.');
-						//devicename = name.substr(0, dot_index);
-						//username = name.substr(dot_index+1, string::npos);
-						http_payload.append(existDevicename(username, devicename));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "MODIFYDEVICE") {
-					string username, devicename, newdevicename, ip, port, public_folder, private_folder;
-					if(qsp.get_value("username", username) && qsp.get_value("devicename", devicename) && qsp.get_value("newdevicename", newdevicename) && qsp.get_value("ip", ip) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder)){				
-						//int dot_index = name.find_last_of('.');
-						//devicename = name.substr(0, dot_index);
-						//username = name.substr(dot_index+1, string::npos);
-						http_payload.append(modifyDevice(username, devicename, newdevicename, ip, port, public_folder, private_folder));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "DELETEDEVICE") {
-					string name, username, devicename;
-					if(qsp.get_value("name", name)){				
-						int dot_index = name.find_last_of('.');
-						devicename = name.substr(0, dot_index);
-						username = name.substr(dot_index+1, string::npos);
-						http_payload.append(deleteDevice(username, devicename));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "REGISTER") {
-					string name, username, devicename, type, ip, port, public_folder, private_folder, os, description, is_publicly_indexed;
-					if(qsp.get_value("name", name) && qsp.get_value("type", type) && qsp.get_value("ip", ip) && qsp.get_value("port", port) && qsp.get_value("public_folder", public_folder) && qsp.get_value("private_folder", private_folder) && qsp.get_value("os", os) && qsp.get_value("description", description) && qsp.get_value("ispublicly_indexed", is_publicly_indexed)){				
-						int dot_index = name.find_last_of('.');
-						devicename = name.substr(0, dot_index);
-						username = name.substr(dot_index+1, string::npos);
-						bool searchable = true;
-						if(is_publicly_indexed == "no") searchable = false;
-						http_payload.append(registerDevice(username, devicename, type, ip, port, public_folder, private_folder, os, description, searchable));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "UPDATE") {
-					string name, username, devicename, ip, port;
-					if(qsp.get_value("name", name) && qsp.get_value("ip", ip) && qsp.get_value("port", port)){				
-						int dot_index = name.find_last_of('.');
-						devicename = name.substr(0, dot_index);
-						username = name.substr(dot_index+1, string::npos);
-						http_payload.append(updateDevice(username, devicename, ip, port));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "UPDATEMETA") {
-					string name, username, devicename, data;
-					if(qsp.get_value("name", name) && qsp.get_value("data", data)){				
-						int dot_index = name.find_last_of('.');
-						devicename = name.substr(0, dot_index);
-						username = name.substr(dot_index+1, string::npos);
-						http_payload.append(updateMeta(username, devicename, data));			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "GETALL" || strtoupper(method_name) == "DEVICELIST") {
-					string timestamp, neighbours;
-					if(qsp.get_value("timestamp", timestamp)){
-						string result = "<getall><name>" + this_peer->get_peer_name() + "</name>";
-						routingTable2XML(*this_peer->getProtocol()->getRoutingTable(), neighbours);
-						result.append(neighbours);	
-						result.append(getall(timestamp));
-						result.append("</getall>");
-						http_payload.append(result);			
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(strtoupper(method_name) == "GETCONTENTLIST") {
-					return_as_html = true;
-					string name, username, devicename;
-					if(qsp.get_value("name", name)){				
-						int dot_index = name.find_last_of('.');
-						devicename = name.substr(0, dot_index);
-						username = name.substr(dot_index+1, string::npos);
-						http_payload.append("<html>");
-						http_payload.append(getContentList(username, devicename));			
-						http_payload.append("</html>");
-						http_code = "200 OK";
-					}
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				/*
-				else if(method_name == "register" || method_name == "REGISTER") {
-					printf("[Web thread]\tip = %ld\n", request_info->remote_ip);
-					string ip_address = ipToString(request_info->remote_ip);
-					printf("[Web thread]\tip address = %s\n", ip_address.c_str());
-					string name, port;
-					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
-						int port_number = atoi(port.c_str());
-						if(port_number >= 1024 && port_number <= 65535){
-							if(ip_address.size()){
-								if(name.size()){
-									HostAddress ha;
-									if(!this_peer->searchNameDb(name, &ha)){
-										this_peer->addToNameDB(name, HostAddress(ip_address, port_number));
-										http_code = "200 OK";
-									}
-									else{
-										http_code = "494 Device Name Not Available"; 
-									}
-								}
-								else{
-									http_code = "493 Device Name of Zero Length Not Allowed";
-								}
-							}
-							else{
-								http_code = "492 Remote IP Error";						
-							}
-						}
-						else{
-							http_code = "491 Port Number Not in Range";					
-						}
-					}			
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(method_name == "update" || method_name == "UPDATE") {
-					string ip_address = ipToString(request_info->remote_ip);
-					string name, port;
-					if(qsp.get_value("name", name) && qsp.get_value("port", port)){				
-						int port_number = atoi(port.c_str());
-						if(port_number >= 1024 && port_number <= 65535){
-							if(ip_address.size()){
-								if(name.size()){
-									HostAddress ha;
-									if(this_peer->updateNameDB(name, HostAddress(ip_address, port_number))){
-										http_code = "200 OK";
-									}
-									else{
-										http_code = "496 Device Name Not Found"; 
-									}
-								}
-								else{
-									http_code = "493 Device Name of Zero Length Not Allowed";
-								}
-							}
-							else{
-								http_code = "492 Remote IP Error";						
-							}
-						}
-						else{
-							http_code = "491 Port Number Not in Range";					
-						}
-					}			
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if(method_name == "isavailable_" || method_name == "ISAVAILABLE_") {
-					string name;
-					if(qsp.get_value("name", name)){				
-						if(name.size()){
-							HostAddress ha;
-							if(!this_peer->searchNameDb(name, &ha)){
-								//just check whether the device name is in namedb
-								http_payload.append("Device Name Available."); 
-								http_code = "200 OK";
-							}
-							else{
-								http_code = "494 Device Name Not Available"; 
-							}
-						}
-						else{
-							http_code = "493 Device Name of Zero Length Not Allowed";
-						}
-					}			
-					else{
-						http_code = "451 Parameter Not Understood";
-					}
-				}
-				else if (method_name == "getall" || method_name == "GETALL") {
-					string timestamp_str;
-					if(qsp.get_value("timestamp", timestamp_str)){	
-						string routing_table_str, name_db_str;					
-						time_t timestamp = atol(timestamp_str.c_str());
-						if(timestamp > 0){
-							routingTable2String(*this_peer->getProtocol()->getRoutingTable(), routing_table_str);
-							http_payload.append(this_peer->get_peer_name());
-							http_payload.append("|");
-							http_payload.append(string(routing_table_str));
-							http_payload.append(nameDbToString(this_peer->searchNameDb(timestamp)));
+				QueryStringParser qsp;
+				qsp.parse(string(request_info->query_string));
+
+				string method_name;
+				if (qsp.get_value("method", method_name))
+				{
+					if (strtoupper(method_name) == "EXISTUSERNAME")
+					{
+						string name;
+						if (qsp.get_value("name", name))
+						{
+							http_payload.append(existUsername(name));
 							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
 						}
-						else{
-							http_code = "495 Timestamp Less Than or Equal to Zero";
+					} else if (strtoupper(method_name) == "REGISTERUSER")
+					{
+						string name, password, email, fullname, location,
+								affiliation;
+						printf("HTTP query string = %s\n", request_info->query_string));
+						if (qsp.get_value("name", name)
+								&& qsp.get_value("password", password)
+								&& qsp.get_value("email", email)
+								&& qsp.get_value("fullname", fullname)
+								&& qsp.get_value("location", location)
+								&& qsp.get_value("affiliation", affiliation))
+						{
+							http_payload.append(
+									registerUser(name, password, email,
+											fullname, location, affiliation));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "AUTHENTICATE")
+					{
+						string name, password;
+						if (qsp.get_value("name", name)
+								&& qsp.get_value("password", password))
+						{
+							http_payload.append(authenticate(name, password));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "GETDEVICELIST")
+					{
+						string username;
+						if (qsp.get_value("username", username))
+						{
+							http_payload.append(getDeviceList(username));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "ISAVAILABLE")
+					{
+						string username, devicename;
+						if (qsp.get_value("devicename", devicename)
+								&& qsp.get_value("username", username))
+						{
+							//int dot_index = name.find_last_of('.');
+							//devicename = name.substr(0, dot_index);
+							//username = name.substr(dot_index+1, string::npos);
+							http_payload.append(
+									existDevicename(username, devicename));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "MODIFYDEVICE")
+					{
+						string username, devicename, newdevicename, ip, port,
+								public_folder, private_folder;
+						if (qsp.get_value("username", username)
+								&& qsp.get_value("devicename", devicename)
+								&& qsp.get_value("newdevicename", newdevicename)
+								&& qsp.get_value("ip", ip)
+								&& qsp.get_value("port", port)
+								&& qsp.get_value("public_folder", public_folder)
+								&& qsp.get_value("private_folder",
+										private_folder))
+						{
+							//int dot_index = name.find_last_of('.');
+							//devicename = name.substr(0, dot_index);
+							//username = name.substr(dot_index+1, string::npos);
+							http_payload.append(
+									modifyDevice(username, devicename,
+											newdevicename, ip, port,
+											public_folder, private_folder));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "DELETEDEVICE")
+					{
+						string name, username, devicename;
+						if (qsp.get_value("name", name))
+						{
+							int dot_index = name.find_last_of('.');
+							devicename = name.substr(0, dot_index);
+							username = name.substr(dot_index + 1, string::npos);
+							http_payload.append(
+									deleteDevice(username, devicename));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "REGISTER")
+					{
+						string name, username, devicename, type, ip, port,
+								public_folder, private_folder, os, description,
+								is_publicly_indexed;
+						if (qsp.get_value("name", name)
+								&& qsp.get_value("type", type)
+								&& qsp.get_value("ip", ip)
+								&& qsp.get_value("port", port)
+								&& qsp.get_value("public_folder", public_folder)
+								&& qsp.get_value("private_folder",
+										private_folder)
+								&& qsp.get_value("os", os)
+								&& qsp.get_value("description", description)
+								&& qsp.get_value("ispublicly_indexed",
+										is_publicly_indexed))
+						{
+							int dot_index = name.find_last_of('.');
+							devicename = name.substr(0, dot_index);
+							username = name.substr(dot_index + 1, string::npos);
+							bool searchable = true;
+							if (is_publicly_indexed == "no")
+								searchable = false;
+							http_payload.append(
+									registerDevice(username, devicename, type,
+											ip, port, public_folder,
+											private_folder, os, description,
+											searchable));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "UPDATE")
+					{
+						string name, username, devicename, ip, port;
+						if (qsp.get_value("name", name)
+								&& qsp.get_value("ip", ip)
+								&& qsp.get_value("port", port))
+						{
+							int dot_index = name.find_last_of('.');
+							devicename = name.substr(0, dot_index);
+							username = name.substr(dot_index + 1, string::npos);
+							http_payload.append(
+									updateDevice(username, devicename, ip,
+											port));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "UPDATEMETA")
+					{
+						string name, username, devicename, data;
+						if (qsp.get_value("name", name)
+								&& qsp.get_value("data", data))
+						{
+							int dot_index = name.find_last_of('.');
+							devicename = name.substr(0, dot_index);
+							username = name.substr(dot_index + 1, string::npos);
+							http_payload.append(
+									updateMeta(username, devicename, data));
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "GETALL"
+							|| strtoupper(method_name) == "DEVICELIST")
+					{
+						string timestamp, neighbours;
+						if (qsp.get_value("timestamp", timestamp))
+						{
+							string result = "<getall><name>"
+									+ this_peer->get_peer_name() + "</name>";
+							routingTable2XML(
+									*this_peer->getProtocol()->getRoutingTable(),
+									neighbours);
+							result.append(neighbours);
+							result.append(getall(timestamp));
+							result.append("</getall>");
+							http_payload.append(result);
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
+						}
+					} else if (strtoupper(method_name) == "GETCONTENTLIST")
+					{
+						return_as_html = true;
+						string name, username, devicename;
+						if (qsp.get_value("name", name))
+						{
+							int dot_index = name.find_last_of('.');
+							devicename = name.substr(0, dot_index);
+							username = name.substr(dot_index + 1, string::npos);
+							http_payload.append("<html>");
+							http_payload.append(
+									getContentList(username, devicename));
+							http_payload.append("</html>");
+							http_code = "200 OK";
+						} else
+						{
+							http_code = "451 Parameter Not Understood";
 						}
 					}
-					else{
-						http_code = "451 Parameter Not Understood";
+					/*
+					 else if(method_name == "register" || method_name == "REGISTER") {
+					 printf("[Web thread]\tip = %ld\n", request_info->remote_ip);
+					 string ip_address = ipToString(request_info->remote_ip);
+					 printf("[Web thread]\tip address = %s\n", ip_address.c_str());
+					 string name, port;
+					 if(qsp.get_value("name", name) && qsp.get_value("port", port)){
+					 int port_number = atoi(port.c_str());
+					 if(port_number >= 1024 && port_number <= 65535){
+					 if(ip_address.size()){
+					 if(name.size()){
+					 HostAddress ha;
+					 if(!this_peer->searchNameDb(name, &ha)){
+					 this_peer->addToNameDB(name, HostAddress(ip_address, port_number));
+					 http_code = "200 OK";
+					 }
+					 else{
+					 http_code = "494 Device Name Not Available";
+					 }
+					 }
+					 else{
+					 http_code = "493 Device Name of Zero Length Not Allowed";
+					 }
+					 }
+					 else{
+					 http_code = "492 Remote IP Error";
+					 }
+					 }
+					 else{
+					 http_code = "491 Port Number Not in Range";
+					 }
+					 }
+					 else{
+					 http_code = "451 Parameter Not Understood";
+					 }
+					 }
+					 else if(method_name == "update" || method_name == "UPDATE") {
+					 string ip_address = ipToString(request_info->remote_ip);
+					 string name, port;
+					 if(qsp.get_value("name", name) && qsp.get_value("port", port)){
+					 int port_number = atoi(port.c_str());
+					 if(port_number >= 1024 && port_number <= 65535){
+					 if(ip_address.size()){
+					 if(name.size()){
+					 HostAddress ha;
+					 if(this_peer->updateNameDB(name, HostAddress(ip_address, port_number))){
+					 http_code = "200 OK";
+					 }
+					 else{
+					 http_code = "496 Device Name Not Found";
+					 }
+					 }
+					 else{
+					 http_code = "493 Device Name of Zero Length Not Allowed";
+					 }
+					 }
+					 else{
+					 http_code = "492 Remote IP Error";
+					 }
+					 }
+					 else{
+					 http_code = "491 Port Number Not in Range";
+					 }
+					 }
+					 else{
+					 http_code = "451 Parameter Not Understood";
+					 }
+					 }
+					 else if(method_name == "isavailable_" || method_name == "ISAVAILABLE_") {
+					 string name;
+					 if(qsp.get_value("name", name)){
+					 if(name.size()){
+					 HostAddress ha;
+					 if(!this_peer->searchNameDb(name, &ha)){
+					 //just check whether the device name is in namedb
+					 http_payload.append("Device Name Available.");
+					 http_code = "200 OK";
+					 }
+					 else{
+					 http_code = "494 Device Name Not Available";
+					 }
+					 }
+					 else{
+					 http_code = "493 Device Name of Zero Length Not Allowed";
+					 }
+					 }
+					 else{
+					 http_code = "451 Parameter Not Understood";
+					 }
+					 }
+					 else if (method_name == "getall" || method_name == "GETALL") {
+					 string timestamp_str;
+					 if(qsp.get_value("timestamp", timestamp_str)){
+					 string routing_table_str, name_db_str;
+					 time_t timestamp = atol(timestamp_str.c_str());
+					 if(timestamp > 0){
+					 routingTable2String(*this_peer->getProtocol()->getRoutingTable(), routing_table_str);
+					 http_payload.append(this_peer->get_peer_name());
+					 http_payload.append("|");
+					 http_payload.append(string(routing_table_str));
+					 http_payload.append(nameDbToString(this_peer->searchNameDb(timestamp)));
+					 http_code = "200 OK";
+					 }
+					 else{
+					 http_code = "495 Timestamp Less Than or Equal to Zero";
+					 }
+					 }
+					 else{
+					 http_code = "451 Parameter Not Understood";
+					 }
+					 }
+					 */
+					else
+					{
+						http_code = "405 Method Not Allowed";
 					}
-				}
-				*/
-				else {
-					http_code = "405 Method Not Allowed";
+				} else
+				{
+					//the key "method" is missing
+					http_code = "400 Bad Request";
 				}
 			}
-			else{
-				//the key "method" is missing
-				http_code = "400 Bad Request";
+			//printf("html content: %d::%s\n", content_length, content);
+
+			int content_length = snprintf(content, sizeof(content), "%s",
+					http_payload.c_str());
+
+			if (return_as_html)
+			{
+				mg_printf(conn, "HTTP/1.1 %s\r\n"
+						"Content-Type: text/html\r\n"
+						"Content-Length: %d\r\n" // Always set Content-Length
+						"\r\n"
+						"%s", http_code.c_str(), content_length, content);
+			} else
+			{
+				mg_printf(conn, "HTTP/1.1 %s\r\n"
+						"Access-Control-Allow-Origin: *\r\n"
+						"Content-Type: application/json\r\n"
+						"Connection: Keep-Alive\r\n"
+						"Keep-Alive:timeout=5, max=100\r\n"
+						"Vary:Accept-Encoding\r\n"
+						"Content-Length: %d\r\n" // Always set Content-Length
+						"\r\n"
+						"%s", http_code.c_str(), content_length, content);
 			}
 		}
-            //printf("html content: %d::%s\n", content_length, content);
-
-            int content_length = snprintf(content, sizeof (content),
-                    "%s", http_payload.c_str());
-	    
-	    if(return_as_html){
-	            mg_printf(conn,
-	                    "HTTP/1.1 %s\r\n"
-	                    "Content-Type: text/html\r\n"
-	                    "Content-Length: %d\r\n" // Always set Content-Length
-        	            "\r\n"
-        	            "%s", http_code.c_str(), content_length, content);
-	    }
-	    else{
-	            mg_printf(conn,
-        	            "HTTP/1.1 %s\r\n"
-			    "Access-Control-Allow-Origin: *\r\n"
-        	            "Content-Type: application/json\r\n"
-			    "Connection: Keep-Alive\r\n"
-			    "Keep-Alive:timeout=5, max=100\r\n"
-			    "Vary:Accept-Encoding\r\n"
-        	            "Content-Length: %d\r\n" // Always set Content-Length
-        	            "\r\n"
-        	            "%s", http_code.c_str(), content_length, content);
-	    }
-        }
-    }
-    return NULL;
+	}
+	return NULL;
 }
 
-void *web_interface_thread(void*) {
-    printf("Starting a web interface thread on port ");
-    char buffer[33];
-    int port = 20005;
-    while (true) {
-        sprintf(buffer, "%d", port++);
-        const char *options[] = {"listening_ports", buffer, NULL};
-        ctx = mg_start(&interface_callback, NULL, options);
-        if (ctx != NULL)
-            break;
-    }
-    puts(buffer);
+void *web_interface_thread(void*)
+{
+	printf("Starting a web interface thread on port ");
+	char buffer[33];
+	int port = 20005;
+	while (true)
+	{
+		sprintf(buffer, "%d", port++);
+		const char *options[] = { "listening_ports", buffer, NULL };
+		ctx = mg_start(&interface_callback, NULL, options);
+		if (ctx != NULL)
+			break;
+	}
+	puts(buffer);
 }
 
-void *storage_stat_thread(void*) {
-    puts("Starting a storage stat thread");
-    int cache_size = 0, index_size = 0, get_process_count = 0, put_process_count = 0;
-    double get_hit = 0.0, put_hit = 0.0;
-    bool loggable = false;
-    PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
-    const double EPS = 1e-3;
+void *storage_stat_thread(void*)
+{
+	puts("Starting a storage stat thread");
+	int cache_size = 0, index_size = 0, get_process_count = 0,
+			put_process_count = 0;
+	double get_hit = 0.0, put_hit = 0.0;
+	bool loggable = false;
+	PlexusProtocol* p_protocol = (PlexusProtocol*) plexus;
+	const double EPS = 1e-3;
 
-    while (true) {
-        if (!this_peer->IsInitRcvd())
-            continue;
+	while (true)
+	{
+		if (!this_peer->IsInitRcvd())
+			continue;
 
-        sleep(60);
+		sleep(60);
 
-        double temp_get_hit = 0.0;
-        if (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded() != 0)
-            temp_get_hit = (double) p_protocol->getGetCacheHitCounter() / (double) (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded());
+		double temp_get_hit = 0.0;
+		if (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded()
+				!= 0)
+			temp_get_hit = (double) p_protocol->getGetCacheHitCounter()
+					/ (double) (this_peer->numOfGet_processed()
+							+ this_peer->numOfGet_forwarded());
 
-        double temp_put_hit = 0;
-        if (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded() != 0)
-            temp_put_hit = (double) p_protocol->getPutCacheHitCounter() / (double) (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded());
+		double temp_put_hit = 0;
+		if (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded()
+				!= 0)
+			temp_put_hit = (double) p_protocol->getPutCacheHitCounter()
+					/ (double) (this_peer->numOfPut_processed()
+							+ this_peer->numOfPut_forwarded());
 
-        if (fabs(get_hit - temp_get_hit) > EPS) {
-            get_hit = temp_get_hit;
-            loggable = true;
-        }
+		if (fabs(get_hit - temp_get_hit) > EPS)
+		{
+			get_hit = temp_get_hit;
+			loggable = true;
+		}
 
-        if (fabs(put_hit - temp_put_hit) > EPS) {
-            put_hit = temp_put_hit;
-            loggable = true;
+		if (fabs(put_hit - temp_put_hit) > EPS)
+		{
+			put_hit = temp_put_hit;
+			loggable = true;
 
-        }
+		}
 
-        if (cache_size != p_protocol->getCache()->getSize()) {
-            cache_size = p_protocol->getCache()->getSize();
-            loggable = true;
-        }
+		if (cache_size != p_protocol->getCache()->getSize())
+		{
+			cache_size = p_protocol->getCache()->getSize();
+			loggable = true;
+		}
 
-        if (index_size != p_protocol->getIndexTable()->size()) {
-            index_size = p_protocol->getIndexTable()->size();
-            loggable = true;
-        }
+		if (index_size != p_protocol->getIndexTable()->size())
+		{
+			index_size = p_protocol->getIndexTable()->size();
+			loggable = true;
+		}
 
-        if (get_process_count != (this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded())) {
-            get_process_count = this_peer->numOfGet_processed() + this_peer->numOfGet_forwarded();
-            loggable = true;
-        }
+		if (get_process_count
+				!= (this_peer->numOfGet_processed()
+						+ this_peer->numOfGet_forwarded()))
+		{
+			get_process_count = this_peer->numOfGet_processed()
+					+ this_peer->numOfGet_forwarded();
+			loggable = true;
+		}
 
-        if (put_process_count != (this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded())) {
-            put_process_count = this_peer->numOfPut_processed() + this_peer->numOfPut_forwarded();
-            loggable = true;
-        }
+		if (put_process_count
+				!= (this_peer->numOfPut_processed()
+						+ this_peer->numOfPut_forwarded()))
+		{
+			put_process_count = this_peer->numOfPut_processed()
+					+ this_peer->numOfPut_forwarded();
+			loggable = true;
+		}
 
-        if (loggable) {
-            string key = this_peer->getHostName();
-            LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddiiii", get_hit, put_hit, cache_size, index_size, get_process_count, put_process_count);
-            p_protocol->addToLogQueue(entry);
-        }
-        loggable = false;
-    }
+		if (loggable)
+		{
+			string key = this_peer->getHostName();
+			LogEntry* entry = new LogEntry(LOG_STORAGE, key.c_str(), "ddiiii",
+					get_hit, put_hit, cache_size, index_size, get_process_count,
+					put_process_count);
+			p_protocol->addToLogQueue(entry);
+		}
+		loggable = false;
+	}
 
 }
 
@@ -1139,15 +1323,16 @@ void *pending_message_process_thread(void*)
 {
 	puts("Starting a Pending Message Processing Thread");
 
-	while(!this_peer->IsInitRcvd() || received_before_init_queue.empty());
+	while (!this_peer->IsInitRcvd() || received_before_init_queue.empty())
+		;
 
-	while(!received_before_init_queue.empty())
+	while (!received_before_init_queue.empty())
 	{
-		((PlexusProtocol*)plexus)->addToIncomingQueue(received_before_init_queue.front());
+		((PlexusProtocol*) plexus)->addToIncomingQueue(
+				received_before_init_queue.front());
 		received_before_init_queue.pop();
 	}
 
 	puts("All Pending Messages Processed");
 }
-
 

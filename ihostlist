@@ -1,4 +1,4 @@
-1
-localhost 30001 127.0.0.1 mypc0
-localhost 30002 127.0.0.1 mypc1
-localhost 30003 127.0.0.1 mypc2
+3
+localhost 55321 127.0.0.1 mypc0
+localhost 55322 127.0.0.1 mypc1
+localhost 55323 127.0.0.1 mypc2
