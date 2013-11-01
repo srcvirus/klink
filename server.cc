@@ -141,8 +141,8 @@ int main(int argc, char* argv[])
 
 void system_init()
 {
-	//freopen("agent.log", "w", stdout);
-	//freopen("agent.err", "w", stderr);
+	freopen("agent.log", "w", stdout);
+	freopen("agent.err", "w", stderr);
 
 	int error_code;
 	puts("[Main Thread]\tInitializing the System");
@@ -234,6 +234,8 @@ void *forwarding_thread(void* args)
 
 	while (true)
 	{
+		fflush(stdout);
+		fflush(stderr);
 
 		message = ((PlexusProtocol*) plexus)->getOutgoingQueueFront();
 		message->incrementOverlayHops();
@@ -296,6 +298,9 @@ void *listener_thread(void* args)
 
 	while (true)
 	{
+		fflush(stdout);
+		fflush(stderr);
+
 		read_connection_fds = connection_pool;
 
 		int n_select = select(fd_max + 1, &read_connection_fds, NULL, NULL,
@@ -505,6 +510,8 @@ void *processing_thread(void* args)
 	{
 		//                if (!this_peer->IsInitRcvd())
 		//                        continue;
+		fflush(stdout);
+		fflush(stderr);
 
 		message = ((PlexusProtocol*) plexus)->getIncomingQueueFront();
 
@@ -548,6 +555,9 @@ void *controlling_thread(void* args)
 
 		while (!this_peer->IsInitRcvd())
 			;
+
+		fflush(stdout);
+		fflush(stderr);
 
 		int total_pub_names = this_peer->getPublish_name_range_end()
 				- this_peer->getPublish_name_range_start() + 1;
@@ -649,6 +659,9 @@ void *logging_thread(void*)
 	LogEntry *entry;
 	while (true)
 	{
+		fflush(stdout);
+		fflush(stderr);
+
 		if (!this_peer->IsInitRcvd())
 		{
 			//puts("[Logging Thread]\tnot init received");
