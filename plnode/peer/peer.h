@@ -332,6 +332,8 @@ public:
 	{
 		string ret = "";
 		bool found = alias2ip_db.lookup(h_alias, &ret);
+		if(found) printf("Alias %s found\n", h_alias.c_str());
+		else printf("Alias %s not found\n", h_alias.c_str());
 		return ret;
 	}
 
