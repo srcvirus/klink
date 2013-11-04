@@ -134,6 +134,7 @@ public:
 				reply->setResolutionIpHops(msg->getIpHops());
 				reply->setResolutionLatency(msg->getLatency());
 				reply->setOriginSeqNo(msg->getSequenceNo());
+				reply->setSequenceNo(msg->getSequenceNo());
 
 				if (container_peer->getCacheStorage() == "path")
 				{
@@ -180,6 +181,9 @@ public:
 					& 0x003FFFFF;
 			MessageStateIndex msg_index(hash_name_to_get,
 					msg->getOriginSeqNo());
+			
+			printf("msg_state_index = %d_%d\n", msg_index.getMessageSeqNo(),
+				msg_index.getNameHash());
 
 			HostAddress requester;
 			pair<HostAddress, string> r;
