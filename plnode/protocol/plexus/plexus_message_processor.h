@@ -115,9 +115,13 @@ public:
 			container_peer->incrementGet_processed();
 			MessageGET *msg = ((MessageGET*) message);
 			HostAddress hostAddress;
-			if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
+			string ip_address = container_peer->lookup_alias_ip(msg->GetDeviceName());
+			if( ip_address.size() > 0 )
+			//if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
 				puts("Got it :)");
+				hostAddress.SetHostName(ip_address);
+				hostAddress.SetHostPort(container_peer->getListenPortNumber());
 				MessageGET_REPLY *reply = new MessageGET_REPLY(
 						container_peer->getHostName(),
 						container_peer->getListenPortNumber(),

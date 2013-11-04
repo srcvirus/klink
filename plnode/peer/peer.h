@@ -330,7 +330,7 @@ public:
 
 	string lookup_alias_ip(const string& h_alias)
 	{
-		string ret;
+		string ret = "";
 		bool found = alias2ip_db.lookup(h_alias, &ret);
 		return ret;
 	}
