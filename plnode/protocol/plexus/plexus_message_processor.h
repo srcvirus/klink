@@ -193,7 +193,7 @@ public:
 			bool exists = plexus->getUnresolvedGet().lookup(msg_index, &r);
 			if(r.first.GetHostPort() < 0 || r.first.GetHostName().size() <= 0) exists = false;
 			
-			requester = r;
+			requester = r.first;
 			if (exists)
 			{
 				printf("Requester: %s:%d\n", requester.GetHostName().c_str(),
