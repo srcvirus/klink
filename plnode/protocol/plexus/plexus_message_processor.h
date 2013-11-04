@@ -115,8 +115,8 @@ public:
 			container_peer->incrementGet_processed();
 			MessageGET *msg = ((MessageGET*) message);
 			HostAddress hostAddress;
-			printf("[Processing thread]\tProcessing get message, device name = %s, device name length = %d\n", msg->GetDeviceName(), msg->GetDeviceName().size());
-			string ip_address = container_peer->lookup_alias_ip(msg->GetDeviceName().c_str());
+			printf("[Processing thread]\tProcessing get message, device name = %s, device name length = %d\n", msg->GetDeviceName().c_str(), msg->GetDeviceName().size());
+			string ip_address = container_peer->lookup_alias_ip(msg->GetDeviceName());
 			if( ip_address.size() > 0 )
 			//if (index_table->lookup(msg->GetDeviceName(), &hostAddress))
 			{
