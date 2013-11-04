@@ -527,6 +527,7 @@ public:
 				make_pair(
 						HostAddress(message->getSourceHost(),
 								message->getSourcePort()), d_name));
+		printf("unresolved gets = %d\n", unresolved_get.size());
 
 		if (msgProcessor->processMessage(msg))
 		{

@@ -187,10 +187,13 @@ public:
 
 			HostAddress requester;
 			pair<HostAddress, string> r;
+			
+			printf("unresolved gets = %d\n", plexus->getUnresolvedGet().size());
 
 			bool exists = plexus->getUnresolvedGet().lookup(msg_index, &r);
-			if(requester.GetHostPort() < 0 || requester.GetHostName().size() <= 0) exists = false;
+			if(r.first.GetHostPort() < 0 || r.first.GetHostName().size() <= 0) exists = false;
 			
+			requester = r;
 			if (exists)
 			{
 				printf("Requester: %s:%d\n", requester.GetHostName().c_str(),
