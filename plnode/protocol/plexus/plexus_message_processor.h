@@ -180,7 +180,8 @@ public:
 			pair<HostAddress, string> r;
 
 			bool exists = plexus->getUnresolvedGet().lookup(msg_index, &r);
-
+			if(requester.GetHostPort() < 0 || requester.GetHostName().size() <= 0) exists = false;
+			
 			if (exists)
 			{
 				printf("Requester: %s:%d\n", requester.GetHostName().c_str(),
