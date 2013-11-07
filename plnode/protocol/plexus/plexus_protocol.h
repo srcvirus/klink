@@ -22,6 +22,8 @@
 #include "../../message/p2p/message_get_reply.h"
 #include "../../message/p2p/message_put_reply.h"
 
+#include "../../message/p2p/RetrieveMessage.h"
+
 #include "../../message/control/peer_initiate_get.h"
 #include "../../message/control/peer_initiate_put.h"
 
@@ -427,6 +429,47 @@ public:
 			addToOutgoingQueue(msg);
 		}
 		getContainerPeer()->incrementGet_generated();
+	}
+
+	void get_for_client_no_lookup(PeerInitiateGET* message)
+	{
+		int last_dot, next_dot, dot_index, last_space;
+		string ha_name, d_name;		
+		string ha_ip_address;
+		string str = message->getDeviceName();
+		RetrieveMessage* rtr_msg;
+
+		last_dot = (int)str.size() - 1;
+		while(last_dot >= 0 && str[last_dot] == '.') --last_dot;
+		str = str.substr(0, last_dot + 1);
+		
+		last_space = (int)str.size() - 1;
+		while(last_space >= 0 && str[last_space] == ' ') --last_space;
+		str = str.substr(0, last_space + 1);
+
+		for(last_dot = (int)str.size() - 1; last_dot >= 0 && str[last_dot] != '.'; last_dot--);
+		ha_name = str.substr(last_dot + 1);
+		d_name = str.substr(0, last_dot);
+
+		ha_ip_address = container_peer->lookup_alias_ip(ha_name);
+
+		if(ha_ip_address.size() > 0)
+		{
+			rtr_msg = new RetrieveMessage(
+				container_peer->getHostName(),
+				container_peer->getListenPortNumber(),
+				ha_ip_address,
+				container_peer->getListenPortNumber(),
+				container_peer->getOverlayID(), OverlayID(), OverlayID(),
+				d_name);
+
+			int hash = (int) urlHash(d_name.c_str()) & 0x003FFFFF;
+			MessageStateIndex ind(hash, message->getSequenceNo());
+			rtr_msg->setSequenceNo(message->getSequenceNo());
+			pair<HostAddress, string> request = make_pair(HostAddress(message->getSourceHost(), message->getSourcePort()), d_name);
+			unresolved_get.add(ind, request);
+			addToOutgoingQueue(rtr_msg);
+		}		
 	}
 
 	void get_for_client(PeerInitiateGET* message)

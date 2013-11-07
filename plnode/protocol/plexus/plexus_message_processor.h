@@ -271,11 +271,10 @@ public:
 			if (exists)
 			{
 				requester = r.first;
-				printf("[Processing thread]\tRequester: %s:%d\n", requester.GetHostName().c_str(),
-						requester.GetHostPort());
-				printf("[Processing thread]\tResult = %s:%d\n", msg->getHostAddress().GetHostName().c_str(), msg->getHostAddress().GetHostPort());
+				//printf("[Processing thread]\tRequester: %s:%d\n", requester.GetHostName().c_str(),
+				//		requester.GetHostPort());
+				//printf("[Processing thread]\tResult = %s:%d\n", msg->getHostAddress().GetHostName().c_str(), msg->getHostAddress().GetHostPort());
 				plexus->getUnresolvedGet().remove(msg_index);
-
 				MessageGET_REPLY* rtr_msg = new MessageGET_REPLY(
 						container_peer->getHostName(),
 						container_peer->getListenPortNumber(),
@@ -410,8 +409,8 @@ public:
 		} else if (message->getMessageType() == MSG_PEER_INITIATE_GET)
 		{
 			PeerInitiateGET* pInitGet = (PeerInitiateGET*) message;
-			pInitGet->message_print_dump();
-			plexus->get_for_client(pInitGet);
+			//pInitGet->message_print_dump();
+			plexus->get_for_client_no_lookup(pInitGet);
 		} else if (message->getMessageType() == MSG_PEER_INITIATE_PUT)
 		{
 			PeerInitiatePUT* pInitPut = (PeerInitiatePUT*) message;

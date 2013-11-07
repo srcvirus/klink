@@ -250,16 +250,15 @@ void *forwarding_thread(void* args)
 			double latency = cost.second;
 			message->incrementIpHops(ip_hops);
 			message->incrementLatency(latency);
-			printf(
-					"[Forwarding Thread %d:]\tNext hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",
+			/*printf("[Forwarding Thread %d:]\tNext hop: %s%d, ip hop = %d, latency = %.3lf (ms)\n",
 					t_param.getThreadId(), ha.GetHostName().c_str(),
-					ha.GetHostPort(), ip_hops, latency);
+					ha.GetHostPort(), ip_hops, latency);*/
 		}
 
-		printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n",
+		/*printf("[Forwarding Thread %d:]\tForwarding a %d message to %s:%d\n",
 				t_param.getThreadId(), message->getMessageType(),
 				message->getDestHost().c_str(), message->getDestPort());
-
+		*/
 		int retry = 0, error_code = 0;
 
 		while (retry < this_peer->getNRetry())
@@ -353,9 +352,9 @@ void *listener_thread(void* args)
 				} else
 				{
 					buffer_length = s_socket->receive_data(i, &buffer);
-					printf("[Listening thread]\t Received %d Bytes\n",
+					/*printf("[Listening thread]\t Received %d Bytes\n",
 							buffer_length);
-
+					*/
 					/*for(int j = 0; j < buffer_length; j++) printf("%d ", buffer[j]);
 					 putchar('\n');*/
 
@@ -386,7 +385,7 @@ void *listener_thread(void* args)
 							this_peer->incrementGet_received();
 							rcvd_message = new MessageGET();
 							rcvd_message->deserialize(buffer, buffer_length);
-							rcvd_message->message_print_dump();
+							//rcvd_message->message_print_dump();
 							//rcvd_message->setDstOid(OverlayID(atoi(((MessageGET*)rcvd_message)->GetDeviceName().c_str()), iCode));
 							break;
 
@@ -400,7 +399,7 @@ void *listener_thread(void* args)
 							this_peer->incrementPut_received();
 							rcvd_message = new MessagePUT();
 							rcvd_message->deserialize(buffer, buffer_length);
-							rcvd_message->message_print_dump();
+							//rcvd_message->message_print_dump();
 							//rcvd_message->setDstOid(OverlayID(atoi(((MessagePUT*)rcvd_message)->GetDeviceName().c_str()), iCode));
 							break;
 
@@ -413,12 +412,12 @@ void *listener_thread(void* args)
 							this_peer->incrementGet_received();
 							rcvd_message = new PeerInitiateGET();
 							rcvd_message->deserialize(buffer, buffer_length);
-							rcvd_message->message_print_dump();
+							//rcvd_message->message_print_dump();
 							break;
 						case MSG_PEER_INITIATE_PUT:
 							this_peer->incrementPut_received();
 							rcvd_message = new PeerInitiatePUT();
-							rcvd_message->deserialize(buffer, buffer_length);
+							//rcvd_message->deserialize(buffer, buffer_length);
 							break;
 						case MSG_PEER_START:
 							rcvd_message = new PeerStartMessage();
@@ -467,13 +466,12 @@ void *listener_thread(void* args)
 							//rcvd_message->message_print_dump();
 							if (this_peer->IsInitRcvd() || rcvd_message->getMessageType() == MSG_PEER_INIT)
 							{
-								puts(
-										"[Listening thread]\tINIT already received");
-								((PlexusProtocol*) plexus)->addToIncomingQueue(
-										rcvd_message);
-								printf(
-										"[Listening thread]\t Added a %d message to the incoming queue\n",
-										rcvd_message->getMessageType());
+								//puts(
+								//		"[Listening thread]\tINIT already received");
+								((PlexusProtocol*) plexus)->addToIncomingQueue(rcvd_message);
+								//printf(
+								//		"[Listening thread]\t Added a %d message to the incoming queue\n",
+								//		rcvd_message->getMessageType());
 							} else
 							{
 								puts(
