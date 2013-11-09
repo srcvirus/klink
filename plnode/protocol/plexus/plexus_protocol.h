@@ -437,11 +437,13 @@ public:
 		string ha_name, d_name;		
 		string ha_ip_address;
 		string str = message->getDeviceName();
+		printf("Got name = %s\n", str.c_str());
 		RetrieveMessage* rtr_msg;
 
 		last_dot = (int)str.size() - 1;
 		while(last_dot >= 0 && str[last_dot] == '.') --last_dot;
 		str = str.substr(0, last_dot + 1);
+		printf("Stripped last dot, final string = %s\n", str.c_str());
 		
 		last_space = (int)str.size() - 1;
 		while(last_space >= 0 && str[last_space] == ' ') --last_space;
@@ -452,7 +454,7 @@ public:
 		d_name = str.substr(0, last_dot);
 
 		ha_ip_address = container_peer->lookup_alias_ip(ha_name);
-
+		printf("Found IP = %s for alias = %s\n", ha_ip_address.c_str(), ha_name.c_str());
 		if(ha_ip_address.size() > 0)
 		{
 			rtr_msg = new RetrieveMessage(

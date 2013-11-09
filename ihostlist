@@ -1,4 +1,2 @@
-3
-localhost 55321 127.0.0.1 mypc0
-localhost 55322 127.0.0.1 mypc1
-localhost 55323 127.0.0.1 mypc2
+1
+scspc394.cs.uwaterloo.ca 55321 127.0.0.1 mypc0

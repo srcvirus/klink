@@ -47,7 +47,8 @@ cat nodes_temp | awk '{len=split($1,array,"."); print $1, $2, $3, array[len-1] m
 # copy the required files to cn102. cn102 will spawn multiple processes to upload all the files to 
 # all the planet lab nodes
 
-scp pssh_nodes ../config ../agent nodes ../pweb.sqlite ../query_sequence.dat pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+scp pssh_nodes ../config ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+#scp ../pweb.sqlite ../query_sequence.dat pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
 sleep 5
 ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
 scp -i ~/.ssh/id_rsa ../config ../imonitorlist nodes uwaterloo_pweb@plink.cs.uwaterloo.ca:~/

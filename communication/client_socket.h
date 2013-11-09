@@ -83,7 +83,7 @@ int ClientSocket::connect_to_server()
 
 		char str_host_name[300];
 		strcpy(str_host_name, server_host_name.c_str());
-
+		//printf("%s<-->%s\n", str_host_name, str_server_port);
 		getaddrinfo(str_host_name, str_server_port, &hints, &res);
 		server_info =  *((sockaddr_in*)(res->ai_addr));
 		//server_info = (*res);
