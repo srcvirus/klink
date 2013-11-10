@@ -75,8 +75,9 @@ int read_devices(char* device_file)
 		device_name = "." + device_name;
 		p = strtok(NULL, ",");
 		device_name = p + device_name;
-		device_name += ".mypc0.";
+		//device_name += ".mypc0.";
 		devices.push_back(device_name);
+		if(lines >= 50) break;
 	}
 
 	fclose(fp);
@@ -106,7 +107,7 @@ int read_home_agents(char* nodes_file)
 		if( ha_name[ (int)ha_name.size() - 1 ] == '\n' )
 			ha_name = ha_name.substr(0, (int)ha_name.size() - 1);
 		ha_name = "." + ha_name;
-		//ha_name += ".mypc0.";
+		ha_name += ".dht.geo.pwebproject.net";
 		home_agents.push_back(ha_name);
 	}
 
@@ -117,7 +118,7 @@ int read_home_agents(char* nodes_file)
 }
 int main()
 {
-	int total = 20000;
+	int total = 2000;
 	devices.clear();
 	int N = read_devices("device.dat");
 	int n_ha = read_home_agents("nodes");
@@ -128,16 +129,16 @@ int main()
 	zipf.setSeed();
 	ha_zipf.setSeed();
 
-	FILE* fp = fopen("query_sequence_benchmark.dat", "w");
+	FILE* fp = fopen("query_sequence.dat", "w");
 	int next_ha, next_device;
 
 	while(total--)
 	{
 		next_device = zipf.nextInt();
-//		next_ha = ha_zipf.nextInt();
+		next_ha = ha_zipf.nextInt();
 
-//		fprintf(fp, "%s\n", (devices[next_device] + home_agents[next_ha]).c_str());
-		fprintf(fp, "%s\n", devices[next_device].c_str());
+		fprintf(fp, "%s\n", (devices[next_device] + home_agents[next_ha]).c_str());
+//		fprintf(fp, "%s\n", devices[next_device].c_str());
 	}
 	fclose(fp);
 	return 0;
