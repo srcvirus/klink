@@ -107,7 +107,7 @@ int read_home_agents(char* nodes_file)
 		if( ha_name[ (int)ha_name.size() - 1 ] == '\n' )
 			ha_name = ha_name.substr(0, (int)ha_name.size() - 1);
 		ha_name = "." + ha_name;
-		ha_name += ".dht.geo.pwebproject.net";
+		ha_name += ".dht.pl.pwebproject.net";
 		home_agents.push_back(ha_name);
 	}
 

@@ -48,6 +48,7 @@ cat nodes_temp | awk '{len=split($1,array,"."); print $1, $2, $3, array[len-1] m
 # all the planet lab nodes
 
 scp pssh_nodes ../config ../agent nodes pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
+#scp pssh_nodes ../agent pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
 #scp ../pweb.sqlite ../query_sequence.dat pweb@cn102.cs.uwaterloo.ca:~/klink/pl_deploy
 sleep 5
 ssh pweb@cn102.cs.uwaterloo.ca "cd klink/pl_deploy ; ./upload_wrap.sh &"
